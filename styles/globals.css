@@ -1,3 +1,68 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  /* 主色系 */
+  --color-primary: #FF6B6B;
+  --color-secondary: #4ECDC4;
+  --color-accent: #FFE66D;
+  
+  /* 渐变色 */
+  --gradient-primary: linear-gradient(135deg, #FF9A8B 0%, #FF6B6B 100%);
+  
+  /* 中性色 */
+  --color-background: #FFFFFF;
+  --color-text: #2D3748;
+  --color-text-light: #718096;
+  
+  /* 功能色 */
+  --color-success: #48BB78;
+  --color-warning: #F6AD55;
+  --color-error: #F56565;
+  
+  /* 动画时间 */
+  --transition-fast: 150ms;
+  --transition-normal: 300ms;
+  --transition-slow: 500ms;
+}
+
+/* 暗色主题 */
+[data-theme='dark'] {
+  --color-background: #1A202C;
+  --color-text: #F7FAFC;
+  --color-text-light: #A0AEC0;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-text antialiased;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 font-semibold rounded-lg bg-gradient-to-r from-[#FF9A8B] to-[#FF6B6B] 
+           text-white transform transition-transform duration-300 hover:scale-105;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg p-4 transform transition-all duration-300 
+           hover:scale-[1.02] hover:shadow-xl;
+  }
+  
+  .nav-link {
+    @apply text-text-light hover:text-primary transition-colors duration-300;
+  }
+}
+
+/* 动画类 */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}

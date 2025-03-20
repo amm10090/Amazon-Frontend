@@ -34,3 +34,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 Amazon.jsonl
+amazon_crawler_api.py
