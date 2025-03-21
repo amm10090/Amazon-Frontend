@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: ['images-na.ssl-images-amazon.com', 'images-cn.ssl-images-amazon.com'],
+        domains: ['images-na.ssl-images-amazon.com', 'images-cn.ssl-images-amazon.com', 'm.media-amazon.com'],
     },
     async rewrites() {
         return [
