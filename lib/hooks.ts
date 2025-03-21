@@ -111,13 +111,6 @@ export function useCategoryStats(params?: {
         }
     );
 
-    console.log('=== useCategoryStats Debug ===');
-    console.log('Raw API response:', data);
-    console.log('Response data:', data?.data);
-    console.log('Error:', error);
-    console.log('Loading:', isLoading);
-    console.log('============================');
-
     const defaultData: CategoryStats = {
         browse_nodes: {},
         browse_tree: {},
@@ -127,10 +120,7 @@ export function useCategoryStats(params?: {
 
     // 处理API返回的数据
     const processData = (rawData: any): CategoryStats => {
-        console.log('Processing raw data in useCategoryStats:', rawData);
-
         if (!rawData) {
-            console.log('Raw data is null or undefined, returning default data');
             return defaultData;
         }
 
@@ -145,8 +135,6 @@ export function useCategoryStats(params?: {
 
             // 验证和处理product_groups
             if (rawData.product_groups) {
-                console.log('Raw product_groups:', rawData.product_groups);
-
                 if (typeof rawData.product_groups === 'object' && !Array.isArray(rawData.product_groups)) {
                     // 确保所有的值都是数字，并且过滤掉count为0的分类
                     result.product_groups = Object.fromEntries(
@@ -157,18 +145,11 @@ export function useCategoryStats(params?: {
                                 Number(value) || 0
                             ])
                     );
-                    console.log('Processed product_groups:', result.product_groups);
-                } else {
-                    console.warn('Invalid product_groups format:', rawData.product_groups);
                 }
-            } else {
-                console.log('No product_groups in raw data');
             }
 
-            console.log('Final processed data:', result);
             return result;
         } catch (error) {
-            console.error('Error processing category stats:', error);
             return defaultData;
         }
     };

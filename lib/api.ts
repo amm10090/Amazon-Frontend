@@ -20,11 +20,9 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
     (config) => {
-        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.params || {});
         return config;
     },
     (error) => {
-        console.error('API Request Error:', error);
         return Promise.reject(error);
     }
 );
@@ -33,13 +31,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error: AxiosError) => {
-        if (error.response?.status === 405 || error.response?.status === 403) {
-            console.error('CORS错误:', {
-                status: error.response?.status,
-                headers: error.response?.headers,
-                url: error.config?.url
-            });
-        }
         return Promise.reject(error);
     }
 );

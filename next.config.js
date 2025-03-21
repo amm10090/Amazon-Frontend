@@ -1,7 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        domains: ['images-na.ssl-images-amazon.com', 'images-cn.ssl-images-amazon.com', 'm.media-amazon.com'],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'images-na.ssl-images-amazon.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'images-cn.ssl-images-amazon.com',
+            },
+            {
+                protocol: 'https',
+                hostname: 'm.media-amazon.com',
+            },
+        ],
     },
     async rewrites() {
         return [
