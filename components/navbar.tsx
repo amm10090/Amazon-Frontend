@@ -71,14 +71,7 @@ export const Navbar = () => {
           <ThemeSwitch />
         </NavbarItem>
         <NavbarItem className="sm:hidden">
-          <Button
-            className="w-10 h-10 -mr-2"
-            isIconOnly
-            variant="light"
-            aria-label="open menu"
-          >
-            <NavbarMenuToggle />
-          </Button>
+          <NavbarMenuToggle className="w-10 h-10 p-2 -mr-2 text-default-500 bg-default-100/50 dark:bg-default-100/20 hover:bg-default-200/70 dark:hover:bg-default-100/40 rounded-lg transition-colors" />
         </NavbarItem>
       </NavbarContent>
 
