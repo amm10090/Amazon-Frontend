@@ -1,69 +1,68 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Next.js + HeroUI",
-  description: "Make beautiful websites regardless of your design experience.",
+  name: "Amazon Deals",
+  description: "亚马逊优惠信息展示平台",
   navItems: [
     {
-      label: "Home",
+      label: "首页",
       href: "/",
     },
     {
-      label: "Docs",
-      href: "/docs",
+      label: "全部商品",
+      href: "/products",
     },
     {
-      label: "Pricing",
-      href: "/pricing",
+      label: "限时特惠",
+      href: "/deals",
     },
     {
-      label: "Blog",
-      href: "/blog",
+      label: "我的收藏",
+      href: "/favorites",
     },
     {
-      label: "About",
+      label: "关于我们",
       href: "/about",
     },
   ],
   navMenuItems: [
     {
-      label: "Profile",
-      href: "/profile",
+      label: "首页",
+      href: "/",
     },
     {
-      label: "Dashboard",
-      href: "/dashboard",
+      label: "全部商品",
+      href: "/products",
     },
     {
-      label: "Projects",
-      href: "/projects",
+      label: "限时特惠",
+      href: "/deals",
     },
     {
-      label: "Team",
-      href: "/team",
+      label: "热门分类",
+      href: "/categories",
     },
     {
-      label: "Calendar",
-      href: "/calendar",
+      label: "我的收藏",
+      href: "/favorites",
     },
     {
-      label: "Settings",
-      href: "/settings",
+      label: "使用指南",
+      href: "/guide",
     },
     {
-      label: "Help & Feedback",
-      href: "/help-feedback",
+      label: "联系我们",
+      href: "/contact",
     },
     {
-      label: "Logout",
-      href: "/logout",
+      label: "关于我们",
+      href: "/about",
     },
   ],
   links: {
-    github: "https://github.com/heroui-inc/heroui",
-    twitter: "https://twitter.com/hero_ui",
-    docs: "https://heroui.com",
-    discord: "https://discord.gg/9b6yyZKmH4",
-    sponsor: "https://patreon.com/jrgarciadev",
+    github: "https://github.com/your-username/amazon-deals",
+    twitter: "https://twitter.com/your-username",
+    docs: "https://your-docs-site.com",
+    discord: "https://discord.gg/your-server",
   },
 };

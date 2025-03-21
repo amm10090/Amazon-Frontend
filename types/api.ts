@@ -5,6 +5,14 @@ export interface ApiResponse<T> {
     data: T;
 }
 
+// FastAPI分页响应类型
+export interface ListResponse<T> {
+    items: T[];
+    total: number;
+    page: number;
+    page_size: number;
+}
+
 // 商品相关类型
 export interface Product {
     id: string;
@@ -38,4 +46,34 @@ export interface Category {
 export interface CJProduct extends Omit<Product, 'id' | 'type'> {
     pid: string;
     shipping_price: number;
+}
+
+// 分类统计接口
+export interface CategoryStats {
+    browse_nodes: {
+        [key: string]: {
+            name?: string;
+            count?: number;
+            products?: number;
+            children?: { [key: string]: string };
+            parent?: string;
+            [key: string]: any
+        }
+    };
+    browse_tree: { [key: string]: any };
+    bindings: { [key: string]: number };
+    product_groups: { [key: string]: number };
+    total_categories?: number;
+}
+
+// 产品统计接口
+export interface ProductStats {
+    total_products: number;
+    discount_products: number;
+    coupon_products: number;
+    prime_products: number;
+    avg_discount: number;
+    avg_price: number;
+    min_price: number;
+    max_price: number;
 } 

@@ -3,28 +3,22 @@
 @tailwind utilities;
 
 :root {
-  /* 主色系 */
-  --color-primary: #FF6B6B;
-  --color-secondary: #4ECDC4;
-  --color-accent: #FFE66D;
+  /* 主题色系 */
+  --primary: #FF6B6B;
+  --secondary: #4ECDC4;
+  --accent: #FFE66D;
+  --background: #FFFFFF;
+  --text: #2D3436;
+  --text-light: #636E72;
   
-  /* 渐变色 */
+  /* 渐变 */
   --gradient-primary: linear-gradient(135deg, #FF9A8B 0%, #FF6B6B 100%);
-  
-  /* 中性色 */
-  --color-background: #FFFFFF;
-  --color-text: #2D3748;
-  --color-text-light: #718096;
-  
-  /* 功能色 */
-  --color-success: #48BB78;
-  --color-warning: #F6AD55;
-  --color-error: #F56565;
+  --gradient-hover: linear-gradient(135deg, #FF6B6B 0%, #FF9A8B 100%);
   
   /* 动画时间 */
-  --transition-fast: 150ms;
-  --transition-normal: 300ms;
-  --transition-slow: 500ms;
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.5s;
 }
 
 /* 暗色主题 */
@@ -34,29 +28,47 @@
   --color-text-light: #A0AEC0;
 }
 
+/* 全局滚动条样式 */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Webkit浏览器隐藏滚动条 */
+*::-webkit-scrollbar {
+  display: none;
+}
+
 @layer base {
-  html, body {
+  html {
     @apply overflow-x-hidden;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
   }
 
   body {
-    @apply bg-background text-text antialiased min-h-screen relative;
-    /* 隐藏滚动条但保持功能 */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
-  }
-
-  /* Webkit浏览器隐藏滚动条 */
-  body::-webkit-scrollbar {
-    display: none;
+    @apply bg-background text-text antialiased min-h-screen relative overflow-x-hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
   }
 }
 
 @layer components {
+  .bg-gradient-primary {
+    @apply bg-gradient-to-r from-[#FF9A8B] to-[#FF6B6B];
+  }
+  
+  .card-hover {
+    @apply transition-transform duration-300 hover:scale-105 hover:shadow-lg;
+  }
+  
   .btn-primary {
-    @apply px-4 py-2 font-semibold rounded-lg bg-gradient-to-r from-[#FF9A8B] to-[#FF6B6B] 
-           text-white transform transition-transform duration-300 hover:scale-105;
+    @apply px-4 py-2 bg-gradient-primary text-white rounded-full 
+           transition-all duration-300 hover:shadow-lg hover:scale-105;
+  }
+  
+  .section-title {
+    @apply text-2xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent;
   }
   
   .card {
@@ -70,14 +82,37 @@
 }
 
 /* 动画类 */
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.fade-enter {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+.fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+.fade-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+}
+
+/* 加载动画 */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
 }
 
 /* 移动端优化 */

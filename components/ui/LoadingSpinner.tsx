@@ -1,30 +1,44 @@
+"use client";
+
 import { motion } from 'framer-motion';
 
 interface LoadingSpinnerProps {
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl';
     className?: string;
+    message?: string;
 }
 
-const sizes = {
-    sm: 'w-4 h-4',
-    md: 'w-8 h-8',
-    lg: 'w-12 h-12',
-};
+export default function LoadingSpinner({
+    size = 'md',
+    className = '',
+    message = '加载中...'
+}: LoadingSpinnerProps) {
+    const sizeMap = {
+        sm: 'w-6 h-6',
+        md: 'w-10 h-10',
+        lg: 'w-16 h-16',
+        xl: 'w-24 h-24'
+    };
 
-const LoadingSpinner = ({ size = 'md', className = '' }: LoadingSpinnerProps) => {
+    const textSizeMap = {
+        sm: 'text-xs',
+        md: 'text-sm',
+        lg: 'text-base',
+        xl: 'text-xl'
+    };
+
     return (
-        <div className={`flex items-center justify-center ${className}`}>
+        <div className={`flex flex-col items-center justify-center ${className}`}>
             <motion.div
-                className={`${sizes[size]} rounded-full border-4 border-primary/30 border-t-primary`}
                 animate={{ rotate: 360 }}
-                transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    ease: 'linear',
-                }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className={`border-4 border-primary/30 border-t-primary rounded-full ${sizeMap[size]}`}
             />
+            {message && (
+                <p className={`mt-3 text-gray-500 ${textSizeMap[size]}`}>
+                    {message}
+                </p>
+            )}
         </div>
     );
-};
-
-export default LoadingSpinner; 
+} 

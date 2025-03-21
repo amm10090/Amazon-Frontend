@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import { productsApi, userApi } from './api';
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats } from '@/types/api';
 import { AxiosResponse } from 'axios';
 
 // 通用fetcher类型
@@ -33,7 +33,7 @@ export function useProducts(params?: {
     api_provider?: string;
     min_commission?: number;
 }): SWRHookResponse<Product[]> {
-    const { data: response, error, isLoading } = useSWR(
+    const { data, error, isLoading } = useSWR(
         ['/products/list', params],
         () => productsApi.getProducts(params),
         {
@@ -43,7 +43,7 @@ export function useProducts(params?: {
     );
 
     return {
-        data: response?.data?.data,
+        data: data?.data?.data?.items || [],
         isLoading,
         isError: error,
     };
@@ -88,13 +88,8 @@ export function useCategories(params?: {
 // 分类统计信息
 export function useCategoryStats(params?: {
     product_type?: 'discount' | 'coupon';
-}): SWRHookResponse<{
-    browse_nodes: { [key: string]: { [key: string]: any } };
-    browse_tree: { [key: string]: any };
-    bindings: { [key: string]: number };
-    product_groups: { [key: string]: number };
-}> {
-    const { data: response, error, isLoading } = useSWR(
+}): SWRHookResponse<CategoryStats> {
+    const { data, error, isLoading } = useSWR(
         ['/categories/stats', params],
         () => productsApi.getCategoryStats(params),
         {
@@ -103,8 +98,15 @@ export function useCategoryStats(params?: {
         }
     );
 
+    const defaultData: CategoryStats = {
+        browse_nodes: {},
+        browse_tree: {},
+        bindings: {},
+        product_groups: {}
+    };
+
     return {
-        data: response?.data?.data,
+        data: (data?.data?.data || defaultData) as CategoryStats,
         isLoading,
         isError: error,
     };
@@ -116,7 +118,7 @@ export function useDeals(params?: {
     page?: number;
     limit?: number;
 }): SWRHookResponse<Product[]> {
-    const { data: response, error, isLoading } = useSWR(
+    const { data, error, isLoading } = useSWR(
         ['/products/list', { ...params, min_discount: 50, sort: 'discount', order: 'desc' }],
         () => productsApi.getDeals(params),
         {
@@ -125,7 +127,7 @@ export function useDeals(params?: {
     );
 
     return {
-        data: response?.data?.data,
+        data: data?.data?.data?.items || [],
         isLoading,
         isError: error,
     };
@@ -205,17 +207,8 @@ export function useCJProduct(pid: string): SWRHookResponse<CJProduct> {
 }
 
 // 商品统计信息
-export function useProductStats(productType?: 'discount' | 'coupon'): SWRHookResponse<{
-    total_products: number;
-    discount_products: number;
-    coupon_products: number;
-    prime_products: number;
-    avg_discount: number;
-    avg_price: number;
-    min_price: number;
-    max_price: number;
-}> {
-    const { data: response, error, isLoading } = useSWR(
+export function useProductStats(productType?: 'discount' | 'coupon'): SWRHookResponse<ProductStats> {
+    const { data, error, isLoading } = useSWR(
         ['/products/stats', productType],
         () => productsApi.getProductsStats(productType),
         {
@@ -224,8 +217,19 @@ export function useProductStats(productType?: 'discount' | 'coupon'): SWRHookRes
         }
     );
 
+    const defaultStats: ProductStats = {
+        total_products: 0,
+        discount_products: 0,
+        coupon_products: 0,
+        prime_products: 0,
+        avg_discount: 0,
+        avg_price: 0,
+        min_price: 0,
+        max_price: 0
+    };
+
     return {
-        data: response?.data?.data,
+        data: (data?.data?.data || defaultStats) as ProductStats,
         isLoading,
         isError: error,
     };

@@ -1,42 +1,45 @@
 import axios, { AxiosError } from 'axios';
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats } from '@/types/api';
 
 const DEFAULT_API_URL = '/api';
-const DEFAULT_TIMEOUT = 10000;
+const DEFAULT_TIMEOUT = 15000;
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL,
-    timeout: Number(process.env.NEXT_PUBLIC_API_TIMEOUT) || DEFAULT_TIMEOUT,
+    baseURL: '/api',
+    timeout: DEFAULT_TIMEOUT,
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        // 如果有API密钥，也应该从环境变量中获取
         ...(process.env.NEXT_PUBLIC_API_KEY && {
             'X-API-Key': process.env.NEXT_PUBLIC_API_KEY
         })
-    }
+    },
+    withCredentials: false
 });
+
+// 请求拦截器
+api.interceptors.request.use(
+    (config) => {
+        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`, config.params || {});
+        return config;
+    },
+    (error) => {
+        console.error('API Request Error:', error);
+        return Promise.reject(error);
+    }
+);
 
 // 响应拦截器
 api.interceptors.response.use(
-    (response) => response.data,
+    (response) => response,
     (error: AxiosError) => {
-        // 处理CORS错误
         if (error.response?.status === 405 || error.response?.status === 403) {
-            console.error('API Access Error:', {
+            console.error('CORS错误:', {
                 status: error.response?.status,
-                url: error.config?.url,
-                method: error.config?.method
+                headers: error.response?.headers,
+                url: error.config?.url
             });
         }
-
-        console.error('API Error:', {
-            status: error.response?.status,
-            message: error.message,
-            data: error.response?.data,
-            url: error.config?.url,
-            method: error.config?.method
-        });
         return Promise.reject(error);
     }
 );
@@ -61,19 +64,10 @@ export const productsApi = {
         product_groups?: string[];
         api_provider?: string;
         min_commission?: number;
-    }) => api.get<ApiResponse<Product[]>>('/products/list', { params }),
+    }) => api.get<ApiResponse<ListResponse<Product>>>('/products/list', { params }),
 
     getProductsStats: (productType?: 'discount' | 'coupon') =>
-        api.get<ApiResponse<{
-            total_products: number;
-            discount_products: number;
-            coupon_products: number;
-            prime_products: number;
-            avg_discount: number;
-            avg_price: number;
-            min_price: number;
-            max_price: number;
-        }>>('/products/stats', { params: { product_type: productType } }),
+        api.get<ApiResponse<ProductStats>>('/products/stats', { params: { product_type: productType } }),
 
     getProductById: (id: string) => api.get<ApiResponse<Product>>(`/products/${id}`),
 
@@ -83,18 +77,13 @@ export const productsApi = {
 
     getCategoryStats: (params?: {
         product_type?: 'discount' | 'coupon';
-    }) => api.get<ApiResponse<{
-        browse_nodes: { [key: string]: { [key: string]: any } };
-        browse_tree: { [key: string]: any };
-        bindings: { [key: string]: number };
-        product_groups: { [key: string]: number };
-    }>>('/categories/stats', { params }),
+    }) => api.get<ApiResponse<CategoryStats>>('/categories/stats', { params }),
 
     getDeals: (params?: {
         active?: boolean;
         page?: number;
         limit?: number;
-    }) => api.get<ApiResponse<Product[]>>('/products/list', {
+    }) => api.get<ApiResponse<ListResponse<Product>>>('/products/list', {
         params: {
             ...params,
             min_discount: 50,
