@@ -10,118 +10,84 @@ import {
   NavbarMenuItem,
 } from "@heroui/navbar";
 import { Button } from "@heroui/react";
-import { Kbd } from "@heroui/kbd";
-import { Link } from "@heroui/react";
 import { Input } from "@heroui/react";
-import { link as linkStyles } from "@heroui/react";
+import { Link } from "@heroui/react";
 import NextLink from "next/link";
-import clsx from "clsx";
+import { useState } from "react";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
-import {
-  TwitterIcon,
-  GithubIcon,
-  DiscordIcon,
-  HeartFilledIcon,
-  SearchIcon,
-  Logo,
-} from "@/components/icons";
+import { SearchIcon } from "@/components/icons";
 
 export const Navbar = () => {
-  const searchInput = (
-    <Input
-      aria-label="Search"
-      classNames={{
-        inputWrapper: "bg-default-100",
-        input: "text-sm",
-      }}
-      endContent={
-        <Kbd className="hidden lg:inline-block" keys={["command"]}>
-          K
-        </Kbd>
-      }
-      labelPlacement="outside"
-      placeholder="Search..."
-      startContent={
-        <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
-      }
-      type="search"
-    />
-  );
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   return (
-    <HeroUINavbar maxWidth="xl" position="sticky">
-      <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
+    <HeroUINavbar
+      maxWidth="xl"
+      position="sticky"
+      className="bg-background/80 dark:bg-default-100/80 backdrop-blur-lg border-b border-divider/50 dark:border-divider/30"
+    >
+      <NavbarContent className="flex gap-4 flex-1" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
           <NextLink className="flex justify-start items-center gap-1" href="/">
-            <Logo />
-            <p className="font-bold text-inherit">ACME</p>
+            <span className="font-bold text-xl bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] dark:from-[#FF8E8E] dark:to-[#FFA5A5] bg-clip-text text-transparent whitespace-nowrap">
+              AmazonDeals
+            </span>
           </NextLink>
         </NavbarBrand>
-        <ul className="hidden lg:flex gap-4 justify-start ml-2">
-          {siteConfig.navItems.map((item) => (
-            <NavbarItem key={item.href}>
-              <NextLink
-                className={clsx(
-                  linkStyles({ color: "foreground" }),
-                  "data-[active=true]:text-primary data-[active=true]:font-medium",
-                )}
-                color="foreground"
-                href={item.href}
-              >
-                {item.label}
-              </NextLink>
-            </NavbarItem>
-          ))}
-        </ul>
+        <NavbarItem className="flex-1">
+          <div className="w-full flex justify-start">
+            <div
+              className={`transition-all duration-300 ease-in-out ${isSearchFocused
+                ? 'w-[calc(100vw-180px)] sm:w-[250px] md:w-[350px]'
+                : 'w-[120px] sm:w-[180px] md:w-[250px]'
+                }`}
+            >
+              <Input
+                aria-label="搜索商品"
+                classNames={{
+                  inputWrapper: "bg-content1 dark:bg-content1/70",
+                  input: "text-sm dark:text-white/90 truncate",
+                  base: "w-full max-w-full"
+                }}
+                placeholder={isSearchFocused ? "搜索心仪的商品..." : "搜索心仪的..."}
+                startContent={
+                  <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
+                }
+                type="search"
+                size="sm"
+                variant="bordered"
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
+              />
+            </div>
+          </div>
+        </NavbarItem>
       </NavbarContent>
 
-      <NavbarContent
-        className="hidden sm:flex basis-1/5 sm:basis-full"
-        justify="end"
-      >
-        <NavbarItem className="hidden sm:flex gap-2">
-          <Link isExternal aria-label="Twitter" href={siteConfig.links.twitter}>
-            <TwitterIcon className="text-default-500" />
-          </Link>
-          <Link isExternal aria-label="Discord" href={siteConfig.links.discord}>
-            <DiscordIcon className="text-default-500" />
-          </Link>
-          <Link isExternal aria-label="Github" href={siteConfig.links.github}>
-            <GithubIcon className="text-default-500" />
-          </Link>
+      <NavbarContent className="flex basis-1/5 sm:basis-full" justify="end">
+        <NavbarItem className="flex gap-2">
           <ThemeSwitch />
         </NavbarItem>
-        <NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>
-        <NavbarItem className="hidden md:flex">
+        <NavbarItem className="sm:hidden">
           <Button
-            isExternal
-            as={Link}
-            className="text-sm font-normal text-default-600 bg-default-100"
-            href={siteConfig.links.sponsor}
-            startContent={<HeartFilledIcon className="text-danger" />}
-            variant="flat"
+            className="w-10 h-10 -mr-2"
+            isIconOnly
+            variant="light"
+            aria-label="open menu"
           >
-            Sponsor
+            <NavbarMenuToggle />
           </Button>
         </NavbarItem>
       </NavbarContent>
 
-      <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <Link isExternal aria-label="Github" href={siteConfig.links.github}>
-          <GithubIcon className="text-default-500" />
-        </Link>
-        <ThemeSwitch />
-        <NavbarMenuToggle />
-      </NavbarContent>
-
-      <NavbarMenu>
-        {searchInput}
-        <div className="mx-4 mt-2 flex flex-col gap-2">
+      <NavbarMenu className="pt-6 pb-6 gap-4 shadow-lg dark:shadow-dark">
+        <div className="mx-4 mt-2 flex flex-col gap-4">
           {siteConfig.navMenuItems.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
               <Link
+                className="w-full px-4 py-3 text-lg hover:bg-default-100 dark:hover:bg-default-50 rounded-lg transition-colors"
                 color={
                   index === 2
                     ? "primary"

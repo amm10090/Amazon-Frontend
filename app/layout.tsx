@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
-import ClientProviders from "./client-providers";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="en">
+    <html lang="zh" suppressHydrationWarning>
       <head />
       <body
         className={clsx(
@@ -39,26 +39,24 @@ export default function RootLayout({
           fontSans.variable,
         )}
       >
-        <ClientProviders>
-          <div className="relative flex flex-col h-screen">
-            <Navbar />
-            <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
-              {children}
-            </main>
-            <footer className="w-full flex items-center justify-center py-3">
-              <a
-                className="flex items-center gap-1 text-current"
-                href="https://heroui.com?utm_source=next-app-template"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="heroui.com homepage"
-              >
-                <span className="text-default-600">Powered by</span>
-                <p className="text-primary">HeroUI</p>
-              </a>
-            </footer>
-          </div>
-        </ClientProviders>
+        <Providers>
+          <Navbar />
+          <main className="container mx-auto max-w-7xl pt-16 px-6 flex-grow">
+            {children}
+          </main>
+          <footer className="w-full flex items-center justify-center py-3">
+            <a
+              className="flex items-center gap-1 text-current"
+              href="https://heroui.com?utm_source=next-app-template"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="heroui.com homepage"
+            >
+              <span className="text-default-600">Powered by</span>
+              <p className="text-primary">HeroUI</p>
+            </a>
+          </footer>
+        </Providers>
       </body>
     </html>
   );
