@@ -88,15 +88,35 @@ export function useCategories(params?: {
 // 分类统计信息
 export function useCategoryStats(params?: {
     product_type?: 'discount' | 'coupon';
-}): SWRHookResponse<CategoryStats> {
+    page?: number;
+    page_size?: number;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+}): SWRHookResponse<CategoryStats> & { rawData?: any } {
+    // 设置默认参数值
+    const defaultParams = {
+        page: 1,
+        page_size: 100, // 增加页面大小以获取更多分类
+        sort_by: 'count',
+        sort_order: 'desc' as const,
+        ...params
+    };
+
     const { data, error, isLoading } = useSWR(
-        ['/categories/stats', params],
-        () => productsApi.getCategoryStats(params),
+        ['/categories/stats', defaultParams],
+        () => productsApi.getCategoryStats(defaultParams),
         {
             revalidateOnFocus: false,
             refreshInterval: 300000, // 每5分钟刷新一次
         }
     );
+
+    console.log('=== useCategoryStats Debug ===');
+    console.log('Raw API response:', data);
+    console.log('Response data:', data?.data);
+    console.log('Error:', error);
+    console.log('Loading:', isLoading);
+    console.log('============================');
 
     const defaultData: CategoryStats = {
         browse_nodes: {},
@@ -105,8 +125,59 @@ export function useCategoryStats(params?: {
         product_groups: {}
     };
 
+    // 处理API返回的数据
+    const processData = (rawData: any): CategoryStats => {
+        console.log('Processing raw data in useCategoryStats:', rawData);
+
+        if (!rawData) {
+            console.log('Raw data is null or undefined, returning default data');
+            return defaultData;
+        }
+
+        try {
+            // 直接使用API响应中的数据
+            const result: CategoryStats = {
+                browse_nodes: rawData.browse_nodes || {},
+                browse_tree: rawData.browse_tree || {},
+                bindings: rawData.bindings || {},
+                product_groups: {}
+            };
+
+            // 验证和处理product_groups
+            if (rawData.product_groups) {
+                console.log('Raw product_groups:', rawData.product_groups);
+
+                if (typeof rawData.product_groups === 'object' && !Array.isArray(rawData.product_groups)) {
+                    // 确保所有的值都是数字，并且过滤掉count为0的分类
+                    result.product_groups = Object.fromEntries(
+                        Object.entries(rawData.product_groups)
+                            .filter(([_, count]) => Number(count) > 0)
+                            .map(([key, value]) => [
+                                key,
+                                Number(value) || 0
+                            ])
+                    );
+                    console.log('Processed product_groups:', result.product_groups);
+                } else {
+                    console.warn('Invalid product_groups format:', rawData.product_groups);
+                }
+            } else {
+                console.log('No product_groups in raw data');
+            }
+
+            console.log('Final processed data:', result);
+            return result;
+        } catch (error) {
+            console.error('Error processing category stats:', error);
+            return defaultData;
+        }
+    };
+
+    const processedData = processData(data?.data);
+
     return {
-        data: (data?.data?.data || defaultData) as CategoryStats,
+        data: processedData,
+        rawData: data?.data,
         isLoading,
         isError: error,
     };

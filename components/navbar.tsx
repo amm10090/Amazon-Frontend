@@ -78,7 +78,7 @@ export const Navbar = () => {
             >
               <NextLink className="flex justify-start items-center gap-1" href="/">
                 <motion.span
-                  className="font-bold text-xl bg-gradient-to-r from-[#FF6B6B] via-[#FF8E8E] to-[#FF6B6B] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
+                  className="font-bold text-xl bg-linear-to-r from-[#FF6B6B] via-[#FF8E8E] to-[#FF6B6B] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
                   animate={{
                     backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
                   }}
@@ -135,7 +135,7 @@ export const Navbar = () => {
                       animate={isSearchFocused ? "animate" : "initial"}
                       transition={{ duration: 0.5 }}
                     >
-                      <SearchIcon className="text-base text-default-400 pointer-events-none flex-shrink-0" />
+                      <SearchIcon className="text-base text-default-400 pointer-events-none shrink-0" />
                     </motion.div>
                   }
                   type="search"

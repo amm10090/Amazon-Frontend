@@ -30,7 +30,7 @@ export default function ProductCard({ product, showActions = false, isNew = fals
             whileHover={{ y: -8 }}
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}
-            className="group relative bg-background rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+            className="group relative bg-background rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300"
         >
             <Link href={`/product/${product.id}`} className="block">
                 {/* 新品标签 */}
@@ -118,7 +118,7 @@ export default function ProductCard({ product, showActions = false, isNew = fals
 
             {/* 快捷操作按钮 */}
             {showActions && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="flex justify-center space-x-2">
                         <motion.a
                             whileHover={{ scale: 1.05 }}

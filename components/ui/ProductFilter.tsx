@@ -27,23 +27,27 @@ export function ProductFilter({
     const [localSort, setLocalSort] = useState<string>(selectedSort);
     const [categoryItems, setCategoryItems] = useState<CategoryItem[]>([]);
 
-    const { data: categoryStats, isLoading: categoriesLoading } = useCategoryStats();
+    const { data: categoryStats, isLoading: categoriesLoading } = useCategoryStats({
+        page: 1,
+        page_size: 100, // 获取足够多的分类
+        sort_by: 'count',
+        sort_order: 'desc'
+    });
 
-    // 处理分类数据，将嵌套的对象转换为简单数组
+    // 处理分类数据，将product_groups转换为简单数组
     useEffect(() => {
-        if (categoryStats && categoryStats.browse_nodes) {
+        if (categoryStats && categoryStats.product_groups) {
             const items: CategoryItem[] = [];
-            Object.entries(categoryStats.browse_nodes).forEach(([id, node]) => {
-                if (node.name && node.count && node.count > 0) {
+            Object.entries(categoryStats.product_groups).forEach(([name, count]) => {
+                if (count > 0) {
                     items.push({
-                        id,
-                        name: node.name,
-                        count: node.count
+                        id: name,
+                        name: name,
+                        count: count
                     });
                 }
             });
-            // 按照数量排序
-            items.sort((a, b) => b.count - a.count);
+            // 后端已经排序，所以不需要再排序
             setCategoryItems(items);
         }
     }, [categoryStats]);
@@ -111,7 +115,7 @@ export function ProductFilter({
                 <select
                     value={localSort}
                     onChange={handleSortChange}
-                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="px-4 py-2 border rounded-lg focus:outline-hidden focus:ring-2 focus:ring-primary"
                 >
                     <option value="created_desc">最新上架</option>
                     <option value="price_asc">价格低到高</option>

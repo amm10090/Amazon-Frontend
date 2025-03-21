@@ -77,6 +77,10 @@ export const productsApi = {
 
     getCategoryStats: (params?: {
         product_type?: 'discount' | 'coupon';
+        page?: number;
+        page_size?: number;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
     }) => api.get<ApiResponse<CategoryStats>>('/categories/stats', { params }),
 
     getDeals: (params?: {
