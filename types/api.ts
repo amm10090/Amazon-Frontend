@@ -76,4 +76,16 @@ export interface ProductStats {
     avg_price: number;
     min_price: number;
     max_price: number;
+}
+
+// 品牌统计接口
+export interface BrandStats {
+    brands: { [brand: string]: number };
+    total_brands: number;
+    pagination: {
+        page: number;
+        page_size: number;
+        total_count: number;
+        total_pages: number;
+    };
 } 

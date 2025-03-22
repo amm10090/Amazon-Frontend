@@ -13,6 +13,7 @@ import { AmazonProduct } from '@/types/amazonApi';
 import { ComponentProduct } from '@/types';
 import { adaptProducts } from '@/lib/utils';
 import axios from 'axios';
+import { useSearchParams } from 'next/navigation';
 
 // 交互式动画SVG组件替代原3D模型
 const CategoryIllustration = ({ category }: { category: string }) => {
@@ -177,7 +178,8 @@ const isProduct = (product: AmazonProduct | Product): product is Product => {
 
 export default function ProductsPage() {
     const [searchParams, setSearchParams] = useState({
-        product_groups: [] as string[],
+        product_groups: '' as string,
+        brands: '' as string,
         page: 1,
         limit: 12,
         sort_by: 'all' as 'price' | 'discount' | 'created' | 'all',
@@ -197,6 +199,37 @@ export default function ProductsPage() {
     const headerY = useTransform(scrollYProgress, [0, 0.2], [0, -20]);
     const catalogRef = useRef<HTMLDivElement>(null);
 
+    // 从URL加载参数
+    const searchParamsFromUrl = useSearchParams();
+
+    // 添加useEffect，确保从URL参数正确加载
+    useEffect(() => {
+        // 获取URL参数
+        const brands = searchParamsFromUrl.get('brands') || '';
+        const product_groups = searchParamsFromUrl.get('product_groups') || '';
+        const page = Number(searchParamsFromUrl.get('page')) || 1;
+        const min_price = searchParamsFromUrl.get('min_price') ? Number(searchParamsFromUrl.get('min_price')) : undefined;
+        const max_price = searchParamsFromUrl.get('max_price') ? Number(searchParamsFromUrl.get('max_price')) : undefined;
+        const min_discount = searchParamsFromUrl.get('min_discount') ? Number(searchParamsFromUrl.get('min_discount')) : undefined;
+        const is_prime_only = searchParamsFromUrl.get('is_prime_only') === 'true';
+        const sort_by = (searchParamsFromUrl.get('sort_by') as typeof searchParams.sort_by) || 'all';
+        const sort_order = (searchParamsFromUrl.get('sort_order') as typeof searchParams.sort_order) || 'desc';
+
+        // 更新searchParams状态，直接使用字符串而非数组
+        setSearchParams(prev => ({
+            ...prev,
+            brands,
+            product_groups,
+            page,
+            min_price,
+            max_price,
+            min_discount,
+            is_prime_only,
+            sort_by,
+            sort_order
+        }));
+    }, [searchParamsFromUrl]);
+
     // 添加数据处理日志
     useEffect(() => {
         console.log('原始API数据:', data);
@@ -214,6 +247,10 @@ export default function ProductsPage() {
                     const apiParams: any = { ...searchParams };
                     if (searchParams.limit) apiParams.page_size = searchParams.limit;
                     delete apiParams.limit;
+
+                    // 移除空的参数
+                    if (apiParams.brands === '') delete apiParams.brands;
+                    if (apiParams.product_groups === '') delete apiParams.product_groups;
 
                     const response = await axios.get('/api/products/list', { params: apiParams });
                     console.log('直接获取的数据:', response.data);
@@ -255,7 +292,7 @@ export default function ProductsPage() {
     const handleCategoryClick = (category: string) => {
         setSearchParams(prev => ({
             ...prev,
-            product_groups: category ? [category] : [],
+            product_groups: category || '',
             page: 1
         }));
 
@@ -279,11 +316,12 @@ export default function ProductsPage() {
     // 处理筛选条件变更
     const handleFilterChange = (filters: any) => {
         // 移除不支持的参数
-        const { api_provider, min_commission, min_rating, brands, ...validFilters } = filters;
+        const { api_provider, min_commission, min_rating, ...validFilters } = filters;
 
-        // 处理品牌筛选，转换为product_groups
-        if (brands && brands.length > 0) {
-            validFilters.product_groups = brands;
+        // 确保品牌参数为字符串类型
+        if (validFilters.brands && Array.isArray(validFilters.brands)) {
+            validFilters.brands = validFilters.brands.join(',');
+            console.log('应用品牌筛选:', validFilters.brands);
         }
 
         setSearchParams(prev => ({
@@ -404,7 +442,7 @@ export default function ProductsPage() {
 
                     <div className="hidden lg:block h-full w-1/3 relative">
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <CategoryIllustration category={searchParams.product_groups[0] || 'default'} />
+                            <CategoryIllustration category={searchParams.product_groups || 'default'} />
                         </div>
                     </div>
                 </div>
@@ -422,7 +460,7 @@ export default function ProductsPage() {
             >
                 <div className="container mx-auto">
                     <ProductCategoryNav
-                        selectedCategory={searchParams.product_groups[0] || ''}
+                        selectedCategory={searchParams.product_groups || ''}
                         onCategorySelect={handleCategoryClick}
                     />
                 </div>
@@ -458,7 +496,7 @@ export default function ProductsPage() {
                             {(products: ComponentProduct[]) => (
                                 <AnimatePresence mode="wait">
                                     <motion.div
-                                        key={`products-${searchParams.product_groups[0] || 'all'}-${searchParams.page}`}
+                                        key={`products-${searchParams.product_groups || 'all'}-${searchParams.page}`}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -20 }}
@@ -480,8 +518,8 @@ export default function ProductsPage() {
                                                         const [sort_by, sort_order] = e.target.value.split(':');
                                                         setSearchParams(prev => ({
                                                             ...prev,
-                                                            sort_by: sort_by as any,
-                                                            sort_order: sort_order as any,
+                                                            sort_by: sort_by as 'price' | 'discount' | 'created' | 'all',
+                                                            sort_order: sort_order as 'asc' | 'desc',
                                                             page: 1
                                                         }));
                                                     }}

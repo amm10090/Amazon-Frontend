@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import { productsApi, userApi } from './api';
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats, BrandStats } from '@/types/api';
 import { AxiosResponse } from 'axios';
 import { useEffect } from 'react';
 
@@ -26,7 +26,8 @@ export function useProducts(params?: {
     max_price?: number;
     min_discount?: number;
     is_prime_only?: boolean;
-    product_groups?: string[];
+    product_groups?: string;
+    brands?: string;
     api_provider?: string;
 }): SWRHookResponse<{ items: any[], total: number, page: number, page_size: number }> {
     // 创建一个唯一的key，确保参数变化时会重新获取
@@ -292,6 +293,52 @@ export function useProductStats(productType?: 'discount' | 'coupon'): SWRHookRes
 
     return {
         data: (data?.data?.data || defaultStats) as ProductStats,
+        isLoading,
+        isError: error,
+    };
+}
+
+// 品牌统计信息
+export function useBrandStats(params?: {
+    product_type?: 'discount' | 'coupon';
+    page?: number;
+    page_size?: number;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+}): SWRHookResponse<BrandStats> & { rawData?: any } {
+    // 设置默认参数值
+    const defaultParams = {
+        page: 1,
+        page_size: 50, // 最大品牌数量
+        sort_by: 'count',
+        sort_order: 'desc' as const,
+        ...params
+    };
+
+    const { data, error, isLoading } = useSWR(
+        ['/brands/stats', defaultParams],
+        () => productsApi.getBrandStats(defaultParams),
+        {
+            revalidateOnFocus: false,
+            refreshInterval: 300000, // 每5分钟刷新一次
+        }
+    );
+
+    // 创建默认的品牌统计数据
+    const defaultBrandStats: BrandStats = {
+        brands: {},
+        total_brands: 0,
+        pagination: {
+            page: 1,
+            page_size: 50,
+            total_count: 0,
+            total_pages: 0
+        }
+    };
+
+    return {
+        data: data?.data || defaultBrandStats,
+        rawData: data?.data,
         isLoading,
         isError: error,
     };

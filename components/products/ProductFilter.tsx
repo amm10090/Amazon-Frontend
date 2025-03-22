@@ -4,11 +4,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { productsApi } from '@/lib/api';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useBrandStats } from '@/lib/hooks';
 
 type FilterState = {
     price: [number, number];
     discount: number;
-    brands: string[];
+    brands: string;
     isPrime: boolean;
 }
 
@@ -198,8 +199,8 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                         key={index}
                         onClick={() => onChange([range.values[0], range.values[1]])}
                         className={`text-xs py-1 px-2 rounded-full transition-colors ${value[0] === range.values[0] && value[1] === range.values[1]
-                                ? 'bg-primary text-white'
-                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                             }`}
                     >
                         {range.label}
@@ -269,7 +270,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
     const initialMinPrice = Number(searchParams.get('minPrice')) || 0;
     const initialMaxPrice = Number(searchParams.get('maxPrice')) || 1000;
     const initialDiscount = Number(searchParams.get('discount')) || 0;
-    const initialBrands = searchParams.get('brands') ? searchParams.get('brands')!.split(',') : [];
+    const initialBrands = searchParams.get('brands') || '';
     const initialIsPrime = searchParams.get('isPrime') === 'true';
 
     const [filter, setFilter] = useState<FilterState>({
@@ -287,6 +288,13 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         brands: true
     });
 
+    // 使用品牌统计hook获取真实数据
+    const { data: brandStats, isLoading: isBrandStatsLoading } = useBrandStats({
+        sort_by: 'count',
+        sort_order: 'desc',
+        page_size: 50
+    });
+
     // Toggle section expansion
     const toggleSection = (section: keyof typeof expandedSections) => {
         setExpandedSections(prev => ({
@@ -295,29 +303,27 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         }));
     };
 
-    // Fetch available brands
+    // 获取品牌数据
     useEffect(() => {
-        const fetchBrands = async () => {
+        if (brandStats && brandStats.brands) {
             try {
                 setLoading(true);
-                // Mock data to avoid API errors
-                setAvailableBrands([
-                    'Apple', 'Samsung', 'Xiaomi', 'Huawei', 'Nike',
-                    'Adidas', 'Puma', 'Sony', 'LG', 'Panasonic'
-                ]);
+
+                // 从API获取的品牌数据转换为数组
+                const brandsArray = Object.keys(brandStats.brands)
+                    .filter(brand => brand && brand.trim() !== "") // 过滤空品牌
+                    .sort((a, b) => (brandStats.brands[b] || 0) - (brandStats.brands[a] || 0)); // 按数量排序
+
+                setAvailableBrands(brandsArray);
             } catch (error) {
-                console.error('Unable to fetch brand list:', error);
-                // Show some mock brands even if there's an error
-                setAvailableBrands([
-                    'Apple', 'Samsung', 'Xiaomi', 'Huawei', 'Nike'
-                ]);
+                console.error('处理品牌数据时出错:', error);
+                // 出错时使用空数组
+                setAvailableBrands([]);
             } finally {
                 setLoading(false);
             }
-        };
-
-        fetchBrands();
-    }, []);
+        }
+    }, [brandStats]);
 
     // Create a function to build URLSearchParams that doesn't depend on filter
     const buildUrlParams = useCallback((currentFilter: FilterState) => {
@@ -333,7 +339,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         if (currentFilter.discount > 0) params.set('discount', currentFilter.discount.toString());
         else params.delete('discount');
 
-        if (currentFilter.brands.length > 0) params.set('brands', currentFilter.brands.join(','));
+        if (currentFilter.brands && currentFilter.brands.trim() !== '') params.set('brands', currentFilter.brands);
         else params.delete('brands');
 
         if (currentFilter.isPrime) params.set('isPrime', 'true');
@@ -366,63 +372,78 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
 
     // Handle price change
     const handlePriceChange = (value: [number, number]) => {
-        setFilter(prev => ({ ...prev, price: value }));
+        // 先调用onFilter
         if (onFilter) {
             onFilter({ min_price: value[0], max_price: value[1] });
         }
+        // 再更新本地状态
+        setFilter(prev => ({ ...prev, price: value }));
     };
 
     // Handle discount change
     const handleDiscountChange = (value: number) => {
-        setFilter(prev => ({ ...prev, discount: value }));
+        // 先调用onFilter
         if (onFilter) {
             onFilter({ min_discount: value });
         }
+        // 再更新本地状态
+        setFilter(prev => ({ ...prev, discount: value }));
     };
 
     // Handle brand change
     const handleBrandChange = (brand: string, checked: boolean) => {
-        setFilter(prev => {
-            const updatedBrands = checked
-                ? [...prev.brands, brand]
-                : prev.brands.filter(b => b !== brand);
+        // 将字符串转为数组以便于修改
+        const brandsArray = filter.brands ? filter.brands.split(',') : [];
 
-            if (onFilter) {
-                onFilter({ brands: updatedBrands });
-            }
+        // 更新数组
+        const updatedBrandsArray = checked
+            ? [...brandsArray, brand]
+            : brandsArray.filter(b => b !== brand);
 
-            return {
-                ...prev,
-                brands: updatedBrands
-            };
-        });
+        // 将数组转回字符串
+        const updatedBrands = updatedBrandsArray.join(',');
+
+        // 先调用onFilter，传递新的筛选条件
+        if (onFilter) {
+            onFilter({ brands: updatedBrands });
+        }
+
+        // 然后更新本地状态
+        setFilter(prev => ({
+            ...prev,
+            brands: updatedBrands
+        }));
     };
 
     // Handle Prime filter change
     const handlePrimeChange = (checked: boolean) => {
-        setFilter(prev => ({ ...prev, isPrime: checked }));
+        // 先调用onFilter
         if (onFilter) {
             onFilter({ is_prime_only: checked });
         }
+        // 再更新本地状态
+        setFilter(prev => ({ ...prev, isPrime: checked }));
     };
 
     // Clear all filters
     const handleClearFilters = () => {
-        setFilter({
-            price: [0, 1000],
-            discount: 0,
-            brands: [],
-            isPrime: false
-        });
+        // 先调用onFilter
         if (onFilter) {
             onFilter({
                 min_price: undefined,
                 max_price: undefined,
                 min_discount: undefined,
-                brands: [],
+                brands: '',
                 is_prime_only: false
             });
         }
+        // 再更新本地状态
+        setFilter({
+            price: [0, 1000],
+            discount: 0,
+            brands: '',
+            isPrime: false
+        });
     };
 
     return (
@@ -507,7 +528,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                     className="flex justify-between items-center mb-4 cursor-pointer"
                     onClick={() => toggleSection('brands')}
                 >
-                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Brands</h3>
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">品牌</h3>
                     <motion.span
                         animate={{ rotate: expandedSections.brands ? 180 : 0 }}
                         transition={{ duration: 0.3 }}
@@ -526,23 +547,28 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                         transition={{ duration: 0.3 }}
                         className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
                     >
-                        {loading ? (
+                        {loading || isBrandStatsLoading ? (
                             <div className="animate-pulse space-y-2">
                                 {[...Array(5)].map((_, i) => (
                                     <div key={i} className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
                                 ))}
                             </div>
-                        ) : (
+                        ) : availableBrands.length > 0 ? (
                             availableBrands.map(brand => (
-                                <div key={brand} className="flex items-center">
+                                <div key={brand} className="flex items-center justify-between">
                                     <Checkbox
                                         id={`brand-${brand}`}
-                                        checked={filter.brands.includes(brand)}
+                                        checked={filter.brands.split(',').includes(brand)}
                                         onChange={(checked) => handleBrandChange(brand, checked)}
                                         label={brand}
                                     />
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                        {brandStats?.brands[brand] || 0}
+                                    </span>
                                 </div>
                             ))
+                        ) : (
+                            <div className="text-sm text-gray-500 dark:text-gray-400">无可用品牌</div>
                         )}
                     </motion.div>
                 )}

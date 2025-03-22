@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats, BrandStats } from '@/types/api';
 
 const DEFAULT_API_URL = '/api';
 const DEFAULT_TIMEOUT = 15000;
@@ -48,7 +48,8 @@ export const productsApi = {
         max_price?: number;
         min_discount?: number;
         is_prime_only?: boolean;
-        product_groups?: string[];
+        product_groups?: string;
+        brands?: string;
         api_provider?: string;
     }) => {
         // 将前端参数映射到API参数
@@ -58,6 +59,10 @@ export const productsApi = {
         if (params?.limit) apiParams.page_size = params.limit;
         if (params?.sort_by) apiParams.sort_by = params.sort_by;
         if (params?.sort_order) apiParams.sort_order = params.sort_order;
+
+        // 移除空的分类和品牌参数
+        if (params?.brands === '') delete apiParams.brands;
+        if (params?.product_groups === '') delete apiParams.product_groups;
 
         // 移除不需要的参数
         delete apiParams.limit;
@@ -80,6 +85,14 @@ export const productsApi = {
         sort_by?: string;
         sort_order?: 'asc' | 'desc';
     }) => api.get<ApiResponse<CategoryStats>>('/categories/stats', { params }),
+
+    getBrandStats: (params?: {
+        product_type?: 'discount' | 'coupon';
+        page?: number;
+        page_size?: number;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
+    }) => api.get<BrandStats>('/brands/stats', { params }),
 
     getDeals: (params?: {
         active?: boolean;
