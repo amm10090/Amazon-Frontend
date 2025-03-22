@@ -295,6 +295,9 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         page_size: 50
     });
 
+    // 使用ref保存上一次的过滤条件，避免无限循环
+    const prevFilter = useRef<FilterState>(filter);
+
     // Toggle section expansion
     const toggleSection = (section: keyof typeof expandedSections) => {
         setExpandedSections(prev => ({
@@ -303,31 +306,39 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         }));
     };
 
-    // 获取品牌数据
+    // 获取品牌数据 - 使用useRef防止无限循环
+    const brandsDataProcessed = useRef(false);
     useEffect(() => {
-        if (brandStats && brandStats.brands) {
+        // 只有当品牌数据发生变化，且还没有处理过，或显式设置重新处理时才执行
+        if (brandStats?.brands && !isBrandStatsLoading && !brandsDataProcessed.current) {
             try {
-                setLoading(true);
-
                 // 从API获取的品牌数据转换为数组
                 const brandsArray = Object.keys(brandStats.brands)
                     .filter(brand => brand && brand.trim() !== "") // 过滤空品牌
                     .sort((a, b) => (brandStats.brands[b] || 0) - (brandStats.brands[a] || 0)); // 按数量排序
 
+                // 设置品牌数据，不会导致循环更新
                 setAvailableBrands(brandsArray);
+                // 标记品牌数据已处理
+                brandsDataProcessed.current = true;
             } catch (error) {
                 console.error('处理品牌数据时出错:', error);
-                // 出错时使用空数组
                 setAvailableBrands([]);
-            } finally {
-                setLoading(false);
             }
         }
-    }, [brandStats]);
+    }, [brandStats?.brands, isBrandStatsLoading]);
+
+    // 重置处理标记，以便于下次重新处理
+    useEffect(() => {
+        if (isBrandStatsLoading) {
+            brandsDataProcessed.current = false;
+        }
+    }, [isBrandStatsLoading]);
 
     // Create a function to build URLSearchParams that doesn't depend on filter
     const buildUrlParams = useCallback((currentFilter: FilterState) => {
-        const params = new URLSearchParams(searchParams.toString());
+        // 创建新的URLSearchParams实例，不依赖于现有的searchParams
+        const params = new URLSearchParams();
 
         // Only add to URL when value is not default
         if (currentFilter.price[0] > 0) params.set('minPrice', currentFilter.price[0].toString());
@@ -346,13 +357,19 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         else params.delete('isPrime');
 
         return params;
-    }, [searchParams]);
+    }, []); // 移除searchParams依赖
 
-    // Update URL parameters function
+    // Update URL parameters function with dependency check to prevent loops
     const updateUrlParams = useCallback(() => {
         const currentFilterSnapshot = filter;
-        const params = buildUrlParams(currentFilterSnapshot);
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        // 比较当前过滤器和之前的过滤器
+        if (JSON.stringify(currentFilterSnapshot) !== JSON.stringify(prevFilter.current)) {
+            // 更新上一次的过滤条件引用
+            prevFilter.current = { ...currentFilterSnapshot };
+            // 构建URL参数
+            const params = buildUrlParams(currentFilterSnapshot);
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        }
     }, [filter, buildUrlParams, pathname, router]);
 
     // Listen for filter changes and update URL (skip initial mount)
@@ -368,32 +385,18 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         }, 300);
 
         return () => clearTimeout(timeoutId);
-    }, [filter, updateUrlParams]);
+    }, [updateUrlParams]); // 只依赖于updateUrlParams，不直接依赖filter
 
-    // Handle price change
-    const handlePriceChange = (value: [number, number]) => {
-        // 先调用onFilter
-        if (onFilter) {
-            onFilter({ min_price: value[0], max_price: value[1] });
-        }
-        // 再更新本地状态
-        setFilter(prev => ({ ...prev, price: value }));
-    };
-
-    // Handle discount change
-    const handleDiscountChange = (value: number) => {
-        // 先调用onFilter
-        if (onFilter) {
-            onFilter({ min_discount: value });
-        }
-        // 再更新本地状态
-        setFilter(prev => ({ ...prev, discount: value }));
-    };
-
-    // Handle brand change
-    const handleBrandChange = (brand: string, checked: boolean) => {
+    // 优化handleBrandChange函数，避免不必要的状态更新
+    const handleBrandChange = useCallback((brand: string, checked: boolean) => {
         // 将字符串转为数组以便于修改
-        const brandsArray = filter.brands ? filter.brands.split(',') : [];
+        const brandsArray = filter.brands ? filter.brands.split(',').filter(b => b) : [];
+
+        // 检查品牌是否已经在数组中，避免不必要的更新
+        const brandExists = brandsArray.includes(brand);
+        if ((checked && brandExists) || (!checked && !brandExists)) {
+            return; // 不需要更新
+        }
 
         // 更新数组
         const updatedBrandsArray = checked
@@ -413,20 +416,56 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
             ...prev,
             brands: updatedBrands
         }));
-    };
+    }, [filter.brands, onFilter]);
 
-    // Handle Prime filter change
-    const handlePrimeChange = (checked: boolean) => {
+    // 使用useCallback包装其他处理函数
+    const handlePriceChange = useCallback((value: [number, number]) => {
+        // 检查值是否变化
+        if (filter.price[0] === value[0] && filter.price[1] === value[1]) {
+            return; // 不需要更新
+        }
+
+        // 先调用onFilter
+        if (onFilter) {
+            onFilter({ min_price: value[0], max_price: value[1] });
+        }
+
+        // 再更新本地状态
+        setFilter(prev => ({ ...prev, price: value }));
+    }, [filter.price, onFilter]);
+
+    const handleDiscountChange = useCallback((value: number) => {
+        // 检查值是否变化
+        if (filter.discount === value) {
+            return; // 不需要更新
+        }
+
+        // 先调用onFilter
+        if (onFilter) {
+            onFilter({ min_discount: value });
+        }
+
+        // 再更新本地状态
+        setFilter(prev => ({ ...prev, discount: value }));
+    }, [filter.discount, onFilter]);
+
+    const handlePrimeChange = useCallback((checked: boolean) => {
+        // 检查值是否变化
+        if (filter.isPrime === checked) {
+            return; // 不需要更新
+        }
+
         // 先调用onFilter
         if (onFilter) {
             onFilter({ is_prime_only: checked });
         }
+
         // 再更新本地状态
         setFilter(prev => ({ ...prev, isPrime: checked }));
-    };
+    }, [filter.isPrime, onFilter]);
 
-    // Clear all filters
-    const handleClearFilters = () => {
+    // 清除所有筛选条件
+    const handleClearFilters = useCallback(() => {
         // 先调用onFilter
         if (onFilter) {
             onFilter({
@@ -437,6 +476,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                 is_prime_only: false
             });
         }
+
         // 再更新本地状态
         setFilter({
             price: [0, 1000],
@@ -444,7 +484,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
             brands: '',
             isPrime: false
         });
-    };
+    }, [onFilter]);
 
     return (
         <div className="space-y-6">
