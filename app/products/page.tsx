@@ -407,7 +407,7 @@ export default function ProductsPage() {
             <LiquidFilter />
 
             {/* 英雄区块与动画SVG插图 */}
-            <section className="relative h-[50vh] min-h-[400px] overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+            <section className="relative h-[35vh] min-h-[400px]relative w-[100vw] left-[calc(-50vw+50%)] right-0 -mt-5 overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
                 <motion.div
                     className="absolute inset-0 bg-[url('/images/dot-pattern.svg')] opacity-10"
                     animate={{
@@ -421,7 +421,7 @@ export default function ProductsPage() {
                     }}
                 />
 
-                <div className="container mx-auto h-full px-4 relative z-10 flex items-center justify-between">
+                <div className="container mx-auto h-full px-12 relative z-10 flex items-center justify-between">
                     <motion.div
                         className="max-w-2xl"
                         initial={{ opacity: 0, x: -50 }}
@@ -450,15 +450,40 @@ export default function ProductsPage() {
 
             {/* 分类导航 */}
             <motion.header
-                className="sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-md"
+                className="sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-md overflow-hidden"
                 style={{
                     opacity: headerOpacity,
                     y: headerY,
                     backdropFilter: "blur(10px)",
                     backgroundColor: "rgba(255, 255, 255, 0.85)",
                 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
             >
-                <div className="container mx-auto">
+                <div
+                    className="w-full px-4 py-1 relative bg-gradient-to-r from-transparent via-indigo-50/5 to-transparent dark:via-indigo-900/5"
+                >
+                    <div className="absolute left-0 top-0 w-16 h-full z-10 pointer-events-none dark:hidden"
+                        style={{
+                            background: "linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0))"
+                        }}
+                    />
+                    <div className="absolute right-0 top-0 w-16 h-full z-10 pointer-events-none dark:hidden"
+                        style={{
+                            background: "linear-gradient(to left, rgba(255,255,255,0.95), rgba(255,255,255,0))"
+                        }}
+                    />
+                    <div className="absolute left-0 top-0 w-16 h-full z-10 pointer-events-none hidden dark:block"
+                        style={{
+                            background: "linear-gradient(to right, rgba(17,24,39,0.95), rgba(17,24,39,0))"
+                        }}
+                    />
+                    <div className="absolute right-0 top-0 w-16 h-full z-10 pointer-events-none hidden dark:block"
+                        style={{
+                            background: "linear-gradient(to left, rgba(17,24,39,0.95), rgba(17,24,39,0))"
+                        }}
+                    />
                     <ProductCategoryNav
                         selectedCategory={searchParams.product_groups || ''}
                         onCategorySelect={handleCategoryClick}

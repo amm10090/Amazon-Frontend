@@ -8,11 +8,30 @@ type ProductCategoryNavProps = {
     onCategorySelect: (category: string) => void;
 };
 
+// 动画变体配置
+const variants = {
+    container: {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.05
+            }
+        }
+    },
+    item: {
+        hidden: { opacity: 0, y: 20 },
+        show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } },
+        hover: { scale: 1.05, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }
+    }
+};
+
 export function ProductCategoryNav({
     selectedCategory,
     onCategorySelect
 }: ProductCategoryNavProps) {
     const [showAll, setShowAll] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const { data, isLoading, isError } = useCategoryStats({
         sort_by: 'count',
         sort_order: 'desc',
@@ -21,6 +40,22 @@ export function ProductCategoryNav({
 
     const [directData, setDirectData] = useState<any>(null);
     const [directLoading, setDirectLoading] = useState(false);
+
+    // 检测设备类型
+    useEffect(() => {
+        const checkIsMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        // 初次加载检测
+        checkIsMobile();
+
+        // 监听窗口大小变化
+        window.addEventListener('resize', checkIsMobile);
+
+        // 清理函数
+        return () => window.removeEventListener('resize', checkIsMobile);
+    }, []);
 
     // If SWR fetch fails, use axios directly
     useEffect(() => {
@@ -63,8 +98,11 @@ export function ProductCategoryNav({
         }))
         .sort((a, b) => b.count - a.count);
 
-    // Number of categories to display
-    const visibleCategories = showAll ? categories : categories.slice(0, 8);
+    // 确定显示的类别 - 移动端显示全部，桌面端根据展开状态决定
+    const visibleCategories = isMobile ? categories : (showAll ? categories : categories.slice(0, 8));
+
+    // 判断是否为桌面端且未展开状态
+    const isDesktopCollapsed = !isMobile && !showAll;
 
     // Handle click on "All" button
     const handleAllClick = () => {
@@ -83,10 +121,10 @@ export function ProductCategoryNav({
 
     if (isLoading || directLoading) {
         return (
-            <div className="py-4 flex justify-center">
-                <div className="animate-pulse flex space-x-4">
-                    {[...Array(8)].map((_, i) => (
-                        <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded-full w-24"></div>
+            <div className="py-6 overflow-x-auto scrollbar-hide">
+                <div className="animate-pulse flex space-x-3 pb-2">
+                    {[...Array(10)].map((_, i) => (
+                        <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded-full w-28 flex-shrink-0"></div>
                     ))}
                 </div>
             </div>
@@ -94,52 +132,63 @@ export function ProductCategoryNav({
     }
 
     return (
-        <div className="py-4">
-            <div className="flex flex-wrap items-center gap-3">
+        <div className={`py-4 ${isMobile ? 'overflow-x-auto scrollbar-hide' : ''}`}>
+            <motion.div
+                className={`flex items-center gap-2 pb-2 ${isMobile ? 'flex-nowrap' : isDesktopCollapsed ? 'flex-wrap justify-between' : 'flex-wrap'}`}
+                variants={variants.container}
+                initial="hidden"
+                animate="show"
+            >
                 <motion.button
+                    variants={variants.item}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === ''
-                        ? 'bg-primary text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                    className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center h-10 flex-shrink-0 min-w-[80px] ${selectedCategory === ''
+                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
                         }`}
                     onClick={handleAllClick}
                 >
+                    <span className="mr-1">🏠</span>
                     All
                 </motion.button>
 
-                <AnimatePresence>
-                    {visibleCategories.map((category) => (
-                        <motion.button
-                            key={category.name}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === category.name
-                                ? 'bg-primary text-white shadow-md'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
-                                }`}
-                            onClick={() => handleCategorySelect(category.name)}
-                        >
-                            {category.name}
-                            <span className="ml-1 text-xs opacity-70">({category.count})</span>
-                        </motion.button>
-                    ))}
-                </AnimatePresence>
+                <div className={`flex ${isDesktopCollapsed ? 'flex-1 justify-between' : 'flex-wrap gap-2'}`}>
+                    <AnimatePresence mode="popLayout">
+                        {visibleCategories.map((category, index) => (
+                            <motion.button
+                                key={category.name}
+                                variants={variants.item}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className={`px-3 py-2.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center h-10 
+                                ${isDesktopCollapsed ? 'flex-1 mx-1 min-w-[90px] max-w-[150px]' : 'flex-shrink-0'} 
+                                ${selectedCategory === category.name
+                                        ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                                    }`}
+                                onClick={() => handleCategorySelect(category.name)}
+                                layout
+                            >
+                                <span className="truncate max-w-[120px]">{category.name}</span>
+                            </motion.button>
+                        ))}
+                    </AnimatePresence>
+                </div>
 
-                {categories.length > 8 && (
+                {!isMobile && categories.length > 8 && (
                     <motion.button
+                        variants={variants.item}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="px-3 py-2 text-sm font-medium text-primary hover:underline"
+                        className="px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center h-10 bg-indigo-100 text-indigo-600 hover:bg-indigo-200 dark:bg-gray-700 dark:text-indigo-300 dark:hover:bg-gray-600 shadow-md flex-shrink-0"
                         onClick={toggleShowAll}
                     >
-                        {showAll ? 'Show less' : 'Show more'}
+                        {showAll ? "Collapse ↑" : "Expand All ↓"}
                     </motion.button>
                 )}
-            </div>
+            </motion.div>
         </div>
     );
 } 

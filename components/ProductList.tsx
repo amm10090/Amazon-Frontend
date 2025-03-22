@@ -72,7 +72,7 @@ export default function ProductList({
                                 : 'bg-gray-200 hover:bg-gray-300'
                                 }`}
                         >
-                            上一页
+                            Previous
                         </button>
 
                         <div className="flex items-center space-x-1">
@@ -131,7 +131,7 @@ export default function ProductList({
                                 : 'bg-gray-200 hover:bg-gray-300'
                                 }`}
                         >
-                            下一页
+                            Next
                         </button>
                     </div>
                 </div>
