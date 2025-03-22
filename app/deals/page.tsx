@@ -5,7 +5,6 @@ import { useDeals } from '@/lib/hooks';
 import ProductCard from '@/components/product/ProductCard';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import ApiDebugger from '@/components/debug/ApiDebugger';
 import { useEffect, useState } from 'react';
 import { adaptProductData } from '@/lib/utils';
 

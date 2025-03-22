@@ -39,23 +39,31 @@ api.interceptors.response.use(
 export const productsApi = {
     // 商品相关
     getProducts: (params?: {
-        type?: 'discount' | 'coupon';
-        category?: string;
+        product_type?: 'discount' | 'coupon' | 'all';
         page?: number;
         limit?: number;
-        sort?: 'price' | 'discount' | 'created';
-        order?: 'asc' | 'desc';
+        sort_by?: 'price' | 'discount' | 'created' | 'all';
+        sort_order?: 'asc' | 'desc';
         min_price?: number;
         max_price?: number;
         min_discount?: number;
         is_prime_only?: boolean;
-        product_type?: string;
-        browse_node_ids?: string[];
-        bindings?: string[];
         product_groups?: string[];
         api_provider?: string;
-        min_commission?: number;
-    }) => api.get<ApiResponse<ListResponse<Product>>>('/products/list', { params }),
+    }) => {
+        // 将前端参数映射到API参数
+        const apiParams: any = { ...params };
+
+        // 重命名一些参数以匹配API预期
+        if (params?.limit) apiParams.page_size = params.limit;
+        if (params?.sort_by) apiParams.sort_by = params.sort_by;
+        if (params?.sort_order) apiParams.sort_order = params.sort_order;
+
+        // 移除不需要的参数
+        delete apiParams.limit;
+
+        return api.get<ApiResponse<ListResponse<Product>>>('/products/list', { params: apiParams });
+    },
 
     getProductsStats: (productType?: 'discount' | 'coupon') =>
         api.get<ApiResponse<ProductStats>>('/products/stats', { params: { product_type: productType } }),
@@ -67,7 +75,6 @@ export const productsApi = {
     }) => api.get<ApiResponse<Category[]>>('/categories', { params }),
 
     getCategoryStats: (params?: {
-        product_type?: 'discount' | 'coupon';
         page?: number;
         page_size?: number;
         sort_by?: string;

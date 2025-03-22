@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Product } from '@/types';
+import { ComponentProduct } from '@/types';
 
 interface ProductListProps {
-    products: Product[];
-    renderProduct: (product: Product) => React.ReactNode;
+    products: ComponentProduct[];
+    renderProduct: (product: ComponentProduct) => React.ReactNode;
     currentPage: number;
     totalPages: number;
     onPageChange: (page: number) => void;
@@ -76,6 +76,19 @@ export default function ProductList({
                         </button>
 
                         <div className="flex items-center space-x-1">
+                            {/* 当页码大于3时，显示第1页链接和省略号 */}
+                            {currentPage > 3 && (
+                                <>
+                                    <button
+                                        onClick={() => onPageChange(1)}
+                                        className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200"
+                                    >
+                                        1
+                                    </button>
+                                    <span className="px-1">...</span>
+                                </>
+                            )}
+
                             {[...Array(Math.min(5, totalPages))].map((_, idx) => {
                                 let pageNum = currentPage <= 3
                                     ? idx + 1

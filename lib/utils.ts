@@ -1,4 +1,5 @@
 import { Product } from '@/types/api';
+import { ComponentProduct } from '@/types';
 
 /**
  * 格式化价格
@@ -103,25 +104,63 @@ export function throttle<T extends (...args: any[]) => any>(
 
 /**
  * 适配API产品数据为前端组件格式
- * @param product API返回的产品数据
+ * @param apiProducts API返回的产品数据
  * @returns 适配后的产品数据
  */
-export function adaptProductData(product: Product) {
-    return {
-        id: product.id,
-        title: product.title,
-        image_url: product.image_url || "",
-        current_price: product.price,
-        original_price: product.original_price || product.price,
-        discount_rate: product.discount_rate,
-        prime_eligible: false, // API暂无此字段，默认为false
-        product_url: product.product_url || "",
-        description: product.description || "",
-        category: product.category || "",
-        type: product.type || "discount",
-        created_at: product.created_at || "",
-        updated_at: product.updated_at || "",
-        end_time: product.end_time || undefined,
-        remaining_quantity: product.remaining_quantity || undefined
-    };
+export function adaptProducts(apiProducts: any[]): ComponentProduct[] {
+    if (!Array.isArray(apiProducts)) {
+        console.error('无效的商品数据:', apiProducts);
+        return [];
+    }
+
+    return apiProducts.map(p => {
+        // 获取主要优惠信息
+        const mainOffer = p.offers && p.offers.length > 0 ? p.offers[0] : null;
+
+        // 获取价格信息
+        const price = mainOffer ? mainOffer.price : (p.price || 0);
+
+        // 计算原价和折扣
+        let originalPrice = price;
+        let discount = 0;
+
+        if (mainOffer) {
+            // 如果有savings，直接使用
+            if (mainOffer.savings) {
+                originalPrice = price + mainOffer.savings;
+                discount = mainOffer.savings_percentage || Math.round((mainOffer.savings / originalPrice) * 100);
+            }
+            // 如果有savings_percentage但没有savings
+            else if (mainOffer.savings_percentage) {
+                discount = mainOffer.savings_percentage;
+                originalPrice = Math.round(price / (1 - discount / 100) * 100) / 100;
+            }
+        }
+
+        // 获取优惠券信息
+        const couponValue = mainOffer?.coupon_value || 0;
+        const couponType = mainOffer?.coupon_type || null;
+
+        return {
+            id: p.asin || p.id || '',
+            title: p.title || '',
+            price: price,
+            originalPrice: originalPrice,
+            discount: discount,
+            image: p.main_image || p.image_url || '',
+            category: p.product_group || p.binding || p.categories?.[0] || '',
+            description: p.description || '',
+            brand: p.brand || '',
+            rating: p.rating || 0,
+            reviews: p.reviews || 0,
+            url: p.url || '',
+            cj_url: p.cj_url || null,
+            isPrime: mainOffer?.is_prime || false,
+            isFreeShipping: mainOffer?.is_free_shipping_eligible || false,
+            isAmazonFulfilled: mainOffer?.is_amazon_fulfilled || false,
+            availability: mainOffer?.availability || '无库存',
+            couponValue: couponValue,
+            couponType: couponType
+        };
+    });
 } 

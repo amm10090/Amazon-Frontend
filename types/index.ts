@@ -40,3 +40,25 @@ export interface ApiResponse<T> {
   message?: string;
   status: number;
 }
+
+export interface ComponentProduct {
+  id: string;
+  title: string;
+  price: number;
+  originalPrice: number;
+  discount: number;
+  image: string;
+  category: string;
+  description?: string;
+  brand?: string;
+  rating?: number;
+  reviews?: number;
+  url?: string;
+  cj_url?: string;
+  isPrime?: boolean;
+  isFreeShipping?: boolean;
+  isAmazonFulfilled?: boolean;
+  availability?: string;
+  couponValue?: number;
+  couponType?: string | null;
+}
