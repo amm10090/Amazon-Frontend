@@ -190,7 +190,9 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
     if (error || deals.length === 0) {
         return (
             <div className={`bg-gray-100 dark:bg-gray-800 rounded-xl p-6 ${className}`}>
-                <h2 className="text-2xl font-bold mb-4 text-primary-dark dark:text-white text-center">Today's Best Deals</h2>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-2xl font-bold text-primary-dark dark:text-white">Today's Best Deals</h2>
+                </div>
                 <div className="flex justify-center items-center h-64">
                     <p className="text-secondary dark:text-gray-400">{error || 'No deals available at the moment'}</p>
                 </div>
@@ -205,12 +207,38 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
             initial="hidden"
             animate="visible"
         >
-            <motion.h2
-                className="text-2xl font-bold mb-4 text-primary-dark dark:text-white text-center"
-                variants={itemVariants}
-            >
-                Today's Best Deals
-            </motion.h2>
+            {/* 标题区域：标题左对齐，右侧添加"See All"链接 */}
+            <div className="flex items-center justify-between mb-4">
+                <motion.h2
+                    className="text-2xl font-bold text-primary-dark dark:text-white"
+                    variants={itemVariants}
+                >
+                    Today's Best Deals
+                </motion.h2>
+
+                <motion.div variants={itemVariants}>
+                    <Link
+                        href="/products"
+                        className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors"
+                    >
+                        <span>See All</span>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 ml-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 7l5 5m0 0l-5 5m5-5H6"
+                            />
+                        </svg>
+                    </Link>
+                </motion.div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {deals.map((deal, index) => {

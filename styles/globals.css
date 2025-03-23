@@ -311,6 +311,16 @@
   .text-gradient-secondary {
     color: var(--color-secondary);
   }
+
+  /* 隐藏滚动条但保持滚动功能 */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 }
 
 /* 过渡动画 */
@@ -341,5 +351,15 @@
   html, body {
     @apply touch-pan-y;
     overscroll-behavior-y: none;
+  }
+}
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

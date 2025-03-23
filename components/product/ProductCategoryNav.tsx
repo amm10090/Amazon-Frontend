@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 type ProductCategoryNavProps = {
     selectedCategory: string;
     onCategorySelect: (category: string) => void;
+    displayMode?: 'scroll' | 'expand'; // 显示模式: scroll-滚动模式, expand-展开收起模式
 };
 
 // 动画变体配置
@@ -131,7 +132,8 @@ const CategoryGroups = ({
 
 export function ProductCategoryNav({
     selectedCategory,
-    onCategorySelect
+    onCategorySelect,
+    displayMode = 'scroll' // 默认为滚动模式
 }: ProductCategoryNavProps) {
     const [showAll, setShowAll] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -240,26 +242,99 @@ export function ProductCategoryNav({
     const tabletLimit = 12;
     const desktopLimit = 8;
 
-    // 确定显示的类别
-    const getVisibleCategories = useCallback(() => {
-        if (isMobile) {
-            return showAll ? categories : categories.slice(0, mobileLimit);
-        } else if (isTablet) {
-            return showAll ? categories : categories.slice(0, tabletLimit);
-        } else {
-            return showAll ? categories : categories.slice(0, desktopLimit);
+    // 展开模式下的动画配置
+    const expandAnimationVariants = {
+        hidden: {
+            opacity: 0,
+            height: 0,
+            overflow: "hidden"
+        },
+        visible: {
+            opacity: 1,
+            height: "auto",
+            overflow: "visible",
+            transition: {
+                duration: 0.3,
+                ease: "easeInOut",
+                staggerChildren: 0.05,
+                when: "beforeChildren"
+            }
         }
-    }, [categories, isMobile, isTablet, showAll, mobileLimit, tabletLimit, desktopLimit]);
+    };
 
-    const visibleCategories = useMemo(() => getVisibleCategories(), [getVisibleCategories]);
+    // 获取初始显示的分类数量和扩展分类
+    const getInitialAndExtendedCategories = useCallback(() => {
+        if (displayMode === 'expand') {
+            // 桌面展开模式
+            const initialCategories = categories.slice(0, desktopLimit);
+            const extendedCategories = categories.slice(desktopLimit);
+            return { initialCategories, extendedCategories };
+        } else {
+            // 滚动模式下根据设备类型决定
+            if (isMobile) {
+                const initialCategories = categories.slice(0, mobileLimit);
+                const extendedCategories = categories.slice(mobileLimit);
+                return { initialCategories, extendedCategories };
+            } else if (isTablet) {
+                const initialCategories = categories.slice(0, tabletLimit);
+                const extendedCategories = categories.slice(tabletLimit);
+                return { initialCategories, extendedCategories };
+            } else {
+                return { initialCategories: categories, extendedCategories: [] };
+            }
+        }
+    }, [categories, displayMode, isMobile, isTablet, mobileLimit, tabletLimit, desktopLimit]);
 
-    // 根据设备类型判断是否应当显示展开按钮
+    const { initialCategories, extendedCategories } = useMemo(
+        () => getInitialAndExtendedCategories(),
+        [getInitialAndExtendedCategories]
+    );
+
+    // 根据设备类型和显示模式判断是否应当显示展开按钮
     const shouldShowExpandButton = useCallback(() => {
-        if (isMobile && categories.length > mobileLimit) return true;
-        if (isTablet && categories.length > tabletLimit) return true;
-        if (!isMobile && !isTablet && categories.length > desktopLimit) return true;
+        // 滚动模式下，移动端和平板端才显示"更多"按钮
+        if (displayMode === 'scroll') {
+            if (isMobile && categories.length > mobileLimit) return true;
+            if (isTablet && categories.length > tabletLimit) return true;
+            return false;
+        }
+
+        // 展开模式下，桌面端显示"展开/收起"按钮
+        if (displayMode === 'expand' && categories.length > desktopLimit) {
+            return true;
+        }
+
         return false;
-    }, [categories.length, isMobile, isTablet, mobileLimit, tabletLimit, desktopLimit]);
+    }, [categories.length, isMobile, isTablet, mobileLimit, tabletLimit, desktopLimit, displayMode]);
+
+    // 判断当前分类是否在初始或扩展列表中
+    const isInInitialList = useCallback((categoryName: string) => {
+        return initialCategories.some(cat => cat.name === categoryName);
+    }, [initialCategories]);
+
+    const isInExtendedList = useCallback((categoryName: string) => {
+        return extendedCategories.some(cat => cat.name === categoryName);
+    }, [extendedCategories]);
+
+    // 根据displayMode返回不同的布局样式
+    const getContainerClassName = () => {
+        if (displayMode === 'expand') {
+            return "flex flex-wrap items-center gap-1.5";
+        }
+        return "flex items-center space-x-1.5 min-w-max";
+    };
+
+    // 获取按钮的样式类
+    const getButtonClassName = (isSelected: boolean) => {
+        return `
+            h-7 px-3 py-1 rounded-full text-sm font-medium 
+            flex items-center justify-center whitespace-nowrap
+            ${isSelected
+                ? 'bg-[#10b981] text-[#ffffff]'
+                : 'bg-[#f3f4f6] text-[#374151] hover:bg-[#e5e7eb] dark:bg-[#1f2937] dark:text-[#e5e7eb] dark:hover:bg-[#374151]'
+            }
+        `;
+    };
 
     // Handle click on "All" button
     const handleAllClick = useCallback(() => {
@@ -316,7 +391,14 @@ export function ProductCategoryNav({
 
     // Toggle show more/less or navigate to categories page
     const toggleShowAll = useCallback(() => {
+        if (displayMode === 'expand') {
+            // 展开模式下直接切换显示状态
+            setShowAll(!showAll);
+            return;
+        }
+
         if (isMobile || isTablet) {
+            // 滚动模式下的移动端和平板端导航到分类页面
             // 在导航前存储当前路径（完整URL）
             const currentPath = window.location.pathname + window.location.search;
             console.log('保存当前路径:', currentPath);
@@ -327,14 +409,14 @@ export function ProductCategoryNav({
         } else {
             setShowAll(!showAll);
         }
-    }, [isMobile, isTablet, showAll, router, actualSelectedCategory]);
+    }, [isMobile, isTablet, showAll, router, actualSelectedCategory, displayMode]);
 
     if (isLoading || directLoading) {
         return (
-            <div className="py-3 sm:py-4 md:py-6">
-                <div className="animate-pulse grid grid-cols-3 sm:grid-cols-4 md:flex md:flex-wrap gap-2 sm:gap-3">
-                    {[...Array(isMobile ? 6 : 9)].map((_, i) => (
-                        <div key={i} className="h-8 sm:h-10 bg-gray-200 dark:bg-gray-700 rounded-full w-full md:w-auto md:min-w-[100px] flex-shrink-0"></div>
+            <div className="py-2">
+                <div className="animate-pulse flex items-center space-x-1 overflow-x-auto">
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="h-7 bg-gray-200 dark:bg-gray-700 rounded-full w-16 md:w-20 flex-shrink-0"></div>
                     ))}
                 </div>
             </div>
@@ -342,60 +424,40 @@ export function ProductCategoryNav({
     }
 
     return (
-        <div className="py-2 sm:py-3 md:py-4 relative">
+        <div className="py-1">
+            {/* 初始分类列表（总是显示） */}
             <motion.div
-                className={`
-                    ${isMobile || isTablet
-                        ? 'grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3'
-                        : 'flex flex-wrap items-center gap-2 md:gap-3'
-                    }
-                `}
+                className={getContainerClassName()}
                 variants={variants.container}
                 initial="hidden"
                 animate="show"
             >
-                {/* All Categories 按钮 - 使其在移动端和平板端也明显可见 */}
+                {/* 全部分类按钮 */}
                 <motion.button
                     variants={variants.item}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`
-                        px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium 
-                        transition-all duration-200 flex items-center justify-center h-10
-                        ${actualSelectedCategory === ''
-                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
-                        }
-                        ${isMobile || isTablet ? 'col-span-1' : 'min-w-[90px]'}
-                    `}
+                    className={getButtonClassName(actualSelectedCategory === '')}
                     onClick={handleAllClick}
                 >
                     <span className="mr-1">🏠</span>
-                    全部
+                    All
                 </motion.button>
 
-                {/* 分类按钮 */}
+                {/* 初始分类按钮 */}
                 <AnimatePresence mode="popLayout">
-                    {visibleCategories.map((category) => (
+                    {initialCategories.map((category) => (
                         <motion.button
                             key={category.name}
                             variants={variants.item}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className={`
-                                px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium 
-                                transition-all duration-200 flex items-center justify-center h-10
-                                ${actualSelectedCategory === category.name
-                                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
-                                }
-                                ${isMobile || isTablet ? 'col-span-1' : 'min-w-[90px]'}
-                            `}
-                            onClick={() => handleCategorySelect(category.name)}
+                            exit={{ opacity: 0, scale: 0.95 }}
                             layout
+                            className={getButtonClassName(actualSelectedCategory === category.name)}
+                            onClick={() => handleCategorySelect(category.name)}
                         >
-                            <span className="truncate max-w-[100px] sm:max-w-[120px]">{category.name}</span>
+                            <span>{category.name}</span>
                         </motion.button>
                     ))}
                 </AnimatePresence>
@@ -407,18 +469,74 @@ export function ProductCategoryNav({
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         className={`
-                            px-2 sm:px-3 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium 
-                            transition-all duration-200 flex items-center justify-center h-10
-                            bg-indigo-100 text-indigo-600 hover:bg-indigo-200 dark:bg-gray-700 
-                            dark:text-indigo-300 dark:hover:bg-gray-600 shadow-md
-                            ${isMobile || isTablet ? 'col-span-1' : 'min-w-[90px]'}
+                            h-7 px-3 py-1 rounded-full text-sm font-medium 
+                            flex items-center justify-center whitespace-nowrap
+                            bg-[#dcfce7] text-[#16a34a] dark:bg-[#064e3b] dark:text-[#86efac]
+                            hover:bg-[#10b981] hover:text-[#ffffff] dark:hover:bg-[#059669]
+                            transition-colors duration-200
                         `}
                         onClick={toggleShowAll}
                     >
-                        {(isMobile || isTablet) ? "更多分类 ↓" : (showAll ? "收起 ↑" : "展开 ↓")}
+                        {displayMode === 'expand'
+                            ? (showAll ? "Collapse ↑" : "Expand ↓")
+                            : ((isMobile || isTablet) ? "More Categories ↓" : (showAll ? "Collapse ↑" : "Expand ↓"))}
                     </motion.button>
                 )}
             </motion.div>
+
+            {/* 扩展分类列表（展开模式且showAll为true时显示） */}
+            {displayMode === 'expand' && extendedCategories.length > 0 && (
+                <motion.div
+                    className="flex flex-wrap items-center gap-1.5 mt-2 pt-2 border-t border-[#e5e7eb] dark:border-[#374151]"
+                    initial="hidden"
+                    animate={showAll ? "visible" : "hidden"}
+                    variants={expandAnimationVariants}
+                >
+                    {extendedCategories.map((category, index) => (
+                        <motion.button
+                            key={category.name}
+                            variants={{
+                                hidden: { opacity: 0, y: 10 },
+                                visible: {
+                                    opacity: 1,
+                                    y: 0,
+                                    transition: {
+                                        delay: index * 0.03,
+                                        type: "spring",
+                                        stiffness: 300,
+                                        damping: 24
+                                    }
+                                }
+                            }}
+                            whileHover={{ scale: 1.05, boxShadow: "0px 2px 4px rgba(0,0,0,0.1)" }}
+                            whileTap={{ scale: 0.95 }}
+                            className={getButtonClassName(actualSelectedCategory === category.name)}
+                            onClick={() => handleCategorySelect(category.name)}
+                        >
+                            <span>{category.name}</span>
+                        </motion.button>
+                    ))}
+                </motion.div>
+            )}
+
+            {/* 当前选中分类不在可见范围时的提示 */}
+            {displayMode === 'expand' &&
+                actualSelectedCategory &&
+                !isInInitialList(actualSelectedCategory) &&
+                !showAll && (
+                    <div className="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        <span>Current Selection: </span>
+                        <span className="ml-1 px-2 py-0.5 bg-[#dcfce7] text-[#16a34a] dark:bg-[#064e3b] dark:text-[#86efac] rounded-full">
+                            {actualSelectedCategory}
+                        </span>
+                        <button
+                            className="ml-2 text-[#10b981] hover:text-[#059669] dark:text-[#4ade80] dark:hover:text-[#86efac]"
+                            onClick={toggleShowAll}
+                        >
+                            Expand to View ↓
+                        </button>
+                    </div>
+                )}
         </div>
     );
 } 

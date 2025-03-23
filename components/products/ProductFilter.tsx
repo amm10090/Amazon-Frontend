@@ -44,7 +44,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
 
                 {/* Selected range */}
                 <motion.div
-                    className="absolute h-2 bg-gradient-to-r from-primary/80 to-primary rounded-full"
+                    className="absolute h-2 bg-gradient-to-r from-blue-500 to-green-400 rounded-full"
                     style={{
                         left: `${((value[0] - min) / (max - min)) * 100}%`,
                         width: `${((value[1] - value[0]) / (max - min)) * 100}%`
@@ -56,7 +56,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                 {/* Min thumb with floating label */}
                 <div className="relative">
                     <motion.div
-                        className={`absolute w-6 h-6 bg-white border-2 border-primary rounded-full -mt-2 -ml-3 cursor-grab shadow-md ${activeThumb === 'min' ? 'ring-2 ring-primary ring-opacity-50 z-20' : 'z-10'}`}
+                        className={`absolute w-6 h-6 bg-white border-2 border-blue-500 rounded-full -mt-2 -ml-3 cursor-grab shadow-md ${activeThumb === 'min' ? 'ring-2 ring-blue-500 ring-opacity-50 z-20' : 'z-10'}`}
                         style={{ left: `${((value[0] - min) / (max - min)) * 100}%` }}
                         whileHover={{ scale: 1.15 }}
                         whileTap={{ scale: 1.15, cursor: "grabbing" }}
@@ -70,20 +70,20 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
 
                     {/* Floating min price label */}
                     <motion.div
-                        className={`absolute -mt-9 ml-0 px-2 py-1 rounded bg-primary text-white text-xs font-bold whitespace-nowrap transform -translate-x-1/2 pointer-events-none ${activeThumb === 'min' ? 'opacity-100' : 'opacity-0'}`}
+                        className={`absolute -mt-9 ml-0 px-2 py-1 rounded bg-blue-500 text-white text-xs font-bold whitespace-nowrap transform -translate-x-1/2 pointer-events-none ${activeThumb === 'min' ? 'opacity-100' : 'opacity-0'}`}
                         style={{ left: `${((value[0] - min) / (max - min)) * 100}%` }}
                         animate={{ opacity: activeThumb === 'min' ? 1 : 0, y: activeThumb === 'min' ? 0 : 5 }}
                         transition={{ duration: 0.2 }}
                     >
                         {formatPrice(value[0])}
-                        <div className="absolute left-1/2 top-full w-2 h-2 bg-primary transform -translate-x-1/2 rotate-45"></div>
+                        <div className="absolute left-1/2 top-full w-2 h-2 bg-blue-500 transform -translate-x-1/2 rotate-45"></div>
                     </motion.div>
                 </div>
 
                 {/* Max thumb with floating label */}
                 <div className="relative">
                     <motion.div
-                        className={`absolute w-6 h-6 bg-white border-2 border-primary rounded-full -mt-2 -ml-3 cursor-grab shadow-md ${activeThumb === 'max' ? 'ring-2 ring-primary ring-opacity-50 z-20' : 'z-10'}`}
+                        className={`absolute w-6 h-6 bg-white border-2 border-green-500 rounded-full -mt-2 -ml-3 cursor-grab shadow-md ${activeThumb === 'max' ? 'ring-2 ring-green-500 ring-opacity-50 z-20' : 'z-10'}`}
                         style={{ left: `${((value[1] - min) / (max - min)) * 100}%` }}
                         whileHover={{ scale: 1.15 }}
                         whileTap={{ scale: 1.15, cursor: "grabbing" }}
@@ -97,13 +97,13 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
 
                     {/* Floating max price label */}
                     <motion.div
-                        className={`absolute -mt-9 ml-0 px-2 py-1 rounded bg-primary text-white text-xs font-bold whitespace-nowrap transform -translate-x-1/2 pointer-events-none ${activeThumb === 'max' ? 'opacity-100' : 'opacity-0'}`}
+                        className={`absolute -mt-9 ml-0 px-2 py-1 rounded bg-green-500 text-white text-xs font-bold whitespace-nowrap transform -translate-x-1/2 pointer-events-none ${activeThumb === 'max' ? 'opacity-100' : 'opacity-0'}`}
                         style={{ left: `${((value[1] - min) / (max - min)) * 100}%` }}
                         animate={{ opacity: activeThumb === 'max' ? 1 : 0, y: activeThumb === 'max' ? 0 : 5 }}
                         transition={{ duration: 0.2 }}
                     >
                         {formatPrice(value[1])}
-                        <div className="absolute left-1/2 top-full w-2 h-2 bg-primary transform -translate-x-1/2 rotate-45"></div>
+                        <div className="absolute left-1/2 top-full w-2 h-2 bg-green-500 transform -translate-x-1/2 rotate-45"></div>
                     </motion.div>
                 </div>
 
@@ -161,7 +161,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                                 onChange([newVal, value[1]]);
                             }
                         }}
-                        className="pl-7 pr-2 py-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="pl-7 pr-2 py-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         aria-label="Minimum price input"
                     />
                 </div>
@@ -181,7 +181,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                                 onChange([value[0], newVal]);
                             }
                         }}
-                        className="pl-7 pr-2 py-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="pl-7 pr-2 py-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-green-500"
                         aria-label="Maximum price input"
                     />
                 </div>
@@ -199,7 +199,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                         key={index}
                         onClick={() => onChange([range.values[0], range.values[1]])}
                         className={`text-xs py-1 px-2 rounded-full transition-colors ${value[0] === range.values[0] && value[1] === range.values[1]
-                            ? 'bg-primary text-white'
+                            ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                             }`}
                     >
@@ -227,7 +227,7 @@ function Checkbox({ id, checked, onChange, label }: {
                 onChange={(e) => onChange(e.target.checked)}
                 className="sr-only"
             />
-            <div className={`w-5 h-5 border-2 rounded transition-all duration-200 flex items-center justify-center ${checked ? 'bg-primary border-primary' : 'border-gray-300 dark:border-gray-600'}`}>
+            <div className={`w-5 h-5 border-2 rounded transition-all duration-200 flex items-center justify-center ${checked ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300 dark:border-gray-600'}`}>
                 {checked && (
                     <motion.svg
                         initial={{ scale: 0 }}
@@ -682,7 +682,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                 <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-md flex-grow transition-all"
+                    className="px-4 py-2 bg-gradient-to-r bg-primary-background text-white text-sm font-medium rounded-md flex-grow transition-all"
                     onClick={updateUrlParams}
                 >
                     Apply Filters
@@ -699,18 +699,3 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         </div>
     );
 }
-
-// 添加到全局CSS - 确保在样式文件中添加这些类
-// 注：如果使用Tailwind，需要在tailwind.config.js扩展配置添加此样式
-/*
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-}
-*/ 

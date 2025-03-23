@@ -6,23 +6,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useCategoryStats } from '@/lib/hooks';
-// 导入Lucide图标组件
-import {
-    Smartphone,
-    Shirt,
-    Home,
-    Coffee,
-    Sofa,
-    ShoppingBag,
-    Dumbbell,
-    Sparkles,
-    Monitor,
-    Footprints,
-    Wifi,
-    Leaf,
-    Pill,
-    Car
-} from 'lucide-react';
 
 // 自定义Category接口
 interface Category {
@@ -31,6 +14,7 @@ interface Category {
     slug: string;
     count: number;
     icon?: React.ReactNode | string;
+    emoji?: string; // 添加emoji属性
     color?: string;
 }
 
@@ -51,75 +35,103 @@ const productGroupToCategoryMapping: Record<string, { slug: string, name: string
     'Automotive Parts and Accessories': { slug: 'Automotive Parts and Accessories', name: 'Automotive' }
 };
 
-// 分类图标映射 - 使用Lucide图标替换SVG路径
-const categoryIcons: Record<string, { icon: React.ReactNode, color: string }> = {
+// 分类图标映射 - 使用emoji表情替代Lucide图标
+const categoryIcons: Record<string, { emoji: string, color: string }> = {
     electronics: {
-        icon: <Smartphone className="w-full h-full" />,
+        emoji: '📱',
         color: 'from-[#5a8a9f] to-[#3d5a80]'
     },
     home: {
-        icon: <Home className="w-full h-full" />,
+        emoji: '🏠',
         color: 'from-[#81a4c4] to-[#5a8a9f]'
     },
     kitchen: {
-        icon: <Coffee className="w-full h-full" />,
+        emoji: '☕',
         color: 'from-[#6b8ea1] to-[#4d6d85]'
     },
     apparel: {
-        icon: <Shirt className="w-full h-full" />,
+        emoji: '👕',
         color: 'from-[#5a8a9f] to-[#3d5a80]'
     },
     sports: {
-        icon: <Dumbbell className="w-full h-full" />,
+        emoji: '🏋️',
         color: 'from-[#4d6d85] to-[#3d5a80]'
     },
     beauty: {
-        icon: <Sparkles className="w-full h-full" />,
+        emoji: '✨',
         color: 'from-[#81a4c4] to-[#5a8a9f]'
     },
     furniture: {
-        icon: <Sofa className="w-full h-full" />,
+        emoji: '🛋️',
         color: 'from-[#6b8ea1] to-[#4d6d85]'
     },
     shoes: {
-        icon: <Footprints className="w-full h-full" />,
+        emoji: '👟',
         color: 'from-[#5a8a9f] to-[#3d5a80]'
     },
     computers: {
-        icon: <Monitor className="w-full h-full" />,
+        emoji: '💻',
         color: 'from-[#4d6d85] to-[#3d5a80]'
     },
     'personal computer': {
-        icon: <Monitor className="w-full h-full" />,
+        emoji: '💻',
         color: 'from-[#4d6d85] to-[#3d5a80]'
     },
     'lawn & patio': {
-        icon: <Leaf className="w-full h-full" />,
+        emoji: '🌿',
         color: 'from-[#6b8ea1] to-[#4d6d85]'
     },
     garden: {
-        icon: <Leaf className="w-full h-full" />,
+        emoji: '🌿',
         color: 'from-[#6b8ea1] to-[#4d6d85]'
     },
     wireless: {
-        icon: <Wifi className="w-full h-full" />,
+        emoji: '📶',
         color: 'from-[#5a8a9f] to-[#3d5a80]'
     },
     drugstore: {
-        icon: <Pill className="w-full h-full" />,
+        emoji: '💊',
         color: 'from-[#81a4c4] to-[#5a8a9f]'
     },
     health: {
-        icon: <Pill className="w-full h-full" />,
+        emoji: '💊',
         color: 'from-[#81a4c4] to-[#5a8a9f]'
     },
     automotive: {
-        icon: <Car className="w-full h-full" />,
+        emoji: '🚗',
         color: 'from-[#7f8c8d] to-[#2c3e50]'
     },
     'automotive parts and accessories': {
-        icon: <Car className="w-full h-full" />,
+        emoji: '🚗',
         color: 'from-[#7f8c8d] to-[#2c3e50]'
+    },
+    grocery: {
+        emoji: '🛒',
+        color: 'from-[#5a8a9f] to-[#3d5a80]'
+    },
+    'sports & fitness': {
+        emoji: '🏀',
+        color: 'from-[#4d6d85] to-[#3d5a80]'
+    },
+    gaming: {
+        emoji: '🎮',
+        color: 'from-[#5a8a9f] to-[#3d5a80]'
+    },
+    'baby & kids': {
+        emoji: '👶',
+        color: 'from-[#81a4c4] to-[#5a8a9f]'
+    },
+    fashion: {
+        emoji: '👗',
+        color: 'from-[#5a8a9f] to-[#3d5a80]'
+    },
+    travel: {
+        emoji: '✈️',
+        color: 'from-[#6b8ea1] to-[#4d6d85]'
+    },
+    gifts: {
+        emoji: '🎁',
+        color: 'from-[#5a8a9f] to-[#3d5a80]'
     }
 };
 
@@ -355,7 +367,7 @@ export function CategoryNavigation() {
                             categoryIcons[productGroupToCategoryMapping[groupName]?.slug.toLowerCase()] ||
                         // 默认图标
                         {
-                            icon: <ShoppingBag className="w-full h-full" />,
+                            emoji: '🛒',
                             color: 'from-gray-400 to-gray-600'
                         };
 
@@ -364,7 +376,7 @@ export function CategoryNavigation() {
                             name: displayName,
                             slug: slug, // 使用原始分类名称作为slug
                             count: count,
-                            icon: iconInfo.icon,
+                            emoji: iconInfo.emoji,
                             color: iconInfo.color
                         };
                     });
@@ -742,15 +754,7 @@ export function CategoryNavigation() {
                                         transition: { duration: 0.2 }
                                     }}
                                 >
-                                    <motion.svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-                                    </motion.svg>
+                                    <span className="text-2xl lg:text-xl">🔍</span>
                                 </motion.div>
 
                                 {/* Text */}
@@ -816,25 +820,10 @@ export function CategoryNavigation() {
                                             transition: { duration: 0.2 }
                                         }}
                                     >
-                                        {category.icon ? (
-                                            <motion.div
-                                                className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : ''}`}
-                                            >
-                                                {category.icon}
-                                            </motion.div>
-                                        ) : categoryIcons[category.slug] ? (
-                                            <motion.div
-                                                className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : 'group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}
-                                            >
-                                                {categoryIcons[category.slug].icon}
-                                            </motion.div>
-                                        ) : (
-                                            <motion.div
-                                                className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : 'group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}
-                                            >
-                                                {category.icon}
-                                            </motion.div>
-                                        )}
+                                        {/* 显示emoji图标 */}
+                                        <span className="text-2xl lg:text-xl">
+                                            {category.emoji || categoryIcons[category.slug.toLowerCase()]?.emoji || '🛒'}
+                                        </span>
                                     </motion.div>
 
                                     {/* Category name and count */}
