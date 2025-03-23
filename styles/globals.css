@@ -4,13 +4,13 @@
 @custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme {
-  --color-primary: oklch(0.7 0.2 20); /* #FF6B6B 珊瑚红 */
-  --color-primary-light: oklch(0.75 0.18 18); /* #FF9A8B 淡珊瑚红 */
-  --color-primary-dark: oklch(0.65 0.22 22); /* #E85555 深珊瑚红 */
+  --color-primary: oklch(0.8 0.17 185); /* #4ECDC4 蒂芙尼蓝 */
+  --color-primary-light: oklch(0.85 0.15 183); /* #5ECDC4 淡蒂芙尼蓝 */
+  --color-primary-dark: oklch(0.75 0.19 187); /* #3AAFA9 深蒂芙尼蓝 */
   
-  --color-secondary: oklch(0.8 0.17 185); /* #4ECDC4 蒂芙尼蓝 */
-  --color-secondary-light: oklch(0.85 0.15 183); /* #5ECDC4 淡蒂芙尼蓝 */
-  --color-secondary-dark: oklch(0.75 0.19 187); /* #3AAFA9 深蒂芙尼蓝 */
+  --color-secondary: oklch(0.7 0.2 20); /* #FF6B6B 珊瑚红 */
+  --color-secondary-light: oklch(0.75 0.18 18); /* #FF9A8B 淡珊瑚红 */
+  --color-secondary-dark: oklch(0.65 0.22 22); /* #E85555 深珊瑚红 */
   
   --color-accent: oklch(0.95 0.15 90); /* #FFE66D 柠檬黄 */
   --color-accent-light: oklch(0.97 0.13 88); /* #FFF09C 淡柠檬黄 */

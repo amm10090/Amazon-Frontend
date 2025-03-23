@@ -36,19 +36,19 @@ interface Category {
 
 // 产品组到分类的映射
 const productGroupToCategoryMapping: Record<string, { slug: string, name: string }> = {
-    'Electronics': { slug: 'electronics', name: 'Electronics' },
-    'Home': { slug: 'home', name: 'Home & Kitchen' },
-    'Kitchen': { slug: 'kitchen', name: 'Kitchen' },
-    'Apparel': { slug: 'clothing', name: 'Clothing' },
-    'Sports': { slug: 'sports', name: 'Sports & Outdoors' },
-    'Beauty': { slug: 'beauty', name: 'Beauty & Personal Care' },
-    'Furniture': { slug: 'furniture', name: 'Furniture' },
-    'Shoes': { slug: 'shoes', name: 'Shoes' },
-    'Personal Computer': { slug: 'personal_computer', name: 'Computers' },
-    'Lawn & Patio': { slug: 'lawn_patio', name: 'Garden & Patio' },
-    'Wireless': { slug: 'wireless', name: 'Wireless Devices' },
-    'Drugstore': { slug: 'drugstore', name: 'Health & Household' },
-    'Automotive Parts and Accessories': { slug: 'automotive', name: 'Automotive' }
+    'Electronics': { slug: 'Electronics', name: 'Electronics' },
+    'Home': { slug: 'Home', name: 'Home & Kitchen' },
+    'Kitchen': { slug: 'Kitchen', name: 'Kitchen' },
+    'Apparel': { slug: 'Apparel', name: 'Apparel' },
+    'Sports': { slug: 'Sports', name: 'Sports & Outdoors' },
+    'Beauty': { slug: 'Beauty', name: 'Beauty & Personal Care' },
+    'Furniture': { slug: 'Furniture', name: 'Furniture' },
+    'Shoes': { slug: 'Shoes', name: 'Shoes' },
+    'Personal Computer': { slug: 'Personal Computer', name: 'Computers' },
+    'Lawn & Patio': { slug: 'Lawn & Patio', name: 'Garden & Patio' },
+    'Wireless': { slug: 'Wireless', name: 'Wireless Devices' },
+    'Drugstore': { slug: 'Drugstore', name: 'Health & Household' },
+    'Automotive Parts and Accessories': { slug: 'Automotive Parts and Accessories', name: 'Automotive' }
 };
 
 // 分类图标映射 - 使用Lucide图标替换SVG路径
@@ -65,7 +65,7 @@ const categoryIcons: Record<string, { icon: React.ReactNode, color: string }> = 
         icon: <Coffee className="w-full h-full" />,
         color: 'from-emerald-500 to-green-600'
     },
-    clothing: {
+    apparel: {
         icon: <Shirt className="w-full h-full" />,
         color: 'from-pink-500 to-rose-600'
     },
@@ -85,11 +85,19 @@ const categoryIcons: Record<string, { icon: React.ReactNode, color: string }> = 
         icon: <Footprints className="w-full h-full" />,
         color: 'from-yellow-500 to-red-500'
     },
-    personal_computer: {
+    computers: {
         icon: <Monitor className="w-full h-full" />,
         color: 'from-blue-400 to-indigo-500'
     },
-    lawn_patio: {
+    'personal computer': {
+        icon: <Monitor className="w-full h-full" />,
+        color: 'from-blue-400 to-indigo-500'
+    },
+    'lawn & patio': {
+        icon: <Leaf className="w-full h-full" />,
+        color: 'from-green-500 to-teal-600'
+    },
+    garden: {
         icon: <Leaf className="w-full h-full" />,
         color: 'from-green-500 to-teal-600'
     },
@@ -101,7 +109,15 @@ const categoryIcons: Record<string, { icon: React.ReactNode, color: string }> = 
         icon: <Pill className="w-full h-full" />,
         color: 'from-red-500 to-pink-600'
     },
+    health: {
+        icon: <Pill className="w-full h-full" />,
+        color: 'from-red-500 to-pink-600'
+    },
     automotive: {
+        icon: <Car className="w-full h-full" />,
+        color: 'from-gray-500 to-gray-700'
+    },
+    'automotive parts and accessories': {
         icon: <Car className="w-full h-full" />,
         color: 'from-gray-500 to-gray-700'
     }
@@ -325,22 +341,28 @@ export function CategoryNavigation() {
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 8) // 取前8个
                     .map(([groupName, count], index) => {
-                        // 尝试从映射中获取分类信息
-                        const categoryInfo = productGroupToCategoryMapping[groupName] || {
-                            slug: groupName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-                            name: groupName
-                        };
+                        // 使用原始的groupName作为slug，确保与API参数一致
+                        const slug = groupName;
+
+                        // 从映射中获取显示名称，如果没有则使用原始分类名称
+                        const displayName = productGroupToCategoryMapping[groupName]?.name || groupName;
 
                         // 尝试从映射中获取图标和颜色
-                        const iconInfo = categoryIcons[categoryInfo.slug] || {
-                            icon: <Smartphone className="w-full h-full" />,
+                        // 使用转换为小写的原始分类名称作为键来匹配图标
+                        const slugKey = groupName.toLowerCase();
+                        const iconInfo = categoryIcons[slugKey] ||
+                            // 尝试使用映射后的名称作为键
+                            categoryIcons[productGroupToCategoryMapping[groupName]?.slug.toLowerCase()] ||
+                        // 默认图标
+                        {
+                            icon: <ShoppingBag className="w-full h-full" />,
                             color: 'from-gray-400 to-gray-600'
                         };
 
                         return {
                             id: index.toString(),
-                            name: categoryInfo.name,
-                            slug: categoryInfo.slug,
+                            name: displayName,
+                            slug: slug, // 使用原始分类名称作为slug
                             count: count,
                             icon: iconInfo.icon,
                             color: iconInfo.color
@@ -433,9 +455,32 @@ export function CategoryNavigation() {
         }
     };
 
-    // 检查某个分类是否为当前活跃分类
+    // 判断一个分类是否被激活
     const isActiveCategory = (slug: string) => {
-        return pathname === `/category/${slug}`;
+        // 检查当前路径是否为产品页面
+        if (pathname.startsWith('/products')) {
+            // 尝试从URL获取product_groups参数
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const productGroups = urlParams.get('product_groups');
+                return productGroups === slug;
+            } catch (error) {
+                // 如果解析URL参数出错，返回false
+                return false;
+            }
+        }
+        return false;
+    };
+
+    // 处理分类点击事件
+    const handleCategoryClick = (slug: string) => {
+        if (!slug) return;
+
+        // 构建产品页面URL，使用原始分类名称作为product_groups参数
+        const productPageUrl = `/products?product_groups=${encodeURIComponent(slug)}`;
+
+        // 使用window.location导航
+        window.location.href = productPageUrl;
     };
 
     // 滚动到左侧
@@ -729,6 +774,7 @@ export function CategoryNavigation() {
                             </Link>
                         </motion.div>
 
+                        {/* 分类卡片 */}
                         {categories.map((category, index) => (
                             <motion.div
                                 key={category.id}
@@ -744,8 +790,8 @@ export function CategoryNavigation() {
                                 whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
                             >
                                 <Link
-                                    href={`/category/${category.slug}`}
-                                    className={`block group ${isActiveCategory(category.slug) ? 'pointer-events-none' : ''}`}
+                                    href={`/products?product_groups=${encodeURIComponent(category.slug)}`}
+                                    className={`block ${isActiveCategory(category.slug) ? 'pointer-events-none' : ''}`}
                                 >
                                     <motion.div
                                         className={`

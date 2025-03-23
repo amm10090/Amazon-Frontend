@@ -78,7 +78,7 @@ export const Navbar = () => {
             >
               <NextLink className="flex justify-start items-center gap-1" href="/">
                 <motion.span
-                  className="font-bold text-xl bg-linear-to-r from-[#FF6B6B] via-[#FF8E8E] to-[#FF6B6B] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
+                  className="font-bold text-xl bg-linear-to-r from-[#81D8F7] via-[#62B6D9] to-[#81D8F7] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
                   animate={{
                     backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
                   }}
@@ -88,7 +88,7 @@ export const Navbar = () => {
                     ease: "linear",
                   }}
                 >
-                  AmazonDeals
+                  OOHUNT
                 </motion.span>
               </NextLink>
             </motion.div>
