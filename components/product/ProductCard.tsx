@@ -30,7 +30,7 @@ export default function ProductCard({ product, showActions = false, isNew = fals
             whileHover={{ y: -8 }}
             onHoverStart={() => setIsHovered(true)}
             onHoverEnd={() => setIsHovered(false)}
-            className="group relative bg-background rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300"
+            className="group relative bg-background rounded-lg sm:rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300"
         >
             <Link href={`/product/${product.id}`} className="block">
                 {/* 新品标签 */}
@@ -38,9 +38,9 @@ export default function ProductCard({ product, showActions = false, isNew = fals
                     <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute top-4 left-4 z-10"
+                        className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10"
                     >
-                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm">
+                        <div className="bg-green-500 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm">
                             新品
                         </div>
                     </motion.div>
@@ -51,9 +51,9 @@ export default function ProductCard({ product, showActions = false, isNew = fals
                     <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute top-4 right-4 z-10"
+                        className="absolute top-2 sm:top-4 right-2 sm:right-4 z-10"
                     >
-                        <div className="bg-accent text-text font-bold px-3 py-1 rounded-full text-sm">
+                        <div className="bg-accent text-text font-bold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm">
                             -{Math.round(discount)}%
                         </div>
                     </motion.div>
@@ -64,9 +64,9 @@ export default function ProductCard({ product, showActions = false, isNew = fals
                     <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className={`absolute ${isNew ? 'top-16' : 'top-4'} left-4 z-10`}
+                        className={`absolute ${isNew ? 'top-10 sm:top-16' : 'top-2 sm:top-4'} left-2 sm:left-4 z-10`}
                     >
-                        <div className="bg-[#00A8E1] text-white px-3 py-1 rounded-full text-sm">
+                        <div className="bg-[#00A8E1] text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm">
                             Prime
                         </div>
                     </motion.div>
@@ -84,24 +84,24 @@ export default function ProductCard({ product, showActions = false, isNew = fals
                             alt={product.title}
                             fill
                             className="object-contain"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                             priority
                         />
                     </motion.div>
                 </div>
 
                 {/* 商品信息 */}
-                <div className="p-4">
-                    <h3 className="text-lg font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                <div className="p-3 sm:p-4">
+                    <h3 className="text-sm sm:text-lg font-medium line-clamp-2 group-hover:text-primary transition-colors">
                         {product.title}
                     </h3>
 
-                    <div className="flex items-baseline gap-2">
-                        <span className="text-xl font-bold text-primary">
+                    <div className="flex items-baseline gap-2 mt-1 sm:mt-2">
+                        <span className="text-base sm:text-xl font-bold text-primary">
                             {formatPrice(product.current_price)}
                         </span>
                         {product.original_price > product.current_price && (
-                            <span className="text-sm text-text-light line-through">
+                            <span className="text-xs sm:text-sm text-text-light line-through">
                                 {formatPrice(product.original_price)}
                             </span>
                         )}
@@ -118,7 +118,7 @@ export default function ProductCard({ product, showActions = false, isNew = fals
 
             {/* 快捷操作按钮 */}
             {showActions && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-linear-to-t from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 bg-linear-to-t from-background to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="flex justify-center space-x-2">
                         <motion.a
                             whileHover={{ scale: 1.05 }}
@@ -126,7 +126,7 @@ export default function ProductCard({ product, showActions = false, isNew = fals
                             href={product.product_url || `https://amazon.com/dp/${product.id}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-primary text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+                            className="bg-primary text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium hover:bg-primary/90 transition-colors"
                         >
                             查看详情
                         </motion.a>

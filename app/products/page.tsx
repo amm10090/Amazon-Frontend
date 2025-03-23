@@ -13,7 +13,7 @@ import { AmazonProduct } from '@/types/amazonApi';
 import { ComponentProduct } from '@/types';
 import { adaptProducts } from '@/lib/utils';
 import axios from 'axios';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 // 交互式动画SVG组件替代原3D模型
 const CategoryIllustration = ({ category }: { category: string }) => {
@@ -191,22 +191,26 @@ export default function ProductsPage() {
         is_prime_only: false,
     });
 
-    const { data, isLoading, isError } = useProducts(searchParams);
-    const [isDirectLoading, setIsDirectLoading] = useState(false);
-    const [directData, setDirectData] = useState<any>(null);
-    const { scrollYProgress } = useScroll();
-    const headerOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.97]);
-    const headerY = useTransform(scrollYProgress, [0, 0.2], [0, -20]);
-    const catalogRef = useRef<HTMLDivElement>(null);
-
     // 从URL加载参数
     const searchParamsFromUrl = useSearchParams();
 
+    // 跟踪参数是否已从URL加载的状态
+    const [urlParamsLoaded, setUrlParamsLoaded] = useState(false);
+
     // 添加useEffect，确保从URL参数正确加载
     useEffect(() => {
-        // 获取URL参数
+        console.log('URL参数变化，开始更新searchParams');
+
+        // 获取URL参数（忽略时间戳参数_ts）
         const brands = searchParamsFromUrl.get('brands') || '';
         const product_groups = searchParamsFromUrl.get('product_groups') || '';
+        const category = searchParamsFromUrl.get('category') || ''; // 兼容category参数
+        const effective_category = product_groups || category; // 优先使用product_groups
+
+        console.log('从URL读取的分类:',
+            effective_category ? effective_category : '全部分类'
+        );
+
         const page = Number(searchParamsFromUrl.get('page')) || 1;
         const min_price = searchParamsFromUrl.get('min_price') ? Number(searchParamsFromUrl.get('min_price')) : undefined;
         const max_price = searchParamsFromUrl.get('max_price') ? Number(searchParamsFromUrl.get('max_price')) : undefined;
@@ -215,20 +219,104 @@ export default function ProductsPage() {
         const sort_by = (searchParamsFromUrl.get('sort_by') as typeof searchParams.sort_by) || 'all';
         const sort_order = (searchParamsFromUrl.get('sort_order') as typeof searchParams.sort_order) || 'desc';
 
-        // 更新searchParams状态，直接使用字符串而非数组
-        setSearchParams(prev => ({
-            ...prev,
-            brands,
-            product_groups,
-            page,
-            min_price,
-            max_price,
-            min_discount,
-            is_prime_only,
-            sort_by,
-            sort_order
-        }));
+        // 更新searchParams状态，使用合并后的分类参数
+        setSearchParams(prev => {
+            const newParams = {
+                ...prev,
+                brands,
+                product_groups: effective_category, // 使用合并后的分类参数
+                page,
+                min_price,
+                max_price,
+                min_discount,
+                is_prime_only,
+                sort_by,
+                sort_order
+            };
+
+            console.log('更新后的searchParams:', newParams);
+            return newParams;
+        });
+
+        // 标记URL参数已加载
+        setUrlParamsLoaded(true);
     }, [searchParamsFromUrl]);
+
+    // 引入useRouter和usePathname
+    const router = useRouter();
+    const pathname = '/products'; // 当前页面路径
+
+    // 添加useEffect，当searchParams变化时更新URL
+    useEffect(() => {
+        // 创建URL参数对象
+        const params = new URLSearchParams();
+
+        // 仅添加有值的参数
+        if (searchParams.product_groups) params.set('product_groups', searchParams.product_groups);
+        if (searchParams.brands) params.set('brands', searchParams.brands);
+        if (searchParams.page > 1) params.set('page', searchParams.page.toString());
+        if (searchParams.min_price !== undefined) params.set('min_price', searchParams.min_price.toString());
+        if (searchParams.max_price !== undefined) params.set('max_price', searchParams.max_price.toString());
+        if (searchParams.min_discount !== undefined) params.set('min_discount', searchParams.min_discount.toString());
+        if (searchParams.is_prime_only) params.set('is_prime_only', 'true');
+        if (searchParams.sort_by !== 'all') params.set('sort_by', searchParams.sort_by);
+        if (searchParams.sort_order !== 'desc') params.set('sort_order', searchParams.sort_order);
+
+        // 构建查询字符串
+        const queryString = params.toString();
+        const url = queryString ? `${pathname}?${queryString}` : pathname;
+
+        // 使用replace而不是push来更新URL，避免创建太多历史记录
+        router.replace(url, { scroll: false });
+    }, [searchParams, router, pathname]);
+
+    // 清理URL中的时间戳参数
+    useEffect(() => {
+        if (typeof window !== 'undefined' && searchParamsFromUrl.has('_ts')) {
+            // 创建一个新的URLSearchParams实例
+            const cleanParams = new URLSearchParams();
+
+            // 复制除了_ts之外的所有参数
+            searchParamsFromUrl.forEach((value, key) => {
+                if (key !== '_ts') {
+                    cleanParams.append(key, value);
+                }
+            });
+
+            // 构建干净的URL
+            const cleanUrl = cleanParams.toString()
+                ? `${pathname}?${cleanParams.toString()}`
+                : pathname;
+
+            // 延迟200ms后清理URL，避免干扰初始数据加载
+            const timeoutId = setTimeout(() => {
+                router.replace(cleanUrl, { scroll: false });
+            }, 200);
+
+            return () => clearTimeout(timeoutId);
+        }
+    }, [searchParamsFromUrl, router, pathname]);
+
+    // 只有当urlParamsLoaded为true时才获取产品数据，确保使用的是从URL加载的参数
+    const { data, isLoading, isError, mutate } = useProducts(urlParamsLoaded ? searchParams : undefined);
+    const [isDirectLoading, setIsDirectLoading] = useState(false);
+    const [directData, setDirectData] = useState<any>(null);
+    const { scrollYProgress } = useScroll();
+    const headerOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.97]);
+    const headerY = useTransform(scrollYProgress, [0, 0.2], [0, -20]);
+    const catalogRef = useRef<HTMLDivElement>(null);
+
+    // 在searchParams变化后，明确触发数据刷新
+    useEffect(() => {
+        if (urlParamsLoaded && mutate) {
+            console.log('searchParams已更新，手动刷新产品数据');
+
+            // 添加短暂延迟，确保URL已更新完成
+            setTimeout(() => {
+                mutate();
+            }, 50);
+        }
+    }, [searchParams, urlParamsLoaded, mutate]);
 
     // 添加数据处理日志
     useEffect(() => {
@@ -268,6 +356,22 @@ export default function ProductsPage() {
         // 每当searchParams变化时，重置directData，确保会获取新数据
         setDirectData(null);
     }, [isError, data, isLoading, searchParams]);
+
+    // 添加页面加载完成事件
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const handleLoad = () => {
+                // 页面完全加载后，额外进行一次数据刷新
+                if (mutate) {
+                    console.log('页面加载完成，刷新产品数据');
+                    setTimeout(() => mutate(), 100);
+                }
+            };
+
+            window.addEventListener('load', handleLoad);
+            return () => window.removeEventListener('load', handleLoad);
+        }
+    }, [mutate]);
 
     // 将API产品数据适配为组件所需的格式
     const adaptedProducts = useMemo(() => {
@@ -406,8 +510,8 @@ export default function ProductsPage() {
         <div className="min-h-screen pb-20">
             <LiquidFilter />
 
-            {/* 英雄区块与动画SVG插图 */}
-            <section className="relative h-[35vh] min-h-[400px]relative w-[100vw] left-[calc(-50vw+50%)] right-0 -mt-5 overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
+            {/* 英雄区块与动画SVG插图 - 优化移动端显示 */}
+            <section className="relative h-[30vh] md:h-[35vh] min-h-[300px] md:min-h-[400px] w-[100vw] left-[calc(-50vw+50%)] right-0 -mt-5 overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600">
                 <motion.div
                     className="absolute inset-0 bg-[url('/images/dot-pattern.svg')] opacity-10"
                     animate={{
@@ -421,26 +525,26 @@ export default function ProductsPage() {
                     }}
                 />
 
-                <div className="container mx-auto h-full px-12 relative z-10 flex items-center justify-between">
+                <div className="container mx-auto h-full px-4 sm:px-6 md:px-8 lg:px-12 relative z-10 flex flex-col md:flex-row items-center justify-between">
                     <motion.div
-                        className="max-w-2xl"
+                        className="max-w-full md:max-w-2xl text-center md:text-left mt-8 md:mt-0"
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                     >
-                        <h1 className="text-5xl font-bold text-white mb-4">Discover Premium Products</h1>
-                        <p className="text-xl text-white/90 mb-8">Curated global selections for an exceptional shopping experience</p>
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 md:mb-4">Discover Premium Products</h1>
+                        <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4 md:mb-8">Curated global selections for an exceptional shopping experience</p>
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="px-8 py-3 bg-white text-indigo-600 font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="px-6 sm:px-8 py-2 sm:py-3 bg-white text-indigo-600 font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                             onClick={() => catalogRef.current?.scrollIntoView({ behavior: 'smooth' })}
                         >
                             Explore Now
                         </motion.button>
                     </motion.div>
 
-                    <div className="hidden lg:block h-full w-1/3 relative">
+                    <div className="hidden md:block h-full w-1/3 relative">
                         <div className="absolute inset-0 flex items-center justify-center">
                             <CategoryIllustration category={searchParams.product_groups || 'default'} />
                         </div>
@@ -448,7 +552,7 @@ export default function ProductsPage() {
                 </div>
             </section>
 
-            {/* 分类导航 */}
+            {/* 分类导航 - 优化滑动体验 */}
             <motion.header
                 className="sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-md overflow-hidden"
                 style={{
@@ -462,24 +566,24 @@ export default function ProductsPage() {
                 transition={{ duration: 0.3 }}
             >
                 <div
-                    className="w-full px-4 py-1 relative bg-gradient-to-r from-transparent via-indigo-50/5 to-transparent dark:via-indigo-900/5"
+                    className="w-full px-2 sm:px-4 py-1 relative bg-gradient-to-r from-transparent via-indigo-50/5 to-transparent dark:via-indigo-900/5"
                 >
-                    <div className="absolute left-0 top-0 w-16 h-full z-10 pointer-events-none dark:hidden"
+                    <div className="absolute left-0 top-0 w-8 sm:w-16 h-full z-10 pointer-events-none dark:hidden"
                         style={{
                             background: "linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0))"
                         }}
                     />
-                    <div className="absolute right-0 top-0 w-16 h-full z-10 pointer-events-none dark:hidden"
+                    <div className="absolute right-0 top-0 w-8 sm:w-16 h-full z-10 pointer-events-none dark:hidden"
                         style={{
                             background: "linear-gradient(to left, rgba(255,255,255,0.95), rgba(255,255,255,0))"
                         }}
                     />
-                    <div className="absolute left-0 top-0 w-16 h-full z-10 pointer-events-none hidden dark:block"
+                    <div className="absolute left-0 top-0 w-8 sm:w-16 h-full z-10 pointer-events-none hidden dark:block"
                         style={{
                             background: "linear-gradient(to right, rgba(17,24,39,0.95), rgba(17,24,39,0))"
                         }}
                     />
-                    <div className="absolute right-0 top-0 w-16 h-full z-10 pointer-events-none hidden dark:block"
+                    <div className="absolute right-0 top-0 w-8 sm:w-16 h-full z-10 pointer-events-none hidden dark:block"
                         style={{
                             background: "linear-gradient(to left, rgba(17,24,39,0.95), rgba(17,24,39,0))"
                         }}
@@ -491,18 +595,107 @@ export default function ProductsPage() {
                 </div>
             </motion.header>
 
-            {/* 商品列表区域 */}
-            <section ref={catalogRef} className="container mx-auto px-4 py-12">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* 左侧筛选器 */}
-                    <div className="lg:col-span-1">
+            {/* 商品列表区域 - 响应式布局 */}
+            <section ref={catalogRef} className="container mx-auto px-4 py-6 md:py-12">
+                <div className="flex flex-col md:grid md:grid-cols-4 gap-4 md:gap-8">
+                    {/* 移动端筛选器切换按钮 */}
+                    <div className="md:hidden mb-4">
+                        <button
+                            className="w-full py-3 px-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-xl shadow-md flex items-center justify-between"
+                            onClick={() => {
+                                // 使用抽屉式面板
+                                const drawerElem = document.getElementById('mobile-filter-drawer');
+                                const overlayElem = document.getElementById('drawer-overlay');
+                                if (drawerElem && overlayElem) {
+                                    // 显示遮罩和抽屉
+                                    drawerElem.classList.remove('translate-y-full');
+                                    // 使用opacity-70替代完全不透明，保持遮罩半透明效果
+                                    overlayElem.classList.remove('opacity-0');
+                                    overlayElem.classList.add('opacity-70');
+                                    overlayElem.classList.remove('pointer-events-none');
+                                    // 防止背景滚动
+                                    document.body.classList.add('overflow-hidden');
+                                }
+                            }}
+                        >
+                            <span className="font-medium">筛选</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    {/* 移动端抽屉式筛选器面板 */}
+                    <div id="drawer-overlay" className="fixed inset-0 bg-black bg-opacity-50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out"
+                        onClick={() => {
+                            // 关闭抽屉
+                            const drawerElem = document.getElementById('mobile-filter-drawer');
+                            const overlayElem = document.getElementById('drawer-overlay');
+                            if (drawerElem && overlayElem) {
+                                drawerElem.classList.add('translate-y-full');
+                                overlayElem.classList.remove('opacity-70');
+                                overlayElem.classList.add('opacity-0');
+                                overlayElem.classList.add('pointer-events-none');
+                                document.body.classList.remove('overflow-hidden');
+                            }
+                        }}
+                    ></div>
+
+                    <div id="mobile-filter-drawer" className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg z-50 transform translate-y-full transition-transform duration-300 ease-in-out max-h-[85vh] overflow-y-auto">
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">筛选选项</h3>
+                                <button
+                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                    onClick={() => {
+                                        // 关闭抽屉
+                                        const drawerElem = document.getElementById('mobile-filter-drawer');
+                                        const overlayElem = document.getElementById('drawer-overlay');
+                                        if (drawerElem && overlayElem) {
+                                            drawerElem.classList.add('translate-y-full');
+                                            overlayElem.classList.remove('opacity-70');
+                                            overlayElem.classList.add('opacity-0');
+                                            overlayElem.classList.add('pointer-events-none');
+                                            document.body.classList.remove('overflow-hidden');
+                                        }
+                                    }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            {/* 可拖动条示意 */}
+                            <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-1"></div>
+                        </div>
+                        <div className="p-4">
+                            <ProductFilter
+                                onFilter={(filters) => {
+                                    handleFilterChange(filters);
+                                    // 应用筛选后关闭抽屉
+                                    const drawerElem = document.getElementById('mobile-filter-drawer');
+                                    const overlayElem = document.getElementById('drawer-overlay');
+                                    if (drawerElem && overlayElem) {
+                                        drawerElem.classList.add('translate-y-full');
+                                        overlayElem.classList.remove('opacity-70');
+                                        overlayElem.classList.add('opacity-0');
+                                        overlayElem.classList.add('pointer-events-none');
+                                        document.body.classList.remove('overflow-hidden');
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* 桌面端左侧筛选器 */}
+                    <div className="hidden md:block md:col-span-1">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="sticky top-28 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md"
+                            className="sticky top-28 bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md"
                         >
-                            <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">Filters</h2>
+                            <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">筛选</h2>
                             <ProductFilter
                                 onFilter={handleFilterChange}
                             />
@@ -510,7 +703,7 @@ export default function ProductsPage() {
                     </div>
 
                     {/* 右侧商品列表 */}
-                    <div className="lg:col-span-3">
+                    <div className="md:col-span-3">
                         <ApiStateWrapper
                             isLoading={isLoading || isDirectLoading}
                             isError={isError && !directData}
@@ -527,8 +720,8 @@ export default function ProductsPage() {
                                         exit={{ opacity: 0, y: -20 }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="mb-6 flex items-center justify-between">
-                                            <p className="text-gray-600 dark:text-gray-300">
+                                        <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                            <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">
                                                 Showing <span className="font-medium">{products.length}</span> of <span className="font-medium">{data?.total || directData?.total || 0}</span> products
                                             </p>
                                             <div className="flex items-center gap-2">

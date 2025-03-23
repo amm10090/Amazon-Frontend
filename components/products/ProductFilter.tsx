@@ -585,7 +585,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="space-y-2 max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+                        className="space-y-2 max-h-60 overflow-y-auto pr-1 no-scrollbar"
                     >
                         {loading || isBrandStatsLoading ? (
                             <div className="animate-pulse space-y-2">
@@ -596,13 +596,15 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                         ) : availableBrands.length > 0 ? (
                             availableBrands.map(brand => (
                                 <div key={brand} className="flex items-center justify-between">
-                                    <Checkbox
-                                        id={`brand-${brand}`}
-                                        checked={filter.brands.split(',').includes(brand)}
-                                        onChange={(checked) => handleBrandChange(brand, checked)}
-                                        label={brand}
-                                    />
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    <div className="flex-grow min-w-0">
+                                        <Checkbox
+                                            id={`brand-${brand}`}
+                                            checked={filter.brands.split(',').includes(brand)}
+                                            onChange={(checked) => handleBrandChange(brand, checked)}
+                                            label={brand}
+                                        />
+                                    </div>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1 flex-shrink-0">
                                         {brandStats?.brands[brand] || 0}
                                     </span>
                                 </div>
@@ -627,11 +629,11 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap sm:flex-nowrap">
                 <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-md w-full transition-all"
+                    className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-md flex-grow transition-all"
                     onClick={updateUrlParams}
                 >
                     Apply Filters
@@ -639,7 +641,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                 <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-sm font-medium rounded-md transition-all"
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-sm font-medium rounded-md transition-all flex-shrink-0"
                     onClick={handleClearFilters}
                 >
                     Clear
@@ -647,4 +649,19 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
             </div>
         </div>
     );
-} 
+}
+
+// 添加到全局CSS - 确保在样式文件中添加这些类
+// 注：如果使用Tailwind，需要在tailwind.config.js扩展配置添加此样式
+/*
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+*/ 

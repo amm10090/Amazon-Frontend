@@ -33,13 +33,15 @@ export function useProducts(params?: {
     // 创建一个唯一的key，确保参数变化时会重新获取
     const cacheKey = JSON.stringify(['/products/list', params]);
 
-    const { data, error, isLoading } = useSWR(
+    const { data, error, isLoading, mutate } = useSWR(
         cacheKey,
         () => productsApi.getProducts(params),
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
-            dedupingInterval: 0 // 禁用缓存去重，确保每次参数变化都重新获取
+            dedupingInterval: 0, // 禁用缓存去重，确保每次参数变化都重新获取
+            shouldRetryOnError: true,
+            errorRetryCount: 3
         }
     );
 
@@ -53,10 +55,19 @@ export function useProducts(params?: {
         }
     }, [data, error]);
 
+    // 当参数变化时，主动触发重新获取数据
+    useEffect(() => {
+        if (params) {
+            console.log('产品参数变化，主动刷新数据:', params);
+            mutate();
+        }
+    }, [JSON.stringify(params), mutate]);
+
     return {
         data: data?.data?.data,
         isLoading,
         isError: error,
+        mutate,
     };
 }
 
