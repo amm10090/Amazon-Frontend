@@ -6,7 +6,12 @@ import { productsApi } from '@/lib/api';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useBrandStats } from '@/lib/hooks';
 
-type FilterState = {
+export type ProductFilterProps = {
+    onFilter: (filter: any) => void;
+    hideButtons?: boolean;
+}
+
+export type FilterState = {
     price: [number, number];
     discount: number;
     brands: string;
@@ -256,11 +261,7 @@ function Checkbox({ id, checked, onChange, label }: {
     );
 }
 
-interface ProductFilterProps {
-    onFilter?: (filters: any) => void;
-}
-
-export function ProductFilter({ onFilter }: ProductFilterProps) {
+export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
@@ -678,24 +679,26 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-                <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="px-4 py-2 bg-gradient-to-r bg-primary-background text-white text-sm font-medium rounded-md flex-grow transition-all"
-                    onClick={updateUrlParams}
-                >
-                    Apply Filters
-                </motion.button>
-                <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-sm font-medium rounded-md transition-all flex-shrink-0"
-                    onClick={handleClearFilters}
-                >
-                    Clear
-                </motion.button>
-            </div>
+            {!hideButtons && (
+                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="px-4 py-2 bg-gradient-to-r bg-primary-background text-white text-sm font-medium rounded-md flex-grow transition-all"
+                        onClick={updateUrlParams}
+                    >
+                        Apply Filters
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-sm font-medium rounded-md transition-all flex-shrink-0"
+                        onClick={handleClearFilters}
+                    >
+                        Clear
+                    </motion.button>
+                </div>
+            )}
         </div>
     );
 }

@@ -191,6 +191,9 @@ export default function ProductsPage() {
         is_prime_only: false,
     });
 
+    // 添加临时筛选状态，用于抽屉内部筛选
+    const [drawerFilters, setDrawerFilters] = useState<any>(null);
+
     // 从URL加载参数
     const searchParamsFromUrl = useSearchParams();
 
@@ -233,6 +236,15 @@ export default function ProductsPage() {
 
         // 标记URL参数已加载
         setUrlParamsLoaded(true);
+
+        // 更新临时筛选状态
+        setDrawerFilters({
+            min_price: min_price,
+            max_price: max_price,
+            min_discount: min_discount,
+            brands: brands,
+            is_prime_only: is_prime_only
+        });
     }, [searchParamsFromUrl]);
 
     // 引入useRouter和usePathname
@@ -410,6 +422,24 @@ export default function ProductsPage() {
         }));
     };
 
+    // 关闭抽屉函数
+    const closeDrawer = () => {
+        // 应用当前抽屉中的筛选条件
+        if (drawerFilters) {
+            handleFilterChange(drawerFilters);
+        }
+
+        const drawerElem = document.getElementById('mobile-filter-drawer');
+        const overlayElem = document.getElementById('drawer-overlay');
+        if (drawerElem && overlayElem) {
+            drawerElem.classList.add('translate-y-full');
+            overlayElem.classList.remove('opacity-70');
+            overlayElem.classList.add('opacity-0');
+            overlayElem.classList.add('pointer-events-none');
+            document.body.classList.remove('overflow-hidden');
+        }
+    };
+
     // 渲染单个商品
     const renderProduct = (product: ComponentProduct) => {
         return (
@@ -531,6 +561,40 @@ export default function ProductsPage() {
             </motion.div>
         </AnimatePresence>
     );
+
+    // 添加事件监听器来处理筛选器内部按钮点击
+    useEffect(() => {
+        const handleFilterButtonClick = (event: MouseEvent) => {
+            // 检查点击的元素是否是按钮
+            const target = event.target as HTMLElement;
+
+            // 查找最近的按钮元素
+            const button = target.closest('button');
+
+            if (!button) return;
+
+            // 判断点击的是否是"Apply Filters"按钮
+            const isApplyButton = button.textContent?.trim() === 'Apply Filters';
+
+            // 检查按钮是否在移动端或平板端筛选器内
+            const isMobileFilter = !!button.closest('#mobile-filter');
+            const isTabletFilter = !!button.closest('#tablet-filter');
+
+            // 如果是在移动端或平板端筛选器内点击了"Apply Filters"按钮，则关闭抽屉
+            if (isApplyButton && (isMobileFilter || isTabletFilter)) {
+                // 给一点延时，确保筛选条件已更新
+                setTimeout(closeDrawer, 100);
+            }
+        };
+
+        // 添加事件监听器
+        document.addEventListener('click', handleFilterButtonClick);
+
+        // 清理函数
+        return () => {
+            document.removeEventListener('click', handleFilterButtonClick);
+        };
+    }, []);// 这个effect只需要运行一次
 
     return (
         <div className="min-h-screen pb-20">
@@ -663,6 +727,15 @@ export default function ProductsPage() {
                         <button
                             className="w-full py-3 px-4 sm:py-4 sm:rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-xl shadow-md flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                             onClick={() => {
+                                // 更新临时筛选状态为当前筛选条件
+                                setDrawerFilters({
+                                    min_price: searchParams.min_price,
+                                    max_price: searchParams.max_price,
+                                    min_discount: searchParams.min_discount,
+                                    brands: searchParams.brands,
+                                    is_prime_only: searchParams.is_prime_only
+                                });
+
                                 // 使用抽屉式面板
                                 const drawerElem = document.getElementById('mobile-filter-drawer');
                                 const overlayElem = document.getElementById('drawer-overlay');
@@ -687,18 +760,7 @@ export default function ProductsPage() {
 
                     {/* 移动端和平板端抽屉式筛选器面板的背景遮罩 */}
                     <div id="drawer-overlay" className="fixed inset-0 bg-black bg-opacity-50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out"
-                        onClick={() => {
-                            // 关闭抽屉
-                            const drawerElem = document.getElementById('mobile-filter-drawer');
-                            const overlayElem = document.getElementById('drawer-overlay');
-                            if (drawerElem && overlayElem) {
-                                drawerElem.classList.add('translate-y-full');
-                                overlayElem.classList.remove('opacity-70');
-                                overlayElem.classList.add('opacity-0');
-                                overlayElem.classList.add('pointer-events-none');
-                                document.body.classList.remove('overflow-hidden');
-                            }
-                        }}
+                        onClick={closeDrawer}
                     ></div>
 
                     {/* 移动端和平板端抽屉式筛选器面板 */}
@@ -708,18 +770,7 @@ export default function ProductsPage() {
                                 <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Filter Options</h3>
                                 <button
                                     className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                    onClick={() => {
-                                        // 关闭抽屉
-                                        const drawerElem = document.getElementById('mobile-filter-drawer');
-                                        const overlayElem = document.getElementById('drawer-overlay');
-                                        if (drawerElem && overlayElem) {
-                                            drawerElem.classList.add('translate-y-full');
-                                            overlayElem.classList.remove('opacity-70');
-                                            overlayElem.classList.add('opacity-0');
-                                            overlayElem.classList.add('pointer-events-none');
-                                            document.body.classList.remove('overflow-hidden');
-                                        }
-                                    }}
+                                    onClick={closeDrawer}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -732,40 +783,24 @@ export default function ProductsPage() {
 
                         {/* 移动端显示常规ProductFilter */}
                         <div className="sm:hidden p-4 no-scrollbar">
-                            <ProductFilter
-                                onFilter={(filters) => {
-                                    handleFilterChange(filters);
-                                    // 关闭抽屉
-                                    const drawerElem = document.getElementById('mobile-filter-drawer');
-                                    const overlayElem = document.getElementById('drawer-overlay');
-                                    if (drawerElem && overlayElem) {
-                                        drawerElem.classList.add('translate-y-full');
-                                        overlayElem.classList.remove('opacity-70');
-                                        overlayElem.classList.add('opacity-0');
-                                        overlayElem.classList.add('pointer-events-none');
-                                        document.body.classList.remove('overflow-hidden');
-                                    }
-                                }}
-                            />
+                            <div id="mobile-filter">
+                                <ProductFilter
+                                    onFilter={(filters) => {
+                                        setDrawerFilters(filters);
+                                    }}
+                                />
+                            </div>
                         </div>
 
                         {/* 平板端显示网格布局的筛选区 */}
                         <div className="hidden sm:block p-6 pb-20 no-scrollbar">
-                            <ProductFilter
-                                onFilter={(filters) => {
-                                    handleFilterChange(filters);
-                                    // 关闭抽屉
-                                    const drawerElem = document.getElementById('mobile-filter-drawer');
-                                    const overlayElem = document.getElementById('drawer-overlay');
-                                    if (drawerElem && overlayElem) {
-                                        drawerElem.classList.add('translate-y-full');
-                                        overlayElem.classList.remove('opacity-70');
-                                        overlayElem.classList.add('opacity-0');
-                                        overlayElem.classList.add('pointer-events-none');
-                                        document.body.classList.remove('overflow-hidden');
-                                    }
-                                }}
-                            />
+                            <div id="tablet-filter">
+                                <ProductFilter
+                                    onFilter={(filters) => {
+                                        setDrawerFilters(filters);
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
 
