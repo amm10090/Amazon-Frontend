@@ -1,5 +1,4 @@
-import { Product } from '@/types/api';
-import { ComponentProduct } from '@/types';
+import type { ComponentProduct } from '@/types';
 
 /**
  * 格式化价格
@@ -23,6 +22,7 @@ export function formatPrice(price: number): string {
  */
 export function calculateDiscount(originalPrice: number, currentPrice: number): number {
     if (originalPrice <= 0 || currentPrice >= originalPrice) return 0;
+
     return Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
 }
 
@@ -34,6 +34,7 @@ export function calculateDiscount(originalPrice: number, currentPrice: number): 
  */
 export function truncateText(text: string, maxLength: number): string {
     if (text.length <= maxLength) return text;
+
     return text.slice(0, maxLength) + '...';
 }
 
@@ -72,11 +73,13 @@ export function debounce<T extends (...args: any[]) => any>(
     wait: number
 ): (...args: Parameters<T>) => void {
     let timeout: NodeJS.Timeout;
+
     return function executedFunction(...args: Parameters<T>) {
         const later = () => {
             clearTimeout(timeout);
             func(...args);
         };
+
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
@@ -93,6 +96,7 @@ export function throttle<T extends (...args: any[]) => any>(
     limit: number
 ): (...args: Parameters<T>) => void {
     let inThrottle: boolean;
+
     return function executedFunction(...args: Parameters<T>) {
         if (!inThrottle) {
             func(...args);
@@ -110,6 +114,7 @@ export function throttle<T extends (...args: any[]) => any>(
 export function adaptProducts(apiProducts: any[]): ComponentProduct[] {
     if (!Array.isArray(apiProducts)) {
         console.error('无效的商品数据:', apiProducts);
+
         return [];
     }
 

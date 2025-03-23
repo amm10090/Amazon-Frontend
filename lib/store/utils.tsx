@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
+
 import { AmazonLogo, WalmartIcon, BestBuyIcon, GenericStoreIcon } from './icons';
 
 export interface StoreInfo {
@@ -42,6 +43,7 @@ export const getStoreFromUrl = (url: string): StoreInfo => {
     // 从URL中提取域名作为商店名称
     try {
         const domain = new URL(url).hostname.replace('www.', '');
+
         return {
             name: domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1),
             color: '#6c757d',

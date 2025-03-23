@@ -1,20 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense, useMemo } from 'react';
+import axios from 'axios';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import { productsApi } from '@/lib/api';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useRef, useMemo } from 'react';
+
+import { ProductCategoryNav } from '@/components/product/ProductCategoryNav';
 import ProductList from '@/components/ProductList';
 import { ProductFilter } from '@/components/products/ProductFilter';
-import { ProductCategoryNav } from '@/components/product/ProductCategoryNav';
 import ApiStateWrapper from '@/components/ui/ApiStateWrapper';
-import { useProducts, useCategories } from '@/lib/hooks';
-import { Product } from '@/types/api';
-import { AmazonProduct } from '@/types/amazonApi';
-import { ComponentProduct } from '@/types';
-import { adaptProducts } from '@/lib/utils';
+import { useProducts } from '@/lib/hooks';
 import { StoreIdentifier } from '@/lib/store';
-import axios from 'axios';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { adaptProducts } from '@/lib/utils';
+import type { ComponentProduct } from '@/types';
+import type { AmazonProduct } from '@/types/amazonApi';
+import type { Product } from '@/types/api';
+
 
 // 交互式动画SVG组件替代原3D模型
 const CategoryIllustration = ({ category }: { category: string }) => {
@@ -331,6 +332,7 @@ export default function ProductsPage() {
 
                     // 创建参数对象，转换参数名
                     const apiParams: any = { ...searchParams };
+
                     if (searchParams.limit) apiParams.page_size = searchParams.limit;
                     delete apiParams.limit;
 
@@ -339,6 +341,7 @@ export default function ProductsPage() {
                     if (apiParams.product_groups === '') delete apiParams.product_groups;
 
                     const response = await axios.get('/api/products/list', { params: apiParams });
+
                     setDirectData(response.data);
                 } catch (err) {
                     // 保留错误处理，但移除日志
@@ -365,6 +368,7 @@ export default function ProductsPage() {
             };
 
             window.addEventListener('load', handleLoad);
+
             return () => window.removeEventListener('load', handleLoad);
         }
     }, [mutate]);
@@ -432,6 +436,7 @@ export default function ProductsPage() {
 
         const drawerElem = document.getElementById('mobile-filter-drawer');
         const overlayElem = document.getElementById('drawer-overlay');
+
         if (drawerElem && overlayElem) {
             drawerElem.classList.add('translate-y-full');
             overlayElem.classList.remove('opacity-70');
@@ -453,6 +458,7 @@ export default function ProductsPage() {
                 onClick={() => {
                     // 优先使用cj_url，因为佣金更高，如果没有则使用普通url
                     const linkUrl = product.cj_url || product.url;
+
                     if (linkUrl) window.open(linkUrl, '_blank');
                 }}
             >
@@ -556,6 +562,7 @@ export default function ProductsPage() {
                             value={`${searchParams.sort_by}:${searchParams.sort_order}`}
                             onChange={(e) => {
                                 const [sort_by, sort_order] = e.target.value.split(':');
+
                                 setSearchParams(prev => ({
                                     ...prev,
                                     sort_by: sort_by as 'price' | 'discount' | 'created' | 'all',
@@ -684,6 +691,7 @@ export default function ProductsPage() {
                                     className="h-full px-2 flex items-center justify-center bg-gradient-to-r from-white via-white to-transparent dark:from-gray-900 dark:via-gray-900 dark:to-transparent"
                                     onClick={() => {
                                         const scrollContainer = document.querySelector('.categories-scroll-container');
+
                                         if (scrollContainer) {
                                             scrollContainer.scrollLeft -= 150;
                                         }
@@ -700,6 +708,7 @@ export default function ProductsPage() {
                                     className="h-full px-2 flex items-center justify-center bg-gradient-to-l from-white via-white to-transparent dark:from-gray-900 dark:via-gray-900 dark:to-transparent"
                                     onClick={() => {
                                         const scrollContainer = document.querySelector('.categories-scroll-container');
+
                                         if (scrollContainer) {
                                             scrollContainer.scrollLeft += 150;
                                         }
@@ -722,9 +731,9 @@ export default function ProductsPage() {
 
                             {/* 滚动指示器 */}
                             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-0.5 flex items-center justify-center space-x-1 mb-1">
-                                <div className="w-6 h-0.5 bg-green-500 rounded-full"></div>
-                                <div className="w-2 h-0.5 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
-                                <div className="w-2 h-0.5 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+                                <div className="w-6 h-0.5 bg-green-500 rounded-full" />
+                                <div className="w-2 h-0.5 bg-gray-300 dark:bg-gray-700 rounded-full" />
+                                <div className="w-2 h-0.5 bg-gray-300 dark:bg-gray-700 rounded-full" />
                             </div>
                         </div>
 
@@ -760,6 +769,7 @@ export default function ProductsPage() {
                                 // 使用抽屉式面板
                                 const drawerElem = document.getElementById('mobile-filter-drawer');
                                 const overlayElem = document.getElementById('drawer-overlay');
+
                                 if (drawerElem && overlayElem) {
                                     // 显示遮罩和抽屉
                                     drawerElem.classList.remove('translate-y-full');
@@ -782,7 +792,7 @@ export default function ProductsPage() {
                     {/* 移动端和平板端抽屉式筛选器面板的背景遮罩 */}
                     <div id="drawer-overlay" className="fixed inset-0 bg-black bg-opacity-50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out"
                         onClick={closeDrawer}
-                    ></div>
+                     />
 
                     {/* 移动端和平板端抽屉式筛选器面板 */}
                     <div id="mobile-filter-drawer" className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg z-50 transform translate-y-full transition-transform duration-300 ease-in-out max-h-[85vh] overflow-y-auto sm:max-h-[90vh] sm:overflow-y-auto no-scrollbar">
@@ -799,7 +809,7 @@ export default function ProductsPage() {
                                 </button>
                             </div>
                             {/* 可拖动条示意 - 在平板端隐藏 */}
-                            <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-1 sm:hidden"></div>
+                            <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-1 sm:hidden" />
                         </div>
 
                         {/* 移动端显示常规ProductFilter */}

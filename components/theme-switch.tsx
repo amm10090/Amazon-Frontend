@@ -1,11 +1,12 @@
 "use client";
 
-import { FC } from "react";
-import { VisuallyHidden } from "@react-aria/visually-hidden";
-import { SwitchProps, useSwitch } from "@heroui/react";
-import { useTheme } from "next-themes";
+import type { SwitchProps} from "@heroui/react";
+import { useSwitch } from "@heroui/react";
 import { useIsSSR } from "@react-aria/ssr";
+import { VisuallyHidden } from "@react-aria/visually-hidden";
 import clsx from "clsx";
+import { useTheme } from "next-themes";
+import type { FC } from "react";
 
 import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
 

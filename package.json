@@ -7,7 +7,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix"
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
   },
   "dependencies": {
     "@heroui/react": "2.7.6-beta.2",
@@ -20,6 +21,7 @@
     "@react-three/fiber": "^9.1.0",
     "@sentry/nextjs": "^9.8.0",
     "@types/three": "^0.174.0",
+    "@typescript-eslint/utils": "^8.27.0",
     "axios": "^1.8.4",
     "clsx": "2.1.1",
     "d3": "^7.9.0",
@@ -36,6 +38,7 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@next/eslint-plugin-next": "15.2.3",
     "@react-types/shared": "3.28.0",
     "@tailwindcss/postcss": "^4.0.15",

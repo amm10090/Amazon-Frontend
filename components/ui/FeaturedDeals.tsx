@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { productsApi } from '@/lib/api';
-import { Product } from '@/types/api';
-import Link from 'next/link';
 import Image from 'next/image';
-import { formatPrice, calculateDiscount } from '@/lib/utils';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+
+import { productsApi } from '@/lib/api';
 import { StoreIdentifier } from '@/lib/store';
+import { formatPrice, calculateDiscount } from '@/lib/utils';
+import type { Product } from '@/types/api';
+
 
 interface FeaturedDealsProps {
     limit?: number;
@@ -45,25 +47,31 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                 if ((response.data as any)?.items && (response.data as any).items.length > 0) {
                     // Randomize the items returned
                     const items = [...(response.data as any).items];
+
                     // Fisher-Yates shuffle algorithm for true randomness
                     for (let i = items.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
+
                         [items[i], items[j]] = [items[j], items[i]];
                     }
                     setDeals(items.slice(0, limit));
                     setLoading(false);
+
                     return;
                 }
                 else if (response.data?.data?.items && response.data.data.items.length > 0) {
                     // Randomize the items returned
                     const items = [...response.data.data.items];
+
                     // Fisher-Yates shuffle algorithm for true randomness
                     for (let i = items.length - 1; i > 0; i--) {
                         const j = Math.floor(Math.random() * (i + 1));
+
                         [items[i], items[j]] = [items[j], items[i]];
                     }
                     setDeals(items.slice(0, limit));
                     setLoading(false);
+
                     return;
                 }
                 else {
@@ -81,25 +89,31 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                     if ((fallbackResponse.data as any)?.items && (fallbackResponse.data as any).items.length > 0) {
                         // Randomize the items returned
                         const items = [...(fallbackResponse.data as any).items];
+
                         // Fisher-Yates shuffle algorithm for true randomness
                         for (let i = items.length - 1; i > 0; i--) {
                             const j = Math.floor(Math.random() * (i + 1));
+
                             [items[i], items[j]] = [items[j], items[i]];
                         }
                         setDeals(items.slice(0, limit));
                         setLoading(false);
+
                         return;
                     }
                     else if (fallbackResponse.data?.data?.items && fallbackResponse.data.data.items.length > 0) {
                         // Randomize the items returned
                         const items = [...fallbackResponse.data.data.items];
+
                         // Fisher-Yates shuffle algorithm for true randomness
                         for (let i = items.length - 1; i > 0; i--) {
                             const j = Math.floor(Math.random() * (i + 1));
+
                             [items[i], items[j]] = [items[j], items[i]];
                         }
                         setDeals(items.slice(0, limit));
                         setLoading(false);
+
                         return;
                     }
                     else {
@@ -115,9 +129,11 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                         if ((anyProductsResponse.data as any)?.items && (anyProductsResponse.data as any).items.length > 0) {
                             // Randomize the items returned
                             const items = [...(anyProductsResponse.data as any).items];
+
                             // Fisher-Yates shuffle algorithm for true randomness
                             for (let i = items.length - 1; i > 0; i--) {
                                 const j = Math.floor(Math.random() * (i + 1));
+
                                 [items[i], items[j]] = [items[j], items[i]];
                             }
                             setDeals(items.slice(0, limit));
@@ -125,9 +141,11 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                         else if (anyProductsResponse.data?.data?.items) {
                             // Randomize the items returned
                             const items = [...anyProductsResponse.data.data.items];
+
                             // Fisher-Yates shuffle algorithm for true randomness
                             for (let i = items.length - 1; i > 0; i--) {
                                 const j = Math.floor(Math.random() * (i + 1));
+
                                 [items[i], items[j]] = [items[j], items[i]];
                             }
                             setDeals(items.slice(0, limit));
@@ -166,10 +184,10 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
     if (loading) {
         return (
             <div className={`bg-gray-100 dark:bg-gray-800 rounded-xl p-6 animate-pulse ${className}`}>
-                <div className="h-8 w-48 bg-gray-300 dark:bg-gray-700 rounded mb-4"></div>
+                <div className="h-8 w-48 bg-gray-300 dark:bg-gray-700 rounded mb-4" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[...Array(limit)].map((_, i) => (
-                        <div key={i} className="h-64 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+                        <div key={i} className="h-64 bg-gray-300 dark:bg-gray-700 rounded-lg" />
                     ))}
                 </div>
             </div>
@@ -384,6 +402,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                         );
                     } catch (error) {
                         console.error(`Error rendering product at index ${index}:`, error);
+
                         return null; // Skip rendering this product if there's an error
                     }
                 }).filter(Boolean)} {/* Filter out any null values from errors */}

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+
 import { useCategoryStats } from '@/lib/hooks';
+
 import LoadingSpinner from './LoadingSpinner';
-import { CategoryStats } from '@/types/api';
 
 interface CategoryItem {
     id: string;
@@ -38,6 +39,7 @@ export function ProductFilter({
     useEffect(() => {
         if (categoryStats && categoryStats.product_groups) {
             const items: CategoryItem[] = [];
+
             Object.entries(categoryStats.product_groups).forEach(([name, count]) => {
                 if (count > 0) {
                     items.push({
@@ -64,6 +66,7 @@ export function ProductFilter({
 
     const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newSort = e.target.value;
+
         setLocalSort(newSort);
         onFilter(localCategory, newSort);
     };

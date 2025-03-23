@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 interface CountdownTimerProps {
     endTime: Date | string;
@@ -33,6 +33,7 @@ export function CountdownTimer({ endTime, onComplete, className = '' }: Countdow
                 clearInterval(interval);
                 setIsCompleted(true);
                 onComplete?.();
+
                 return;
             }
 

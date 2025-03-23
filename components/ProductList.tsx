@@ -1,8 +1,9 @@
 "use client";
 
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ComponentProduct } from '@/types';
+import React from 'react';
+
+import type { ComponentProduct } from '@/types';
 
 interface ProductListProps {
     products: ComponentProduct[];
@@ -100,7 +101,7 @@ export default function ProductList({
                                 // 在小屏幕上展示较少页码
                                 const maxDisplayedPages = window.innerWidth < 640 ? 3 : 5;
                                 let startPage = Math.max(1, currentPage - Math.floor(maxDisplayedPages / 2));
-                                let endPage = Math.min(totalPages, startPage + maxDisplayedPages - 1);
+                                const endPage = Math.min(totalPages, startPage + maxDisplayedPages - 1);
 
                                 // 如果不能显示最大页数，则调整起始页
                                 if (endPage - startPage + 1 < maxDisplayedPages && startPage > 1) {

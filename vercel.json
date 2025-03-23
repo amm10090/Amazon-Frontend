@@ -1,0 +1,25 @@
+{
+    "framework": "nextjs",
+    "buildCommand": "pnpm build",
+    "installCommand": "pnpm install",
+    "outputDirectory": ".next",
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "regions": [
+        "iad1"
+    ],
+    "github": {
+        "silent": true
+    },
+    "headers": [
+        {
+            "source": "/assets/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
+        }
+    ]
+}

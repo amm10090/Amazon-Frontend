@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { productsApi } from '@/lib/api';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+
+
 import { useBrandStats } from '@/lib/hooks';
 
 export type ProductFilterProps = {
@@ -81,7 +83,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                         transition={{ duration: 0.2 }}
                     >
                         {formatPrice(value[0])}
-                        <div className="absolute left-1/2 top-full w-2 h-2 bg-blue-500 transform -translate-x-1/2 rotate-45"></div>
+                        <div className="absolute left-1/2 top-full w-2 h-2 bg-blue-500 transform -translate-x-1/2 rotate-45" />
                     </motion.div>
                 </div>
 
@@ -108,7 +110,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                         transition={{ duration: 0.2 }}
                     >
                         {formatPrice(value[1])}
-                        <div className="absolute left-1/2 top-full w-2 h-2 bg-green-500 transform -translate-x-1/2 rotate-45"></div>
+                        <div className="absolute left-1/2 top-full w-2 h-2 bg-green-500 transform -translate-x-1/2 rotate-45" />
                     </motion.div>
                 </div>
 
@@ -122,6 +124,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                     value={value[0]}
                     onChange={(e) => {
                         const newVal = Number(e.target.value);
+
                         if (newVal < value[1]) {
                             onChange([newVal, value[1]]);
                         }
@@ -139,6 +142,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                     value={value[1]}
                     onChange={(e) => {
                         const newVal = Number(e.target.value);
+
                         if (newVal > value[0]) {
                             onChange([value[0], newVal]);
                         }
@@ -162,6 +166,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                         value={value[0]}
                         onChange={(e) => {
                             const newVal = Number(e.target.value);
+
                             if (!isNaN(newVal) && newVal >= min && newVal < value[1]) {
                                 onChange([newVal, value[1]]);
                             }
@@ -182,6 +187,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                         value={value[1]}
                         onChange={(e) => {
                             const newVal = Number(e.target.value);
+
                             if (!isNaN(newVal) && newVal <= max && newVal > value[0]) {
                                 onChange([value[0], newVal]);
                             }
@@ -327,6 +333,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
 
     // 获取品牌数据 - 使用useRef防止无限循环
     const brandsDataProcessed = useRef(false);
+
     useEffect(() => {
         // 只有当品牌数据发生变化，且还没有处理过，或显式设置重新处理时才执行
         if (brandStats?.brands && !isBrandStatsLoading && !brandsDataProcessed.current) {
@@ -363,6 +370,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         // 以防万一，我们可以确保这些参数一定存在
         const productGroups = searchParams.get('product_groups');
         const category = searchParams.get('category');
+
         if (productGroups) params.set('product_groups', productGroups);
         if (category) params.set('category', category);
 
@@ -391,12 +399,14 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     // Update URL parameters function with dependency check to prevent loops
     const updateUrlParams = useCallback(() => {
         const currentFilterSnapshot = filter;
+
         // 比较当前过滤器和之前的过滤器
         if (JSON.stringify(currentFilterSnapshot) !== JSON.stringify(prevFilter.current)) {
             // 更新上一次的过滤条件引用
             prevFilter.current = { ...currentFilterSnapshot };
             // 构建URL参数
             const params = buildUrlParams(currentFilterSnapshot);
+
             console.log('更新URL参数:', params.toString(), '原有分类参数:', searchParams.get('product_groups') || searchParams.get('category'));
             router.replace(`${pathname}?${params.toString()}`, { scroll: false });
         }
@@ -406,6 +416,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false;
+
             return;
         }
 
@@ -424,6 +435,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
 
         // 检查品牌是否已经在数组中，避免不必要的更新
         const brandExists = brandsArray.includes(brand);
+
         if ((checked && brandExists) || (!checked && !brandExists)) {
             return; // 不需要更新
         }
@@ -517,6 +529,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
 
         // 清除URL中的筛选参数，但保留分类参数 - 使用正确的API参数名称
         const params = new URLSearchParams(searchParams.toString());
+
         params.delete('min_price');
         params.delete('max_price');
         params.delete('min_discount');
@@ -526,6 +539,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         // 保留分类参数（可选，因为我们已经基于现有searchParams创建了params）
         const productGroups = searchParams.get('product_groups');
         const category = searchParams.get('category');
+
         if (productGroups) params.set('product_groups', productGroups);
         if (category) params.set('category', category);
 
@@ -640,7 +654,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                         {loading || isBrandStatsLoading ? (
                             <div className="animate-pulse space-y-2">
                                 {[...Array(5)].map((_, i) => (
-                                    <div key={i} className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                    <div key={i} className="h-6 bg-gray-200 dark:bg-gray-700 rounded" />
                                 ))}
                             </div>
                         ) : availableBrands.length > 0 ? (

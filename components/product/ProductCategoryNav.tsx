@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useCategoryStats } from '@/lib/hooks';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+
+import { useCategoryStats } from '@/lib/hooks';
+
 
 type ProductCategoryNavProps = {
     selectedCategory: string;
@@ -36,6 +38,7 @@ const groupCategoriesByAlphabet = (categories: Array<{ name: string, count: numb
     categories.forEach(category => {
         // 获取首字母并转为大写
         const firstLetter = category.name.charAt(0).toUpperCase();
+
         // 如果该字母组不存在，则创建
         if (!groups[firstLetter]) {
             groups[firstLetter] = [];
@@ -207,6 +210,7 @@ export function ProductCategoryNav({
                             page_size: 50
                         }
                     });
+
                     console.log('Directly fetched category data:', response.data);
                     setDirectData(response.data);
                 } catch (err) {
@@ -268,16 +272,19 @@ export function ProductCategoryNav({
             // 桌面展开模式
             const initialCategories = categories.slice(0, desktopLimit);
             const extendedCategories = categories.slice(desktopLimit);
+
             return { initialCategories, extendedCategories };
         } else {
             // 滚动模式下根据设备类型决定
             if (isMobile) {
                 const initialCategories = categories.slice(0, mobileLimit);
                 const extendedCategories = categories.slice(mobileLimit);
+
                 return { initialCategories, extendedCategories };
             } else if (isTablet) {
                 const initialCategories = categories.slice(0, tabletLimit);
                 const extendedCategories = categories.slice(tabletLimit);
+
                 return { initialCategories, extendedCategories };
             } else {
                 return { initialCategories: categories, extendedCategories: [] };
@@ -296,6 +303,7 @@ export function ProductCategoryNav({
         if (displayMode === 'scroll') {
             if (isMobile && categories.length > mobileLimit) return true;
             if (isTablet && categories.length > tabletLimit) return true;
+
             return false;
         }
 
@@ -321,6 +329,7 @@ export function ProductCategoryNav({
         if (displayMode === 'expand') {
             return "flex flex-wrap items-center gap-1.5";
         }
+
         return "flex items-center space-x-1.5 min-w-max";
     };
 
@@ -345,6 +354,7 @@ export function ProductCategoryNav({
 
         // 构建新的URL
         const params = new URLSearchParams(window.location.search);
+
         // 清除分类参数
         params.delete('product_groups');
         params.delete('category');
@@ -355,6 +365,7 @@ export function ProductCategoryNav({
 
         // 更新URL
         const newPath = `${window.location.pathname}?${params.toString()}`;
+
         router.replace(newPath, { scroll: false });
 
         // 同时更新父组件状态
@@ -370,6 +381,7 @@ export function ProductCategoryNav({
 
         // 构建新的URL
         const params = new URLSearchParams(window.location.search);
+
         if (category) {
             params.set('product_groups', category);
         } else {
@@ -383,6 +395,7 @@ export function ProductCategoryNav({
 
         // 更新URL
         const newPath = `${window.location.pathname}?${params.toString()}`;
+
         router.replace(newPath, { scroll: false });
 
         // 同时更新父组件状态
@@ -394,6 +407,7 @@ export function ProductCategoryNav({
         if (displayMode === 'expand') {
             // 展开模式下直接切换显示状态
             setShowAll(!showAll);
+
             return;
         }
 
@@ -401,6 +415,7 @@ export function ProductCategoryNav({
             // 滚动模式下的移动端和平板端导航到分类页面
             // 在导航前存储当前路径（完整URL）
             const currentPath = window.location.pathname + window.location.search;
+
             console.log('保存当前路径:', currentPath);
             sessionStorage.setItem('prevPath', currentPath);
 
@@ -416,7 +431,7 @@ export function ProductCategoryNav({
             <div className="py-2">
                 <div className="animate-pulse flex items-center space-x-1 overflow-x-auto">
                     {[...Array(8)].map((_, i) => (
-                        <div key={i} className="h-7 bg-gray-200 dark:bg-gray-700 rounded-full w-16 md:w-20 flex-shrink-0"></div>
+                        <div key={i} className="h-7 bg-gray-200 dark:bg-gray-700 rounded-full w-16 md:w-20 flex-shrink-0" />
                     ))}
                 </div>
             </div>

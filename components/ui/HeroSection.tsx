@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, useAnimation } from 'framer-motion';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useTheme } from 'next-themes';
 import axios from 'axios';
+import { motion, useAnimation } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useTheme } from 'next-themes';
+import { useState, useEffect } from 'react';
 
 interface Bubble {
     top: string;
@@ -118,6 +118,7 @@ export function HeroSection() {
 
                         // 确定折扣文本
                         let discountText = '';
+
                         if (isCoupon) {
                             // 如果是优惠券类型
                             if (offer.coupon_type === 'fixed') {
@@ -132,6 +133,7 @@ export function HeroSection() {
 
                         // 确定描述文本
                         let description = product.brand || '';
+
                         if (product.binding) {
                             description += (description ? ' · ' : '') + product.binding;
                         }
@@ -203,6 +205,7 @@ export function HeroSection() {
                 height: `${10 + Math.random() * 40}px`,
                 delay: Math.random() * 1
             }));
+
             setBubbles(newBubbles);
         };
 
@@ -261,7 +264,7 @@ export function HeroSection() {
             {svgFilters}
 
             {/* 替换背景为浅蓝色 */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#1B5479] to-[#287EB7] dark:from-[#1B5479] dark:to-[#287EB7]" style={{ zIndex: 2 }}></div>
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#1B5479] to-[#287EB7] dark:from-[#1B5479] dark:to-[#287EB7]" style={{ zIndex: 2 }} />
 
             {/* 简化背景装饰元素 */}
             <div className="absolute inset-0 overflow-hidden rounded-xl" style={{ zIndex: 1 }}>
@@ -403,7 +406,7 @@ export function HeroSection() {
                             <div className="relative w-full max-w-md mx-auto md:ml-auto h-72 sm:h-80 md:h-96">
                                 {isLoading ? (
                                     <div className="absolute inset-0 w-full h-full bg-white dark:bg-gray-800 rounded-2xl p-5 sm:p-7 shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 flex items-center justify-center">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" />
                                     </div>
                                 ) : error ? (
                                     <div className="absolute inset-0 w-full h-full bg-white dark:bg-gray-800 rounded-2xl p-5 sm:p-7 shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 flex items-center justify-center">
@@ -443,7 +446,7 @@ export function HeroSection() {
                                                         className="transition-transform duration-500 group-hover:scale-105"
                                                     />
                                                     {/* 简化渐变叠加层 - 使用半透明纯色 */}
-                                                    <div className="absolute inset-0 bg-black/40 transition-opacity duration-500 group-hover:opacity-50"></div>
+                                                    <div className="absolute inset-0 bg-black/40 transition-opacity duration-500 group-hover:opacity-50" />
                                                 </div>
                                             ) : (
                                                 <div className="absolute inset-0 w-full h-full bg-primary dark:bg-primary">

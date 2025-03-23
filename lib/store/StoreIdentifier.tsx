@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { getStoreFromUrl } from './utils';
 
 interface StoreIdentifierProps {

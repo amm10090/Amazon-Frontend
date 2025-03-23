@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCategoryStats } from '@/lib/hooks';
 import { motion } from 'framer-motion';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+
 import { ProductCategoryNav } from '@/components/product/ProductCategoryNav';
-import Link from 'next/link';
+import { useCategoryStats } from '@/lib/hooks';
+
+
+
 
 // 按字母分组分类
 const groupCategoriesByAlphabet = (categories: Array<{ name: string, count: number }>) => {
@@ -15,6 +18,7 @@ const groupCategoriesByAlphabet = (categories: Array<{ name: string, count: numb
     categories.forEach(category => {
         // 获取首字母并转为大写
         const firstLetter = category.name.charAt(0).toUpperCase();
+
         // 如果该字母组不存在，则创建
         if (!groups[firstLetter]) {
             groups[firstLetter] = [];
@@ -131,8 +135,10 @@ export default function CategoriesPage() {
 
         // 获取存储的原始路径（使用 try-catch 防止服务器端错误）
         let prevPath = '/products'; // 默认导航到商品页面
+
         try {
             const storedPath = sessionStorage.getItem('prevPath');
+
             if (storedPath) {
                 prevPath = storedPath;
                 console.log('从sessionStorage读取路径:', prevPath);
@@ -145,10 +151,12 @@ export default function CategoriesPage() {
 
         // 检查是否是产品页面路径
         const isProductPage = prevPath.startsWith('/products');
+
         console.log('是否为产品页面:', isProductPage);
 
         // 构建URL对象更可靠地处理参数
         let url;
+
         try {
             url = new URL(prevPath, window.location.origin);
         } catch (error) {
@@ -200,6 +208,7 @@ export default function CategoriesPage() {
     // 处理字母选择
     const handleLetterSelect = useCallback((letter: string) => {
         const element = document.getElementById(`group-${letter}`);
+
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
             setActiveLetter(letter);
@@ -237,6 +246,7 @@ export default function CategoriesPage() {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
                         const groupId = entry.target.id;
+
                         if (groupId.startsWith('group-')) {
                             setActiveLetter(groupId.replace('group-', ''));
                         }
@@ -248,6 +258,7 @@ export default function CategoriesPage() {
 
         // 观察所有字母组
         const letterGroups = document.querySelectorAll('[id^="group-"]');
+
         letterGroups.forEach(group => observer.observe(group));
 
         return () => observer.disconnect();
@@ -272,7 +283,7 @@ export default function CategoriesPage() {
             {isNavigating && (
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl flex flex-col items-center justify-center">
-                        <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full mb-3"></div>
+                        <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full mb-3" />
                         <p className="text-lg font-medium text-gray-700 dark:text-gray-200">正在跳转到商品页面...</p>
                     </div>
                 </div>
@@ -314,7 +325,7 @@ export default function CategoriesPage() {
             <main className="container mx-auto px-4 pb-20">
                 {isLoading ? (
                     <div className="py-8 flex justify-center">
-                        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
                     </div>
                 ) : (
                     <CategoryGroups

@@ -1,6 +1,6 @@
 import { CategoryNavigation } from "@/components/ui/CategoryNavigation";
-import { HeroSection } from "@/components/ui/HeroSection";
 import { FeaturedDeals } from "@/components/ui/FeaturedDeals";
+import { HeroSection } from "@/components/ui/HeroSection";
 
 
 export default function Home() {
@@ -29,7 +29,7 @@ export default function Home() {
         {/* 分隔线 */}
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
+            <div className="w-full border-t border-gray-200" />
           </div>
           <div className="relative flex justify-center">
             <span className="bg-background px-4 text-sm text-text-light">Recommended for you</span>

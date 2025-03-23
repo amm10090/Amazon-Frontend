@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useUserStore } from '@/store';
-import { useCategoryStats } from '@/lib/hooks';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+
+import { useCategoryStats } from '@/lib/hooks';
+import { useUserStore } from '@/store';
+
 
 interface Category {
     id: string;
@@ -29,7 +31,9 @@ const Header = () => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
         };
+
         window.addEventListener('scroll', handleScroll);
+
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 

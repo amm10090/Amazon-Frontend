@@ -1,8 +1,10 @@
-import { ReactNode } from 'react';
-import Header from './Header';
-import Footer from './Footer';
-import { useUserStore } from '@/store';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { ReactNode } from 'react';
+
+import { useUserStore } from '@/store';
+
+import Footer from './Footer';
+import Header from './Header';
 
 interface LayoutProps {
     children: ReactNode;

@@ -1,8 +1,10 @@
-import useSWR from 'swr';
-import { productsApi, userApi } from './api';
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats, BrandStats } from '@/types/api';
-import { AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
 import { useEffect } from 'react';
+import useSWR from 'swr';
+
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats } from '@/types/api';
+
+import { productsApi, userApi } from './api';
 
 // 通用fetcher类型
 type Fetcher<T> = (...args: any[]) => Promise<AxiosResponse<ApiResponse<T>>>;

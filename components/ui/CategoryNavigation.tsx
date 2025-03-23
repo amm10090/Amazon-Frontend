@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useMotionValue, useTransform, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
+import { useState, useEffect, useRef } from 'react';
+
 import { useCategoryStats } from '@/lib/hooks';
 
 // 自定义Category接口
@@ -179,6 +179,7 @@ export function CategoryNavigation() {
 
         // 更新滚动方向
         const currentScrollPosition = scrollContainerRef.current.scrollLeft;
+
         if (currentScrollPosition > lastScrollPosition.current) {
             setScrollDirection('right');
         } else if (currentScrollPosition < lastScrollPosition.current) {
@@ -241,6 +242,7 @@ export function CategoryNavigation() {
     // 使用useMotionValueEvent监听indicatorProgress变化并更新activePointIndex
     useMotionValueEvent(indicatorProgress, "change", (latest) => {
         const roundedIndex = Math.round(latest);
+
         if (roundedIndex !== activePointIndex) {
             setActivePointIndex(roundedIndex);
         }
@@ -250,6 +252,7 @@ export function CategoryNavigation() {
     const dotScales = Array.from({ length: 10 }).map((_, i) =>
         useTransform(indicatorProgress, (p) => {
             const diff = Math.abs(p - i);
+
             return diff <= 0.5 ? 1.3 - (0.3 * (diff * 2)) : 1;
         })
     );
@@ -257,6 +260,7 @@ export function CategoryNavigation() {
     const indicatorOpacities = Array.from({ length: 10 }).map((_, i) =>
         useTransform(indicatorProgress, (p) => {
             const diff = Math.abs(p - i);
+
             return diff < 0.8 ? Math.max(0, 1 - (diff / 0.8)) : 0;
         })
     );
@@ -264,6 +268,7 @@ export function CategoryNavigation() {
     const indicatorScaleXs = Array.from({ length: 10 }).map((_, i) =>
         useTransform(indicatorProgress, (p) => {
             const diff = Math.abs(p - i);
+
             return diff < 0.8 ? Math.max(0, 1 - (diff / 0.8)) : 0;
         })
     );
@@ -271,6 +276,7 @@ export function CategoryNavigation() {
     const buttonScales = Array.from({ length: 10 }).map((_, i) =>
         useTransform(indicatorProgress, (p) => {
             const diff = Math.abs(p - i);
+
             return diff <= 0.5 ? 1 + (0.15 * (1 - diff * 2)) : 1;
         })
     );
@@ -287,15 +293,18 @@ export function CategoryNavigation() {
 
         const { scrollWidth, clientWidth } = scrollContainerRef.current;
         const needsNav = scrollWidth > clientWidth + 10; // 添加一点余量
+
         setNeedNavigation(needsNav);
 
         // 检查是否为移动设备
         const newIsMobile = window.innerWidth < 768;
+
         setIsMobile(newIsMobile);
 
         // 如果需要导航，则同时检查箭头状态
         if (needsNav) {
             const { scrollLeft } = scrollContainerRef.current;
+
             setShowLeftArrow(scrollLeft > 20);
             setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 20);
         }
@@ -306,6 +315,7 @@ export function CategoryNavigation() {
         if (!scrollContainerRef.current || !needNavigation) return;
 
         const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+
         setShowLeftArrow(scrollLeft > 20);
         setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 20);
     };
@@ -338,6 +348,7 @@ export function CategoryNavigation() {
         if (isError) {
             setError('Unable to load categories. Please try again later.');
             processedDataRef.current = true;
+
             return;
         }
 
@@ -394,6 +405,7 @@ export function CategoryNavigation() {
     // 添加滚动事件监听
     useEffect(() => {
         const scrollContainer = scrollContainerRef.current;
+
         if (scrollContainer) {
             scrollContainer.addEventListener('scroll', handleScroll);
             scrollContainer.addEventListener('scroll', updateActiveCardIndex);
@@ -408,6 +420,7 @@ export function CategoryNavigation() {
                     updateActiveCardIndex();
                 }, 150); // 滚动停止150ms后更新
             };
+
             scrollContainer.addEventListener('scroll', handleScrollEnd);
 
             // 初始化检查是否需要导航
@@ -475,12 +488,14 @@ export function CategoryNavigation() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const productGroups = urlParams.get('product_groups');
+
                 return productGroups === slug;
             } catch (error) {
                 // 如果解析URL参数出错，返回false
                 return false;
             }
         }
+
         return false;
     };
 
@@ -552,6 +567,7 @@ export function CategoryNavigation() {
     // 添加触摸事件处理，优化移动端体验
     useEffect(() => {
         const container = scrollContainerRef.current;
+
         if (!container) return;
 
         const handleTouchStart = () => {
@@ -583,6 +599,7 @@ export function CategoryNavigation() {
 
         cards.forEach((card) => {
             const cardElement = card as HTMLElement;
+
             positions.push(cardElement.offsetLeft);
         });
 
@@ -594,10 +611,12 @@ export function CategoryNavigation() {
 
     // 检查是否在侧边栏中
     const isSidebar = typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false;
+
     useEffect(() => {
         const checkIsSidebar = () => {
             if (typeof window !== 'undefined') {
                 const newIsSidebar = window.matchMedia('(min-width: 1024px)').matches;
+
                 setIsMobile(!newIsSidebar);
             }
         };
@@ -622,8 +641,8 @@ export function CategoryNavigation() {
                         {Array.from({ length: 8 }).map((_, index) => (
                             <div key={index} className="flex-shrink-0 w-32 md:w-40 lg:w-full">
                                 <div className="bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl p-4 animate-pulse h-40 lg:h-16">
-                                    <div className="w-16 h-16 mx-auto lg:hidden bg-gray-200 dark:bg-gray-700 rounded-full mb-4"></div>
-                                    <div className="h-4 w-20 lg:w-full mx-auto bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                                    <div className="w-16 h-16 mx-auto lg:hidden bg-gray-200 dark:bg-gray-700 rounded-full mb-4" />
+                                    <div className="h-4 w-20 lg:w-full mx-auto bg-gray-200 dark:bg-gray-700 rounded mb-2" />
                                 </div>
                             </div>
                         ))}
@@ -655,7 +674,7 @@ export function CategoryNavigation() {
 
     return (
         <div className="relative my-6 lg:my-0">
-            <div className="absolute left-0 right-0 h-48 lg:h-full bg-gray-100 dark:bg-gray-800/20 -z-10 opacity-50"></div>
+            <div className="absolute left-0 right-0 h-48 lg:h-full bg-gray-100 dark:bg-gray-800/20 -z-10 opacity-50" />
 
             {/* Mobile and tablet title, hidden on large screens */}
             <h2 className="text-2xl font-bold mb-4 text-center lg:hidden text-primary-dark dark:text-white">Popular Categories</h2>
@@ -700,8 +719,8 @@ export function CategoryNavigation() {
                 {/* Add gradient edge masks to solve the cutoff feeling - visible in non-desktop mode */}
                 {needNavigation && (
                     <div className="lg:hidden">
-                        <div className="absolute left-0 top-2 bottom-2 w-8 sm:w-12 bg-gradient-to-r from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 dark:to-transparent pointer-events-none z-10"></div>
-                        <div className="absolute right-0 top-2 bottom-2 w-8 sm:w-12 bg-gradient-to-l from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 dark:to-transparent pointer-events-none z-10"></div>
+                        <div className="absolute left-0 top-2 bottom-2 w-8 sm:w-12 bg-gradient-to-r from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 dark:to-transparent pointer-events-none z-10" />
+                        <div className="absolute right-0 top-2 bottom-2 w-8 sm:w-12 bg-gradient-to-l from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 dark:to-transparent pointer-events-none z-10" />
                     </div>
                 )}
 
