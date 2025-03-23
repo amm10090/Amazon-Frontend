@@ -12,6 +12,7 @@ import { Product } from '@/types/api';
 import { AmazonProduct } from '@/types/amazonApi';
 import { ComponentProduct } from '@/types';
 import { adaptProducts } from '@/lib/utils';
+import { StoreIdentifier } from '@/lib/store';
 import axios from 'axios';
 import { useSearchParams, useRouter } from 'next/navigation';
 
@@ -448,59 +449,79 @@ export default function ProductsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="relative group cursor-pointer"
+                className="relative group cursor-pointer h-full"
                 onClick={() => {
                     // 优先使用cj_url，因为佣金更高，如果没有则使用普通url
                     const linkUrl = product.cj_url || product.url;
                     if (linkUrl) window.open(linkUrl, '_blank');
                 }}
             >
-                <div className="relative overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300">
-                    <div className="relative pb-[100%]">
+                <div className="relative h-full flex flex-col overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300">
+                    {/* 图片容器固定比例 */}
+                    <div className="relative w-full pt-[100%]">
                         <img
                             src={product.image}
                             alt={product.title}
-                            className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                            className="absolute inset-0 w-full h-full object-contain object-center transform group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
                         />
 
-                        {/* Prime badge */}
+                        {/* 添加商品来源标识到右下角 */}
+                        <div className="absolute right-2 bottom-2 z-10">
+                            <StoreIdentifier
+                                url={product.cj_url || product.url || ''}
+                                align="right"
+                                showName={false}
+                                className="mb-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-1 rounded-md shadow-sm"
+                            />
+                        </div>
+
+                        {/* Prime badge - 移动端更紧凑 */}
                         {product.isPrime && (
-                            <div className="absolute top-2 left-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded">
+                            <div className="absolute top-1 left-1 sm:top-1.5 sm:left-1.5 md:top-2 md:left-2 bg-yellow-400 text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
                                 Prime
                             </div>
                         )}
 
-                        {/* Discount tag */}
+                        {/* Discount tag - 移动端更紧凑 */}
                         {product.discount > 0 && (
-                            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                            <div className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 md:top-2 md:right-2 bg-red-500 text-white text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
                                 -{Math.round(product.discount)}%
                             </div>
                         )}
 
-                        {/* Coupon tag */}
+                        {/* Coupon tag - 移动端更紧凑 */}
                         {product.couponValue && product.couponValue > 0 && (
-                            <div className="absolute bottom-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                                Coupon: {product.couponType === 'percentage' ? `${product.couponValue}%` : `$${product.couponValue}`}
+                            <div className="absolute bottom-1 left-1 sm:bottom-1.5 sm:left-1.5 md:bottom-2 md:left-2 bg-green-500 text-white text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
+                                {product.couponType === 'percentage' ? `${product.couponValue}%` : `$${product.couponValue}`}
                             </div>
                         )}
                     </div>
-                    <div className="p-4">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white line-clamp-2">
+
+                    {/* 内容区域使用flex-grow保证卡片高度一致 */}
+                    <div className="p-2 sm:p-3 md:p-4 flex-grow flex flex-col">
+                        {/* 标题固定高度，确保一致性 */}
+                        <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-gray-800 dark:text-white line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem]">
                             {product.title}
                         </h3>
-                        <div className="mt-2 flex items-center justify-between">
+
+                        {/* 使用mt-auto将价格信息推到底部，确保所有卡片布局一致 */}
+                        <div className="mt-auto pt-1 sm:pt-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-0.5 sm:gap-1">
+                            {/* 价格区域 */}
                             <div className="flex flex-col">
-                                <p className="text-xl font-bold text-primary">
+                                <p className="text-sm sm:text-lg md:text-xl font-bold text-primary">
                                     ${product.price.toFixed(2)}
                                 </p>
                                 {product.discount > 0 && (
-                                    <p className="text-sm text-gray-500 line-through">
+                                    <p className="text-[10px] sm:text-xs md:text-sm text-gray-500 line-through">
                                         ${product.originalPrice.toFixed(2)}
                                     </p>
                                 )}
                             </div>
+
+                            {/* 品牌展示 - 移动端优化 */}
                             {product.brand && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-400 truncate max-w-[60px] sm:max-w-[120px]">
                                     {product.brand}
                                 </p>
                             )}

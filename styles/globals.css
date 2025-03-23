@@ -267,7 +267,27 @@
     --color-gray-950: #f9fafb;
   }
 
-  /* 文本阴影 */
+  /* 商品卡片网格样式 - 确保高度一致性 */
+  .grid-item {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* 确保在移动端和平板端商品卡片有合适的高度和间距 */
+  @media (max-width: 640px) {
+    .grid-item {
+      min-height: 250px;
+    }
+  }
+  
+  /* 平板端布局优化 */
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .grid-item {
+      min-height: 350px;
+    }
+  }
+  
   .text-shadow-sm {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
