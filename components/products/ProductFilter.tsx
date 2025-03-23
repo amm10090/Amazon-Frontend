@@ -266,12 +266,12 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
     const pathname = usePathname();
     const isInitialMount = useRef(true);
 
-    // Get initial filter state from URL parameters
-    const initialMinPrice = Number(searchParams.get('minPrice')) || 0;
-    const initialMaxPrice = Number(searchParams.get('maxPrice')) || 1000;
-    const initialDiscount = Number(searchParams.get('discount')) || 0;
+    // Get initial filter state from URL parameters - 使用正确的API参数名称
+    const initialMinPrice = Number(searchParams.get('min_price')) || 0;
+    const initialMaxPrice = Number(searchParams.get('max_price')) || 1000;
+    const initialDiscount = Number(searchParams.get('min_discount')) || 0;
     const initialBrands = searchParams.get('brands') || '';
-    const initialIsPrime = searchParams.get('isPrime') === 'true';
+    const initialIsPrime = searchParams.get('is_prime_only') === 'true';
 
     const [filter, setFilter] = useState<FilterState>({
         price: [initialMinPrice, initialMaxPrice],
@@ -337,27 +337,37 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
 
     // Create a function to build URLSearchParams that doesn't depend on filter
     const buildUrlParams = useCallback((currentFilter: FilterState) => {
-        // 创建新的URLSearchParams实例，不依赖于现有的searchParams
-        const params = new URLSearchParams();
+        // 基于当前URL的searchParams创建新实例，保留所有现有参数
+        const params = new URLSearchParams(searchParams.toString());
 
-        // Only add to URL when value is not default
-        if (currentFilter.price[0] > 0) params.set('minPrice', currentFilter.price[0].toString());
-        else params.delete('minPrice');
+        // 确保保留分类相关参数（这一步可以省略，因为我们已经基于现有searchParams创建了params）
+        // 以防万一，我们可以确保这些参数一定存在
+        const productGroups = searchParams.get('product_groups');
+        const category = searchParams.get('category');
+        if (productGroups) params.set('product_groups', productGroups);
+        if (category) params.set('category', category);
 
-        if (currentFilter.price[1] < 1000) params.set('maxPrice', currentFilter.price[1].toString());
-        else params.delete('maxPrice');
+        // Only add to URL when value is not default - 使用正确的API参数名称
+        if (currentFilter.price[0] > 0) params.set('min_price', currentFilter.price[0].toString());
+        else params.delete('min_price');
 
-        if (currentFilter.discount > 0) params.set('discount', currentFilter.discount.toString());
-        else params.delete('discount');
+        if (currentFilter.price[1] < 1000) params.set('max_price', currentFilter.price[1].toString());
+        else params.delete('max_price');
+
+        if (currentFilter.discount > 0) params.set('min_discount', currentFilter.discount.toString());
+        else params.delete('min_discount');
 
         if (currentFilter.brands && currentFilter.brands.trim() !== '') params.set('brands', currentFilter.brands);
         else params.delete('brands');
 
-        if (currentFilter.isPrime) params.set('isPrime', 'true');
-        else params.delete('isPrime');
+        if (currentFilter.isPrime) params.set('is_prime_only', 'true');
+        else params.delete('is_prime_only');
+
+        // 添加时间戳参数，防止缓存问题
+        params.set('_ts', Date.now().toString());
 
         return params;
-    }, []); // 移除searchParams依赖
+    }, [searchParams]); // 添加searchParams依赖
 
     // Update URL parameters function with dependency check to prevent loops
     const updateUrlParams = useCallback(() => {
@@ -368,9 +378,10 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
             prevFilter.current = { ...currentFilterSnapshot };
             // 构建URL参数
             const params = buildUrlParams(currentFilterSnapshot);
+            console.log('更新URL参数:', params.toString(), '原有分类参数:', searchParams.get('product_groups') || searchParams.get('category'));
             router.replace(`${pathname}?${params.toString()}`, { scroll: false });
         }
-    }, [filter, buildUrlParams, pathname, router]);
+    }, [filter, buildUrlParams, pathname, router, searchParams]);
 
     // Listen for filter changes and update URL (skip initial mount)
     useEffect(() => {
@@ -484,7 +495,27 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
             brands: '',
             isPrime: false
         });
-    }, [onFilter]);
+
+        // 清除URL中的筛选参数，但保留分类参数 - 使用正确的API参数名称
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('min_price');
+        params.delete('max_price');
+        params.delete('min_discount');
+        params.delete('brands');
+        params.delete('is_prime_only');
+
+        // 保留分类参数（可选，因为我们已经基于现有searchParams创建了params）
+        const productGroups = searchParams.get('product_groups');
+        const category = searchParams.get('category');
+        if (productGroups) params.set('product_groups', productGroups);
+        if (category) params.set('category', category);
+
+        // 添加时间戳防止缓存问题
+        params.set('_ts', Date.now().toString());
+
+        // 更新URL
+        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }, [onFilter, searchParams, router, pathname]);
 
     return (
         <div className="space-y-6">
