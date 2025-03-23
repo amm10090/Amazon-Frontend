@@ -670,7 +670,7 @@ export default function ProductsPage() {
                             transition={{ duration: 0.5 }}
                             className="sticky top-28 bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md"
                         >
-                            <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">筛选</h2>
+                            <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">Filter</h2>
                             <ProductFilter
                                 onFilter={handleFilterChange}
                             />

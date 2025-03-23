@@ -617,7 +617,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                     className="flex justify-between items-center mb-4 cursor-pointer"
                     onClick={() => toggleSection('brands')}
                 >
-                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">品牌</h3>
+                    <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Brands</h3>
                     <motion.span
                         animate={{ rotate: expandedSections.brands ? 180 : 0 }}
                         transition={{ duration: 0.3 }}

@@ -30,7 +30,7 @@ export default function Home() {
 
       {/* 品牌推荐区域 */}
       <div className="mt-4 p-6 bg-gradient-to-r from-secondary-light/10 to-tiffany/5 rounded-xl">
-        <h2 className="text-2xl font-bold mb-6 text-primary text-center">热门品牌</h2>
+        <h2 className="text-2xl font-bold mb-6 text-primary text-center">Hot brands</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 justify-items-center">
           {["Apple", "Samsung", "Sony", "Nike", "Adidas", "Amazon"].map((brand) => (
             <div
