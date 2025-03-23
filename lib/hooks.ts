@@ -45,20 +45,9 @@ export function useProducts(params?: {
         }
     );
 
-    // 添加额外的日志，帮助调试
-    useEffect(() => {
-        if (error) {
-            console.error('获取产品列表时出错:', error);
-        }
-        if (data) {
-            console.log('API响应数据:', data?.data);
-        }
-    }, [data, error]);
-
     // 当参数变化时，主动触发重新获取数据
     useEffect(() => {
         if (params) {
-            console.log('产品参数变化，主动刷新数据:', params);
             mutate();
         }
     }, [JSON.stringify(params), mutate]);

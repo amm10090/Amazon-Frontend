@@ -199,17 +199,11 @@ export default function ProductsPage() {
 
     // 添加useEffect，确保从URL参数正确加载
     useEffect(() => {
-        console.log('URL参数变化，开始更新searchParams');
-
         // 获取URL参数（忽略时间戳参数_ts）
         const brands = searchParamsFromUrl.get('brands') || '';
         const product_groups = searchParamsFromUrl.get('product_groups') || '';
         const category = searchParamsFromUrl.get('category') || ''; // 兼容category参数
         const effective_category = product_groups || category; // 优先使用product_groups
-
-        console.log('从URL读取的分类:',
-            effective_category ? effective_category : '全部分类'
-        );
 
         const page = Number(searchParamsFromUrl.get('page')) || 1;
         const min_price = searchParamsFromUrl.get('min_price') ? Number(searchParamsFromUrl.get('min_price')) : undefined;
@@ -234,7 +228,6 @@ export default function ProductsPage() {
                 sort_order
             };
 
-            console.log('更新后的searchParams:', newParams);
             return newParams;
         });
 
@@ -309,8 +302,6 @@ export default function ProductsPage() {
     // 在searchParams变化后，明确触发数据刷新
     useEffect(() => {
         if (urlParamsLoaded && mutate) {
-            console.log('searchParams已更新，手动刷新产品数据');
-
             // 添加短暂延迟，确保URL已更新完成
             setTimeout(() => {
                 mutate();
@@ -318,17 +309,11 @@ export default function ProductsPage() {
         }
     }, [searchParams, urlParamsLoaded, mutate]);
 
-    // 添加数据处理日志
-    useEffect(() => {
-        console.log('原始API数据:', data);
-    }, [data]);
-
     // 如果SWR获取失败，尝试直接使用axios获取
     useEffect(() => {
         const fetchDirectlyIfNeeded = async () => {
             if ((isError || (!data && !isLoading)) && !isDirectLoading) {
                 try {
-                    console.log('尝试直接使用axios获取数据');
                     setIsDirectLoading(true);
 
                     // 创建参数对象，转换参数名
@@ -341,10 +326,9 @@ export default function ProductsPage() {
                     if (apiParams.product_groups === '') delete apiParams.product_groups;
 
                     const response = await axios.get('/api/products/list', { params: apiParams });
-                    console.log('直接获取的数据:', response.data);
                     setDirectData(response.data);
                 } catch (err) {
-                    console.error('直接获取数据失败:', err);
+                    // 保留错误处理，但移除日志
                 } finally {
                     setIsDirectLoading(false);
                 }
@@ -363,7 +347,6 @@ export default function ProductsPage() {
             const handleLoad = () => {
                 // 页面完全加载后，额外进行一次数据刷新
                 if (mutate) {
-                    console.log('页面加载完成，刷新产品数据');
                     setTimeout(() => mutate(), 100);
                 }
             };
@@ -379,18 +362,11 @@ export default function ProductsPage() {
         const sourceData = data?.items || directData?.items;
 
         if (!sourceData || !Array.isArray(sourceData)) {
-            console.log('没有商品数据可用');
             return [];
         }
 
-        console.log('正在适配商品数据:', sourceData.length, '个商品');
         return adaptProducts(sourceData);
     }, [data, directData]);
-
-    // 添加适配后的数据日志
-    useEffect(() => {
-        console.log('适配后的商品数据:', adaptedProducts);
-    }, [adaptedProducts]);
 
     // 处理分类点击
     const handleCategoryClick = (category: string) => {
@@ -425,7 +401,6 @@ export default function ProductsPage() {
         // 确保品牌参数为字符串类型
         if (validFilters.brands && Array.isArray(validFilters.brands)) {
             validFilters.brands = validFilters.brands.join(',');
-            console.log('应用品牌筛选:', validFilters.brands);
         }
 
         setSearchParams(prev => ({

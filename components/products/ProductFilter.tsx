@@ -424,7 +424,6 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         // 检查品牌是否已经在数组中，避免不必要的更新
         const brandExists = brandsArray.includes(brand);
         if ((checked && brandExists) || (!checked && !brandExists)) {
-            console.log(`品牌 ${brand} 状态未变化，跳过更新`);
             return; // 不需要更新
         }
 
@@ -436,19 +435,16 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
         // 将数组转回字符串
         const updatedBrands = updatedBrandsArray.join(',');
 
-        console.log(`更新品牌从 "${filter.brands}" 到 "${updatedBrands}"`);
-
         // 先调用onFilter，传递新的筛选条件
         if (onFilter) {
             onFilter({ brands: updatedBrands });
         }
 
         // 然后更新本地状态
-        setFilter(prev => {
-            const newFilter = { ...prev, brands: updatedBrands };
-            console.log('新的品牌筛选状态:', newFilter.brands);
-            return newFilter;
-        });
+        setFilter(prev => ({
+            ...prev,
+            brands: updatedBrands
+        }));
     }, [filter.brands, onFilter]);
 
     // 使用useCallback包装其他处理函数
@@ -473,19 +469,13 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
             return; // 不需要更新
         }
 
-        console.log(`设置折扣值从 ${filter.discount}% 到 ${value}%`);
-
         // 先调用onFilter
         if (onFilter) {
             onFilter({ min_discount: value });
         }
 
-        // 再更新本地状态，确保设置准确的值
-        setFilter(prev => {
-            const newFilter = { ...prev, discount: value };
-            console.log('新的过滤器状态:', newFilter);
-            return newFilter;
-        });
+        // 再更新本地状态
+        setFilter(prev => ({ ...prev, discount: value }));
     }, [filter.discount, onFilter]);
 
     const handlePrimeChange = useCallback((checked: boolean) => {
@@ -607,19 +597,12 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                         transition={{ duration: 0.3 }}
                         className="space-y-2"
                     >
-                        {/* 添加当前折扣值调试 */}
-                        <div className="text-xs text-gray-500 mb-2">
-                            当前折扣值: {filter.discount}%
-                        </div>
                         {discountOptions.map(discount => (
                             <div key={discount} className="flex items-center">
                                 <Checkbox
                                     id={`discount-${discount}`}
                                     checked={filter.discount >= discount}
-                                    onChange={() => {
-                                        console.log(`切换折扣选项: ${discount}%, 当前值: ${filter.discount}%, 新值将是: ${filter.discount === discount ? 0 : discount}%`);
-                                        handleDiscountChange(filter.discount === discount ? 0 : discount);
-                                    }}
+                                    onChange={() => handleDiscountChange(filter.discount === discount ? 0 : discount)}
                                     label={`${discount}% or more`}
                                 />
                             </div>
@@ -653,10 +636,6 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                         transition={{ duration: 0.3 }}
                         className="space-y-2 max-h-60 overflow-y-auto pr-1 no-scrollbar"
                     >
-                        {/* 添加当前选中品牌调试 */}
-                        <div className="text-xs text-gray-500 mb-2">
-                            当前选中品牌: {filter.brands || "无"}
-                        </div>
                         {loading || isBrandStatsLoading ? (
                             <div className="animate-pulse space-y-2">
                                 {[...Array(5)].map((_, i) => (
@@ -670,10 +649,7 @@ export function ProductFilter({ onFilter }: ProductFilterProps) {
                                         <Checkbox
                                             id={`brand-${brand}`}
                                             checked={filter.brands.split(',').includes(brand)}
-                                            onChange={(checked) => {
-                                                console.log(`切换品牌 ${brand}: ${checked ? '选中' : '取消选中'}`);
-                                                handleBrandChange(brand, checked);
-                                            }}
+                                            onChange={(checked) => handleBrandChange(brand, checked)}
                                             label={brand}
                                         />
                                     </div>
