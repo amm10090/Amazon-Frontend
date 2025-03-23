@@ -6,6 +6,23 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useCategoryStats } from '@/lib/hooks';
+// 导入Lucide图标组件
+import {
+    Smartphone,
+    Shirt,
+    Home,
+    Coffee,
+    Sofa,
+    ShoppingBag,
+    Dumbbell,
+    Sparkles,
+    Monitor,
+    Footprints,
+    Wifi,
+    Leaf,
+    Pill,
+    Car
+} from 'lucide-react';
 
 // 自定义Category接口
 interface Category {
@@ -13,7 +30,7 @@ interface Category {
     name: string;
     slug: string;
     count: number;
-    icon?: string;
+    icon?: React.ReactNode | string;
     color?: string;
 }
 
@@ -34,58 +51,58 @@ const productGroupToCategoryMapping: Record<string, { slug: string, name: string
     'Automotive Parts and Accessories': { slug: 'automotive', name: 'Automotive' }
 };
 
-// 分类图标映射
-const categoryIcons: Record<string, { icon: string, color: string }> = {
+// 分类图标映射 - 使用Lucide图标替换SVG路径
+const categoryIcons: Record<string, { icon: React.ReactNode, color: string }> = {
     electronics: {
-        icon: 'M12 18.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z M4.5 8.67h14.969c.76 0 1.26-.79.957-1.474L17.78 2.741A2 2 0 0 0 16 1.5H8.023a2 2 0 0 0-1.782 1.082L3.601 7.196c-.364.683.138 1.474.897 1.474h.002Z M3.75 20.25a1.5 1.5 0 0 0 1.5 1.5h13.5a1.5 1.5 0 0 0 1.5-1.5v-10.5A1.5 1.5 0 0 0 18.75 8.25h-15A1.5 1.5 0 0 0 2.25 9.75v10.5a1.5 1.5 0 0 0 1.5 1.5Z',
+        icon: <Smartphone className="w-full h-full" />,
         color: 'from-blue-500 to-indigo-600'
     },
     home: {
-        icon: 'M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h5.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12 3.545l-7.5 7.5M21 3.75V21m0-17.25a.75.75 0 0 0-.75-.75H3.75a.75.75 0 0 0-.75.75v1.502h18V3.75Z',
+        icon: <Home className="w-full h-full" />,
         color: 'from-amber-500 to-orange-600'
     },
     kitchen: {
-        icon: 'M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c6.011-6.01 15.766-6.01 21.776 0M12 2.25c-2.784 0-5.424.554-7.825 1.555M12 2.25c2.784 0 5.424.554 7.825 1.555M12 2.25V4.5M12 12.75a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5ZM12 12.75V16.5',
+        icon: <Coffee className="w-full h-full" />,
         color: 'from-emerald-500 to-green-600'
     },
     clothing: {
-        icon: 'M6.96 9.47l4.55-2.16A1.08 1.08 0 0 1 12 7.27c.2 0 .38.05.55.04h.01l4.37 2.16v-.01c.2.1.39.23.55.4A2.9 2.9 0 0 1 18 9.03V4.74c0-.27-.11-.52-.31-.71l-1.13-.98a1.06 1.06 0 0 0-.66-.29H8.1c-.25 0-.5.1-.68.29l-1.13.98c-.2.19-.31.44-.31.71v4.29c0-.18.09-.34.15-.51.15-.16.34-.29.55-.38.09-.05.18-.09.28-.13V4.74M12 6s1-.33 2.25-.33c1.1 0 2.25.33 2.25.33v-.63c0-.2-.08-.39-.22-.53l-.83-.72a.78.78 0 0 0-.52-.2h-5.36c-.19 0-.38.07-.52.2l-.83.72c-.14.14-.22.33-.22.53V6S9.75 5.67 12 6m9.97 11.22L19.3 7.4c-.15-.48-.4-.93-.78-1.28-.01-.01-.03-.03-.05H5.5l-.01.01a3.2 3.2 0 0 0-.77 1.33l-2.7 9.81c-.24.87.48 1.69 1.39 1.69c.28 0 .55-.07.79-.2L8 16.73v3.02c0 .55.45 1 1 1h6a1 1 0 0 0 1-1v-3.02l3.79 1.98a1.64 1.64 0 0 0 2.18-1.47z',
+        icon: <Shirt className="w-full h-full" />,
         color: 'from-pink-500 to-rose-600'
     },
     sports: {
-        icon: 'M11.7 6a2 2 0 0 0-2 2c0 .2.04.42.12.6.23.52.76.85 1.36.9H12.64c.6-.05 1.13-.38 1.36-.9a2 2 0 0 0-2.3-2.6zm.3 5h-1c-1.1 0-2 .9-2 2v5h2v-3h1v3h2v-5c0-1.1-.9-2-2-2zm1-9c-5.52 0-10 4.48-10 10s4.48 10 10 10s10-4.48 10-10c0-5.52-4.48-10-10-10zm6.23 15.76c-1.17 1.17-2.7 1.96-4.32 2.18v-2.22c.48-.41.8-.98.8-1.72v-1H9.3v1c0 .74.32 1.31.8 1.72v2.22c-1.63-.22-3.15-1.01-4.33-2.18C4.7 15.99 4 14.07 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 2.07-.7 3.99-1.77 5.76z',
+        icon: <Dumbbell className="w-full h-full" />,
         color: 'from-cyan-500 to-blue-600'
     },
     beauty: {
-        icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+        icon: <Sparkles className="w-full h-full" />,
         color: 'from-purple-500 to-violet-600'
     },
     furniture: {
-        icon: 'M6 19V9a2 2 0 012-2h1.1a1.987 1.987 0 012.514-1.176A3.1 3.1 0 0110 3h4a3.1 3.1 0 01-1.614 2.824A1.987 1.987 0 0114.9 7H16a2 2 0 012 2v10h1V4a1 1 0 10-2 0v1H7V4a1 1 0 00-2 0v15H6z M6 19h12v-5a2 2 0 00-2-2H8a2 2 0 00-2 2v5z M5 19.5a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-1a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1z M21 19.5a.5.5 0 01-.5.5h-1a.5.5 0 01-.5-.5v-1a.5.5 0 01.5-.5h1a.5.5 0 01.5.5v1z',
+        icon: <Sofa className="w-full h-full" />,
         color: 'from-brown-500 to-amber-600'
     },
     shoes: {
-        icon: 'M9.29 13.29l.76.15.081.16L10 14v1A12.07 12.07 0 006 13c-2.63 0-3.44.56-3.67.72-.45.31-.33.87.22 1.02C3.12 15 5.31 15 6 15c2.67 0 5 1.86 5 4 0 .58-.47 1-1 1H5c-1.13 0-2.11-.27-2.82-.71A2.665 2.665 0 001 17V4c0-1.11.89-2 2-2h6a2 2 0 011.46.6l6.36 7.2c.38.43.64.97.64 1.7 0 1.11-.89 2-2 2h-5a2 2 0 01-1.46-.6l.29-.29a.996.996 0 000-1.41M18 15l-1.5-4h3L18 15z',
+        icon: <Footprints className="w-full h-full" />,
         color: 'from-yellow-500 to-red-500'
     },
     personal_computer: {
-        icon: 'M2 5.5a2 2 0 012-2h16a2 2 0 012 2v11a2 2 0 01-2 2h-5.5v1.1h2.25a.4.4 0 01.4.4v.5a.5.5 0 01-.5.5h-9.5a.5.5 0 01-.5-.5v-.5a.4.4 0 01.4-.4h2.25V18.5H4a2 2 0 01-2-2v-11z M4 7h16v7H4V7z',
+        icon: <Monitor className="w-full h-full" />,
         color: 'from-blue-400 to-indigo-500'
     },
     lawn_patio: {
-        icon: 'M17.625 4.95L18 4.5l.375.45c1.175 1.425 3.3 4.2 3.3 6.3 0 1.725-1.5 3.75-3.675 3.75-1.425 0-2.925-.6-3.9-1.575-1.05.075-3.675.15-5.1.075C7.95 14.4 6.45 15 5.025 15 2.85 15 1.35 12.975 1.35 11.25c0-2.1 2.1-4.875 3.3-6.3L5.025 4.5l.375.45C6.575 6.375 8.7 9.15 8.7 11.25c0 .075 0 .15-.025.225a82.56 82.56 0 014.65 0c0-.075-.025-.15-.025-.225-.025-2.1 2.1-4.875 4.325-6.3z',
+        icon: <Leaf className="w-full h-full" />,
         color: 'from-green-500 to-teal-600'
     },
     wireless: {
-        icon: 'M12 21.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z M6.343 14.657a8 8 0 0111.314 0M2.929 11.243a12 12 0 0118.142 0M0 8.25a15 15 0 0124 0',
+        icon: <Wifi className="w-full h-full" />,
         color: 'from-sky-500 to-blue-600'
     },
     drugstore: {
-        icon: 'M5 21a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5z M9 3v18 M15 3v18 M3 9h18 M3 15h18 M9 9h6 M9 15h6',
+        icon: <Pill className="w-full h-full" />,
         color: 'from-red-500 to-pink-600'
     },
     automotive: {
-        icon: 'M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-1.45-5c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.37-.66-.11-1.48-.87-1.48H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7l1.1-2h7.45zM6.16 6h12.15l-2.76 5H8.53L6.16 6z',
+        icon: <Car className="w-full h-full" />,
         color: 'from-gray-500 to-gray-700'
     }
 };
@@ -316,7 +333,7 @@ export function CategoryNavigation() {
 
                         // 尝试从映射中获取图标和颜色
                         const iconInfo = categoryIcons[categoryInfo.slug] || {
-                            icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z',
+                            icon: <Smartphone className="w-full h-full" />,
                             color: 'from-gray-400 to-gray-600'
                         };
 
@@ -518,17 +535,38 @@ export function CategoryNavigation() {
         updateActiveCardIndex();
     }, [categories]);
 
+    // 检查是否在侧边栏中
+    const isSidebar = typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false;
+    useEffect(() => {
+        const checkIsSidebar = () => {
+            if (typeof window !== 'undefined') {
+                const newIsSidebar = window.matchMedia('(min-width: 1024px)').matches;
+                setIsMobile(!newIsSidebar);
+            }
+        };
+
+        // 初始检查
+        checkIsSidebar();
+
+        // 添加窗口尺寸变化监听
+        window.addEventListener('resize', checkIsSidebar);
+
+        return () => {
+            window.removeEventListener('resize', checkIsSidebar);
+        };
+    }, []);
+
     if (isLoading) {
         return (
-            <div className="relative my-6 px-2 md:px-4">
-                <h2 className="text-2xl font-bold mb-4 text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Popular Categories</h2>
+            <div className="relative my-6 lg:my-0 px-2 md:px-4 lg:px-0">
+                <h2 className="text-2xl font-bold mb-4 text-center lg:hidden bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Popular Categories</h2>
                 <div className="overflow-hidden">
-                    <div className="flex space-x-4 py-2">
+                    <div className="flex lg:flex-col space-x-4 lg:space-x-0 lg:space-y-3 py-2">
                         {Array.from({ length: 8 }).map((_, index) => (
-                            <div key={index} className="flex-shrink-0 w-32 md:w-40">
-                                <div className="bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl p-4 animate-pulse h-40">
-                                    <div className="w-16 h-16 mx-auto bg-gray-200 dark:bg-gray-700 rounded-full mb-4"></div>
-                                    <div className="h-4 w-20 mx-auto bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
+                            <div key={index} className="flex-shrink-0 w-32 md:w-40 lg:w-full">
+                                <div className="bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl p-4 animate-pulse h-40 lg:h-16">
+                                    <div className="w-16 h-16 mx-auto lg:hidden bg-gray-200 dark:bg-gray-700 rounded-full mb-4"></div>
+                                    <div className="h-4 w-20 lg:w-full mx-auto bg-gray-200 dark:bg-gray-700 rounded mb-2"></div>
                                 </div>
                             </div>
                         ))}
@@ -540,8 +578,8 @@ export function CategoryNavigation() {
 
     if (error) {
         return (
-            <div className="my-6 text-center px-4">
-                <h2 className="text-2xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Popular Categories</h2>
+            <div className="my-6 lg:my-0 text-center px-4 lg:px-0">
+                <h2 className="text-2xl font-bold mb-4 lg:hidden bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Popular Categories</h2>
                 <div className="p-6 bg-red-50/80 dark:bg-red-900/20 backdrop-blur-md rounded-xl shadow-lg border border-red-100 dark:border-red-800/30">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -559,20 +597,21 @@ export function CategoryNavigation() {
     }
 
     return (
-        <div className="relative my-6">
-            <div className="absolute left-0 right-0 h-48 bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 -z-10 blur-3xl opacity-50"></div>
+        <div className="relative my-6 lg:my-0">
+            <div className="absolute left-0 right-0 h-48 lg:h-full bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 -z-10 blur-3xl opacity-50"></div>
 
-            <h2 className="text-2xl font-bold mb-4 text-center bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Popular Categories</h2>
+            {/* Mobile and tablet title, hidden on large screens */}
+            <h2 className="text-2xl font-bold mb-4 text-center lg:hidden bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Popular Categories</h2>
 
-            <div className="relative px-4 md:px-6">
-                {/* 左边滚动按钮 - 仅在非移动端且需要导航时显示 */}
+            <div className="relative px-3 md:px-4 lg:px-0">
+                {/* Left scroll button - visible in non-desktop mode */}
                 <AnimatePresence>
                     {needNavigation && showLeftArrow && !isMobile && (
                         <motion.button
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 10 }}
-                            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-1.5 md:p-2 rounded-full shadow-md border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-light/50"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-1.5 md:p-2 rounded-full shadow-md border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-light/50 lg:hidden"
                             onClick={scrollLeft}
                             aria-label="Scroll left"
                         >
@@ -583,14 +622,14 @@ export function CategoryNavigation() {
                     )}
                 </AnimatePresence>
 
-                {/* 右边滚动按钮 - 仅在非移动端且需要导航时显示 */}
+                {/* Right scroll button - visible in non-desktop mode */}
                 <AnimatePresence>
                     {needNavigation && showRightArrow && !isMobile && (
                         <motion.button
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -10 }}
-                            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-1.5 md:p-2 rounded-full shadow-md border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-light/50"
+                            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-1.5 md:p-2 rounded-full shadow-md border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-light/50 lg:hidden"
                             onClick={scrollRight}
                             aria-label="Scroll right"
                         >
@@ -601,18 +640,18 @@ export function CategoryNavigation() {
                     )}
                 </AnimatePresence>
 
-                {/* 添加渐变边缘遮罩，解决割裂感 */}
+                {/* Add gradient edge masks to solve the cutoff feeling - visible in non-desktop mode */}
                 {needNavigation && (
-                    <>
+                    <div className="lg:hidden">
                         <div className="absolute left-0 top-2 bottom-2 w-8 sm:w-12 bg-gradient-to-r from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 dark:to-transparent pointer-events-none z-10"></div>
                         <div className="absolute right-0 top-2 bottom-2 w-8 sm:w-12 bg-gradient-to-l from-white via-white/95 to-transparent dark:from-gray-900 dark:via-gray-900/95 dark:to-transparent pointer-events-none z-10"></div>
-                    </>
+                    </div>
                 )}
 
-                {/* 滚动容器 */}
+                {/* Scroll container - vertical layout on large screens */}
                 <div
                     ref={scrollContainerRef}
-                    className="overflow-x-auto hide-scrollbar pb-2 pt-1 snap-x snap-mandatory"
+                    className="overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto hide-scrollbar pb-2 pt-1 lg:pt-0 lg:pb-0 lg:max-h-[calc(100vh-12rem)] snap-x lg:snap-none snap-mandatory"
                     style={{
                         scrollbarWidth: 'none', // Firefox
                         msOverflowStyle: 'none', // IE and Edge
@@ -620,11 +659,80 @@ export function CategoryNavigation() {
                     }}
                     onScroll={handleScroll}
                 >
-                    <div className="flex space-x-3 sm:space-x-4 md:space-x-5 lg:space-x-7 px-2 md:px-4">
+                    <div className="flex lg:flex-col space-x-3 lg:space-x-0  sm:space-x-4 md:space-x-5 lg:space-y-3 px-2 md:px-4 lg:px-0">
+                        {/* All Categories 按钮 - 始终显示在最前面 */}
+                        <motion.div
+                            className="flex-shrink-0 w-[110px] sm:w-[135px] md:w-[160px] lg:w-full snap-center lg:snap-align-none"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{
+                                duration: 0.5,
+                                delay: 0.05,
+                                ease: [0.4, 0.0, 0.2, 1]
+                            }}
+                            whileHover={{ y: isMobile ? -8 : 0, transition: { duration: 0.3, type: "spring", stiffness: 300 } }}
+                            whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
+                        >
+                            <Link
+                                href="/categories"
+                                className="block group"
+                            >
+                                <motion.div
+                                    className={`
+                                        relative overflow-hidden rounded-xl lg:rounded-lg
+                                        ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-3' : 'h-40 sm:h-44 md:h-48'}
+                                        bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20
+                                        border border-primary/20 dark:border-primary-light/20
+                                        p-3 sm:p-4 lg:py-3 lg:px-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start
+                                    `}
+                                    whileHover={{
+                                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                                        transition: { duration: 0.3 }
+                                    }}
+                                >
+                                    {/* Icon */}
+                                    <motion.div
+                                        className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-10 lg:h-10 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 text-primary dark:text-primary-light shadow-sm group-hover:shadow-md transition-all duration-300"
+                                        whileHover={{
+                                            scale: isMobile ? 1.1 : 1.05,
+                                            transition: { duration: 0.2 }
+                                        }}
+                                    >
+                                        <motion.svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                                        </motion.svg>
+                                    </motion.div>
+
+                                    {/* Text */}
+                                    <motion.h3
+                                        className="text-center lg:text-left font-medium text-xs sm:text-sm md:text-base lg:text-sm text-primary dark:text-primary-light transition-colors lg:flex-1"
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, delay: 0.2 }}
+                                    >
+                                        All Categories
+                                    </motion.h3>
+
+                                    {/* Count badge - only shown on large screens */}
+                                    <div className="hidden lg:block">
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                                            All
+                                        </span>
+                                    </div>
+                                </motion.div>
+                            </Link>
+                        </motion.div>
+
                         {categories.map((category, index) => (
                             <motion.div
                                 key={category.id}
-                                className="flex-shrink-0 w-[110px] sm:w-[135px] md:w-[160px] lg:w-[180px] snap-center"
+                                className="flex-shrink-0 w-[110px] sm:w-[135px] md:w-[160px] lg:w-full snap-center lg:snap-align-none"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{
@@ -632,7 +740,7 @@ export function CategoryNavigation() {
                                     delay: index * 0.08,
                                     ease: [0.4, 0.0, 0.2, 1]
                                 }}
-                                whileHover={{ y: -8, transition: { duration: 0.3, type: "spring", stiffness: 300 } }}
+                                whileHover={{ y: isMobile ? -8 : 0, transition: { duration: 0.3, type: "spring", stiffness: 300 } }}
                                 whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
                             >
                                 <Link
@@ -641,21 +749,22 @@ export function CategoryNavigation() {
                                 >
                                     <motion.div
                                         className={`
-                                            relative overflow-hidden rounded-xl h-40 sm:h-44 md:h-48
+                                            relative overflow-hidden rounded-xl lg:rounded-lg
+                                            ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2' : 'h-40 sm:h-44 md:h-48'}
                                             ${isActiveCategory(category.slug)
                                                 ? 'bg-gradient-to-br from-primary/20 to-secondary/20 dark:from-primary/30 dark:to-secondary/30 ring-2 ring-primary/50 dark:ring-primary-light/50'
                                                 : 'bg-white/40 dark:bg-gray-800/40 backdrop-blur-md hover:bg-gradient-to-br hover:from-gray-50/80 hover:to-white/80 dark:hover:from-gray-800/80 dark:hover:to-gray-700/80 border border-gray-100/80 dark:border-gray-700/50 hover:border-primary/20 dark:hover:border-primary-light/20'
                                             }
-                                            p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center
+                                            p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start
                                         `}
                                         whileHover={{
                                             boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                                             transition: { duration: 0.3 }
                                         }}
                                     >
-                                        {/* 装饰元素 - 随机位置的小圆点 */}
+                                        {/* Decorative element - random positioned dots */}
                                         <motion.div
-                                            className="absolute top-0 right-0 w-16 sm:w-20 h-16 sm:h-20 opacity-10"
+                                            className="absolute top-0 right-0 w-16 sm:w-20 h-16 sm:h-20 opacity-10 lg:hidden"
                                             animate={{
                                                 rotate: [0, 180],
                                                 scale: [1, 1.05, 1],
@@ -669,10 +778,10 @@ export function CategoryNavigation() {
                                             <div className={`w-full h-full rounded-full bg-gradient-to-r ${category.color || 'from-gray-400 to-gray-500'}`}></div>
                                         </motion.div>
 
-                                        {/* 类别图标 */}
+                                        {/* Category icon */}
                                         <motion.div
                                             className={`
-                                                relative w-14 h-14 sm:w-16 sm:h-16 rounded-full mb-3 sm:mb-4 flex items-center justify-center 
+                                                relative w-14 h-14 sm:w-16 sm:h-16 lg:w-10 lg:h-10 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
                                                 ${isActiveCategory(category.slug)
                                                     ? `bg-gradient-to-br ${category.color || 'from-gray-400 to-gray-500'} text-white`
                                                     : `bg-gradient-to-br ${category.color ? `${category.color}/10` : 'from-gray-400/10 to-gray-500/10'} text-gray-700 dark:text-gray-200 group-hover:${category.color ? `${category.color}/20` : 'from-gray-400/20 to-gray-500/20'}`
@@ -680,16 +789,19 @@ export function CategoryNavigation() {
                                                 shadow-sm group-hover:shadow-md transition-all duration-300
                                             `}
                                             whileHover={{
-                                                scale: 1.1,
-                                                rotate: [0, 5, -5, 0],
+                                                scale: isMobile ? 1.1 : 1.05,
+                                                rotate: isMobile ? [0, 5, -5, 0] : [0, 0, 0, 0],
                                                 transition: {
                                                     scale: { duration: 0.2 },
                                                     rotate: { duration: 0.5, repeat: 0 }
                                                 }
                                             }}
-                                            animate={{
+                                            animate={isMobile ? {
                                                 scale: [1, 1.03, 1],
                                                 rotate: [0, 2, -2, 0],
+                                            } : {
+                                                scale: 1,
+                                                rotate: 0
                                             }}
                                             transition={{
                                                 duration: 4,
@@ -698,24 +810,39 @@ export function CategoryNavigation() {
                                                 ease: "easeInOut"
                                             }}
                                         >
-                                            <motion.svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className={`h-7 w-7 sm:h-8 sm:w-8 ${isActiveCategory(category.slug) ? 'text-white' : 'group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                initial={{ opacity: 0.8 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{
-                                                    duration: 2,
-                                                    repeat: Infinity,
-                                                    repeatType: "reverse"
-                                                }}
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={category.icon || 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'} />
-                                            </motion.svg>
+                                            {/* 动态渲染图标：如果是ReactNode直接渲染，如果是string则用作path */}
+                                            {typeof category.icon === 'string' ? (
+                                                <motion.svg
+                                                    className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : 'group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    initial={{ opacity: 0.8 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{
+                                                        duration: 2,
+                                                        repeat: Infinity,
+                                                        repeatType: "reverse"
+                                                    }}
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={category.icon || 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'} />
+                                                </motion.svg>
+                                            ) : (
+                                                <motion.div
+                                                    className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : 'group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}
+                                                    initial={{ opacity: 0.8 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{
+                                                        duration: 2,
+                                                        repeat: Infinity,
+                                                        repeatType: "reverse"
+                                                    }}
+                                                >
+                                                    {category.icon}
+                                                </motion.div>
+                                            )}
 
-                                            {/* 高亮光效果 */}
+                                            {/* Highlight light effect */}
                                             <motion.div
                                                 className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
                                                 animate={{
@@ -729,59 +856,68 @@ export function CategoryNavigation() {
                                                 }}
                                             ></motion.div>
 
-                                            {/* 添加装饰性粒子效果 */}
-                                            <motion.div
-                                                className="absolute w-full h-full"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                            >
-                                                {[...Array(3)].map((_, i) => (
-                                                    <motion.div
-                                                        key={i}
-                                                        className={`absolute w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-gradient-to-r ${category.color || 'from-gray-300 to-gray-400'}`}
-                                                        initial={{
-                                                            x: 0,
-                                                            y: 0,
-                                                            opacity: 0
-                                                        }}
-                                                        animate={{
-                                                            x: [0, (i + 1) * 6, (i + 1) * -4, 0],
-                                                            y: [0, (i + 1) * -6, (i + 1) * 4, 0],
-                                                            opacity: [0, 0.7, 0.7, 0],
-                                                            scale: [0, 1, 1, 0]
-                                                        }}
-                                                        transition={{
-                                                            duration: 4 + i,
-                                                            repeat: Infinity,
-                                                            repeatType: "loop",
-                                                            delay: i * 0.7,
-                                                            ease: "easeInOut"
-                                                        }}
-                                                    />
-                                                ))}
-                                            </motion.div>
+                                            {/* Add decorative particle effect - only display in non-desktop mode */}
+                                            {isMobile && (
+                                                <motion.div
+                                                    className="absolute w-full h-full"
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                >
+                                                    {[...Array(3)].map((_, i) => (
+                                                        <motion.div
+                                                            key={i}
+                                                            className={`absolute w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-gradient-to-r ${category.color || 'from-gray-300 to-gray-400'}`}
+                                                            initial={{
+                                                                x: 0,
+                                                                y: 0,
+                                                                opacity: 0
+                                                            }}
+                                                            animate={{
+                                                                x: [0, (i + 1) * 6, (i + 1) * -4, 0],
+                                                                y: [0, (i + 1) * -6, (i + 1) * 4, 0],
+                                                                opacity: [0, 0.7, 0.7, 0],
+                                                                scale: [0, 1, 1, 0]
+                                                            }}
+                                                            transition={{
+                                                                duration: 4 + i,
+                                                                repeat: Infinity,
+                                                                repeatType: "loop",
+                                                                delay: i * 0.7,
+                                                                ease: "easeInOut"
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </motion.div>
+                                            )}
                                         </motion.div>
 
-                                        {/* 类别名称 */}
+                                        {/* Category name */}
                                         <motion.h3
                                             className={`
-                                                text-center font-medium text-xs sm:text-sm md:text-base
+                                                text-center lg:text-left font-medium text-xs sm:text-sm md:text-base lg:text-sm
                                                 ${isActiveCategory(category.slug)
                                                     ? 'text-primary dark:text-primary-light'
                                                     : 'text-gray-700 dark:text-gray-200 group-hover:text-primary/80 dark:group-hover:text-primary-light/80'
                                                 }
-                                                transition-colors
+                                                transition-colors lg:flex-1
                                             `}
                                             initial={{ opacity: 0, y: 5 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.3, delay: index * 0.08 + 0.2 }}
                                             whileHover={{
-                                                scale: 1.05,
+                                                scale: isMobile ? 1.05 : 1,
                                                 transition: { duration: 0.2 }
                                             }}
                                         >
                                             {category.name}
                                         </motion.h3>
+
+                                        {/* Add count display - only shown in large screen sidebar mode */}
+                                        <div className="hidden lg:block">
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                                                {category.count}
+                                            </span>
+                                        </div>
                                     </motion.div>
                                 </Link>
                             </motion.div>

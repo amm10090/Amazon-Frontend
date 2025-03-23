@@ -255,16 +255,16 @@ export function HeroSection() {
     );
 
     return (
-        // 突破容器限制，实现全宽设计
-        <div className="relative w-[100vw] left-[calc(-50vw+50%)] right-0 -mt-5">
+        // 适应新布局结构，不再全宽显示
+        <div className="relative w-full">
             {/* SVG过滤器 */}
             {svgFilters}
 
             {/* 渐变光晕背景 - 使用更高级的渐变色 */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/40 via-purple-500/30 to-fuchsia-400/30 dark:from-indigo-700/40 dark:via-purple-600/30 dark:to-fuchsia-500/30" style={{ zIndex: 2 }}></div>
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-600/40 via-purple-500/30 to-fuchsia-400/30 dark:from-indigo-700/40 dark:via-purple-600/30 dark:to-fuchsia-500/30" style={{ zIndex: 2 }}></div>
 
             {/* 背景装饰元素 */}
-            <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 1 }}>
+            <div className="absolute inset-0 overflow-hidden rounded-xl" style={{ zIndex: 1 }}>
                 {/* 左侧装饰球 */}
                 <motion.div
                     className="absolute -left-16 top-1/4 w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/20 backdrop-blur-xl"
@@ -310,12 +310,12 @@ export function HeroSection() {
 
             {/* 主要内容 */}
             <div
-                className="relative py-8 sm:py-10 md:py-14 lg:py-18 overflow-hidden"
+                className="relative py-8 rounded-xl overflow-hidden"
                 style={{ zIndex: 3 }}
             >
                 {/* 内容容器，保持居中 */}
-                <div className="container mx-auto px-4 sm:px-6 relative z-10">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6 md:gap-8 items-center">
+                <div className="px-4 relative z-10">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-center">
                         {/* 左侧文本区域 (占7列) */}
                         <motion.div
                             className="md:col-span-7 z-10"
