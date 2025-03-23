@@ -13,22 +13,85 @@ export interface ListResponse<T> {
     page_size: number;
 }
 
+// Amazon产品优惠信息
+export interface ProductOffer {
+    condition: string;
+    price: number;
+    currency: string;
+    savings?: number | null;
+    savings_percentage?: number | null;
+    is_prime?: boolean;
+    is_amazon_fulfilled?: boolean;
+    is_free_shipping_eligible?: boolean;
+    availability?: string;
+    merchant_name?: string;
+    is_buybox_winner?: boolean;
+    deal_type?: string | null;
+    coupon_type?: string | null;
+    coupon_value?: number | null;
+    coupon_history?: any | null;
+    commission?: any | null;
+}
+
+// 浏览节点类型
+export interface BrowseNode {
+    id: string;
+    name: string;
+    is_root: boolean;
+}
+
 // 商品相关类型
 export interface Product {
+    asin?: string;
+    id?: string;
+    title: string;
+    description?: string;
+    features?: string[];
+    brand?: string;
+    price?: number;
+    original_price?: number;
+    discount_rate?: number;
+    rating?: number;
+    rating_count?: number;
+    reviews?: number;
+    main_image?: string;
+    image_url?: string;
+    images?: string[];
+    product_group?: string;
+    binding?: string;
+    categories?: string[];
+    rank?: number;
+    availability?: string;
+    url?: string;
+    cj_url?: string | null;
+    offers?: ProductOffer[];
+    browse_nodes?: BrowseNode[];
+    timestamp?: string;
+    coupon_info?: any;
+    api_provider?: string;
+}
+
+export interface ComponentProduct {
     id: string;
     title: string;
     description: string;
     price: number;
-    original_price: number;
-    discount_rate: number;
-    image_url: string;
-    product_url: string;
+    originalPrice: number;
+    discount: number;
+    image: string;
     category: string;
-    type: 'discount' | 'coupon';
-    created_at: string;
-    updated_at: string;
-    end_time?: string;        // 可选的结束时间
-    remaining_quantity?: number;  // 可选的剩余数量
+    brand: string;
+    rating: number;
+    reviews: number;
+    url: string;
+    cj_url: string | null;
+    isPrime: boolean;
+    isFreeShipping: boolean;
+    isAmazonFulfilled: boolean;
+    availability: string;
+    couponValue: number;
+    couponType: string | null;
+    apiProvider: string;
 }
 
 export interface PriceHistory {

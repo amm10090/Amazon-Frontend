@@ -4,42 +4,41 @@
 @custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme {
-  --color-primary: oklch(0.8 0.17 185); /* #4ECDC4 蒂芙尼蓝 */
-  --color-primary-light: oklch(0.85 0.15 183); /* #5ECDC4 淡蒂芙尼蓝 */
-  --color-primary-dark: oklch(0.75 0.19 187); /* #3AAFA9 深蒂芙尼蓝 */
+  --color-primary: #3d5a80; /* 中性蓝色 */
+  --color-primary-background: oklch(0.588 0.158 241.966); /* 淡蓝色 */
+  --color-primary-dark: #2c3e50; /* 深蓝色 */
+  --color-primary-button: oklch(0.596 0.145 163.225); /*按钮颜色*/
+  --color-primary-button-hover: oklch(0.508 0.118 165.612); /*按钮颜色*/
+  --color-primary-badge: oklch(0.852 0.199 91.936); /*按钮颜色*/
+  --color-primary-badge-dark: oklch(0.795 0.184 86.047); /*较深的按钮颜色*/
+  --color-secondary: #7f8c8d; /* 中性灰色 */
+  --color-secondary-light: #95a5a6; /* 淡灰色 */
+  --color-secondary-dark: #576574; /* 深灰色 */
   
-  --color-secondary: oklch(0.7 0.2 20); /* #FF6B6B 珊瑚红 */
-  --color-secondary-light: oklch(0.75 0.18 18); /* #FF9A8B 淡珊瑚红 */
-  --color-secondary-dark: oklch(0.65 0.22 22); /* #E85555 深珊瑚红 */
+  --color-accent: #f39c12; /* 柔和橙色 */
+  --color-accent-light: #f5b041; /* 淡橙色 */
+  --color-accent-dark: #d35400; /* 深橙色 */
   
-  --color-accent: oklch(0.95 0.15 90); /* #FFE66D 柠檬黄 */
-  --color-accent-light: oklch(0.97 0.13 88); /* #FFF09C 淡柠檬黄 */
-  --color-accent-dark: oklch(0.9 0.17 92); /* #FFCC33 深柠檬黄 */
+  --color-success: #27ae60; /* 绿色 */
+  --color-warning: #f39c12; /* 橙色 */
+  --color-error: #c0392b; /* 红色 */
   
-  --color-success: oklch(0.7 0.2 140); /* #48BB78 绿色 */
-  --color-warning: oklch(0.8 0.2 80); /* #ED8936 橙色 */
-  --color-error: oklch(0.65 0.25 30); /* #F56565 红色 */
+  --color-background: #ffffff; /* 白色 */
+  --color-text: #2c3e50; /* 深灰色 */
+  --color-text-light: #7f8c8d; /* 中灰色 */
   
-  --color-background: oklch(1 0 0); /* #FFFFFF 白色 */
-  --color-text: oklch(0.2 0.02 240); /* #1A202C 深灰色 */
-  --color-text-light: oklch(0.6 0.03 245); /* #718096 浅灰色 */
-  
-  --color-gray-50: oklch(0.98 0.003 240);
-  --color-gray-100: oklch(0.95 0.01 240);
-  --color-gray-200: oklch(0.9 0.015 240);
-  --color-gray-300: oklch(0.85 0.02 240);
-  --color-gray-400: oklch(0.7 0.02 240);
-  --color-gray-500: oklch(0.6 0.02 240);
-  --color-gray-600: oklch(0.5 0.02 240);
-  --color-gray-700: oklch(0.4 0.015 240);
-  --color-gray-800: oklch(0.3 0.01 240);
-  --color-gray-900: oklch(0.2 0.005 240);
-  --color-gray-950: oklch(0.1 0.003 240);
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1e293b;
+  --color-gray-900: #0f172a;
+  --color-gray-950: #020617;
 
-  --gradient-primary: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
-  --gradient-secondary: linear-gradient(135deg, var(--color-secondary-light), var(--color-secondary));
-  --gradient-accent: linear-gradient(135deg, var(--color-accent-light), var(--color-accent));
-  
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -113,17 +112,17 @@
 }
 
 @utility bg-gradient-primary {
-  background: var(--gradient-primary);
+  background: var(--color-primary);
   color: white;
   
   &:is([data-theme="dark"] *) {
-    background: linear-gradient(135deg, #E85555, #B24242);
+    background: var(--color-primary);
   }
 }
 
 @utility btn-primary {
   @apply px-4 py-2 rounded-full font-medium transition-all duration-300;
-  background: var(--gradient-primary);
+  background: var(--color-primary);
   color: white;
   box-shadow: var(--shadow);
   
@@ -137,13 +136,13 @@
   }
   
   &:is([data-theme="dark"] *) {
-    background: linear-gradient(135deg, #E85555, #B24242);
+    background: var(--color-primary);
   }
 }
 
 @utility btn-secondary {
   @apply px-4 py-2 rounded-full font-medium transition-all duration-300;
-  background: var(--gradient-secondary);
+  background: var(--color-secondary);
   color: white;
   box-shadow: var(--shadow);
   
@@ -159,8 +158,8 @@
 
 @utility btn-accent {
   @apply px-4 py-2 rounded-full font-medium transition-all duration-300;
-  background: var(--gradient-accent);
-  color: var(--color-text);
+  background: var(--color-accent);
+  color: white;
   box-shadow: var(--shadow);
   
   &:hover {
@@ -199,11 +198,7 @@
 
 @utility section-title {
   @apply text-2xl font-bold mb-6;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-fill-color: transparent;
+  color: var(--color-primary);
 }
 
 @utility category-card {
@@ -212,24 +207,9 @@
          transition-all duration-300 relative overflow-hidden;
   box-shadow: var(--shadow-sm);
 
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    background: var(--gradient-primary);
-    opacity: 0;
-    transition: opacity var(--transition-normal);
-    filter: blur(6px);
-    z-index: 0;
-  }
-
   &:hover {
     box-shadow: var(--shadow-md);
     border-color: var(--color-primary-light);
-    
-    &::before {
-      opacity: 0.2;
-    }
   }
 
   & > * {
@@ -238,7 +218,7 @@
   }
 
   &.active, &[data-active='true'] {
-    background: var(--gradient-primary);
+    background: var(--color-primary);
     color: white;
     border-color: transparent;
     box-shadow: var(--shadow-md);
@@ -260,31 +240,31 @@
 @layer utilities {
   /* 暗色主题 */
   [data-theme='dark'] {
-    --color-background: oklch(0.15 0.02 240); /* #1A202C 深灰色背景 */
-    --color-text: oklch(0.95 0.01 240); /* #F7FAFC 浅色文本 */
-    --color-text-light: oklch(0.7 0.02 240); /* #A0AEC0 中灰色文本 */
+    --color-background: #1a202c; /* 深灰色背景 */
+    --color-text: #f7fafc; /* 浅色文本 */
+    --color-text-light: #a0aec0; /* 中灰色文本 */
     
-    --color-primary: oklch(0.65 0.22 22); /* #E85555 深珊瑚红 */
-    --color-primary-light: oklch(0.7 0.2 20); /* #FF6B6B 珊瑚红 */
-    --color-primary-dark: oklch(0.6 0.24 24); /* #CC4040 更深珊瑚红 */
+    --color-primary: #5a8a9f; /* 主色调整为中性蓝色 */
+    --color-primary-light: #7ba3b7; /* 淡蓝色 */
+    --color-primary-dark: #3d5a80; /* 深蓝色 */
     
-    --color-secondary: oklch(0.75 0.19 187); /* #3AAFA9 深蒂芙尼蓝 */
-    --color-secondary-light: oklch(0.8 0.17 185); /* #4ECDC4 蒂芙尼蓝 */
+    --color-secondary: #718096; /* 中性灰色 */
+    --color-secondary-light: #a0aec0; /* 淡灰色 */
     
-    --color-accent: oklch(0.9 0.17 92); /* #FFCC33 深柠檬黄 */
-    --color-accent-light: oklch(0.95 0.15 90); /* #FFE66D 柠檬黄 */
+    --color-accent: #f39c12; /* 柔和橙色 */
+    --color-accent-light: #f5b041; /* 淡橙色 */
     
-    --color-gray-50: oklch(0.2 0.005 240);
-    --color-gray-100: oklch(0.3 0.01 240);
-    --color-gray-200: oklch(0.35 0.015 240);
-    --color-gray-300: oklch(0.4 0.02 240);
-    --color-gray-400: oklch(0.5 0.02 240);
-    --color-gray-500: oklch(0.6 0.02 240);
-    --color-gray-600: oklch(0.7 0.015 240);
-    --color-gray-700: oklch(0.8 0.01 240);
-    --color-gray-800: oklch(0.9 0.005 240);
-    --color-gray-900: oklch(0.95 0.003 240);
-    --color-gray-950: oklch(0.98 0.001 240);
+    --color-gray-50: #171923;
+    --color-gray-100: #1a202c;
+    --color-gray-200: #2d3748;
+    --color-gray-300: #4a5568;
+    --color-gray-400: #718096;
+    --color-gray-500: #a0aec0;
+    --color-gray-600: #cbd5e0;
+    --color-gray-700: #e2e8f0;
+    --color-gray-800: #edf2f7;
+    --color-gray-900: #f7fafc;
+    --color-gray-950: #f9fafb;
   }
 
   /* 文本阴影 */
@@ -323,21 +303,13 @@
     }
   }
   
-  /* 渐变文本 */
+  /* 文本颜色类，使用纯色替代渐变 */
   .text-gradient-primary {
-    background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
+    color: var(--color-primary);
   }
   
   .text-gradient-secondary {
-    background: var(--gradient-secondary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
+    color: var(--color-secondary);
   }
 }
 

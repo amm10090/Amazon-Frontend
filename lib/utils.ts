@@ -160,7 +160,8 @@ export function adaptProducts(apiProducts: any[]): ComponentProduct[] {
             isAmazonFulfilled: mainOffer?.is_amazon_fulfilled || false,
             availability: mainOffer?.availability || '无库存',
             couponValue: couponValue,
-            couponType: couponType
+            couponType: couponType,
+            apiProvider: p.api_provider
         };
     });
 } 

@@ -260,18 +260,16 @@ export function HeroSection() {
             {/* SVG过滤器 */}
             {svgFilters}
 
-            {/* 渐变光晕背景 - 使用更高级的渐变色 */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-indigo-600/40 via-purple-500/30 to-fuchsia-400/30 dark:from-indigo-700/40 dark:via-purple-600/30 dark:to-fuchsia-500/30" style={{ zIndex: 2 }}></div>
+            {/* 替换背景为浅蓝色 */}
+            <div className="absolute inset-0 rounded-xl bg-[#4A7CAC] dark:bg-[#4A7CAC]" style={{ zIndex: 2 }}></div>
 
-            {/* 背景装饰元素 */}
+            {/* 简化背景装饰元素 */}
             <div className="absolute inset-0 overflow-hidden rounded-xl" style={{ zIndex: 1 }}>
-                {/* 左侧装饰球 */}
+                {/* 简化左侧装饰球 */}
                 <motion.div
-                    className="absolute -left-16 top-1/4 w-32 h-32 rounded-full bg-gradient-to-br from-indigo-500/20 to-fuchsia-500/20 backdrop-blur-xl"
+                    className="absolute -left-16 top-1/4 w-32 h-32 rounded-full bg-[#5A8CBB] dark:bg-[#5A8CBB]"
                     animate={{
-                        y: [0, -20, 0],
-                        scale: [1, 1.05, 1],
-                        rotate: [0, 5, 0]
+                        y: [0, -10, 0],
                     }}
                     transition={{
                         duration: 8,
@@ -280,13 +278,11 @@ export function HeroSection() {
                     }}
                 />
 
-                {/* 右侧装饰球 */}
+                {/* 简化右侧装饰球 */}
                 <motion.div
-                    className="absolute -right-20 top-2/3 w-40 h-40 rounded-full bg-gradient-to-br from-purple-500/20 to-indigo-400/20 backdrop-blur-xl"
+                    className="absolute -right-20 top-2/3 w-40 h-40 rounded-full bg-[#5A8CBB] dark:bg-[#5A8CBB]"
                     animate={{
-                        y: [0, 20, 0],
-                        scale: [1, 1.1, 1],
-                        rotate: [0, -5, 0]
+                        y: [0, 10, 0],
                     }}
                     transition={{
                         duration: 10,
@@ -295,17 +291,6 @@ export function HeroSection() {
                         delay: 1
                     }}
                 />
-
-                {/* 底部波浪效果 */}
-                <div className="absolute bottom-0 left-0 right-0 h-16">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" className="absolute bottom-0 w-full h-full">
-                        <path
-                            fill="rgba(255,255,255,0.05)"
-                            fillOpacity="1"
-                            d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,197.3C672,192,768,160,864,165.3C960,171,1056,213,1152,218.7C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
-                        ></path>
-                    </svg>
-                </div>
             </div>
 
             {/* 主要内容 */}
@@ -322,152 +307,92 @@ export function HeroSection() {
                             initial={{ opacity: 0, y: 50 }}
                             animate={controls}
                         >
-                            {/* 标题 */}
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white dark:text-white mb-2 sm:mb-3 tracking-tight">
-                                <motion.span
-                                    className="inline-block"
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{
-                                        opacity: 1,
-                                        x: 0,
-                                        scale: [1, 1.03, 1]  // 呼吸效果稍微增强
-                                    }}
-                                    transition={{
-                                        duration: 0.7,
-                                        delay: 0.1,
-                                        scale: {
-                                            duration: 4,
-                                            repeat: Infinity,
-                                            repeatType: "mirror",
-                                            ease: "easeInOut",
-                                            delay: 1.2  // 统一的呼吸动画延迟
-                                        }
-                                    }}
-                                >
-                                    Amazon
-                                </motion.span>{" "}
-                                <motion.span
-                                    className="inline-block"
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{
-                                        opacity: 1,
-                                        x: 0,
-                                        scale: [1, 1.03, 1]  // 呼吸效果稍微增强
-                                    }}
-                                    transition={{
-                                        duration: 0.7,
-                                        delay: 0.2,
-                                        scale: {
-                                            duration: 4,
-                                            repeat: Infinity,
-                                            repeatType: "mirror",
-                                            ease: "easeInOut",
-                                            delay: 1.2  // 统一的呼吸动画延迟
-                                        }
-                                    }}
-                                >
-                                    Deals
-                                </motion.span>{" "}
-                                <motion.span
-                                    className="relative inline-block"
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{
-                                        opacity: 1,
-                                        x: 0,
-                                        scale: [1, 1.03, 1]  // 呼吸效果稍微增强
-                                    }}
-                                    transition={{
-                                        duration: 0.7,
-                                        delay: 0.3,
-                                        scale: {
-                                            duration: 4,
-                                            repeat: Infinity,
-                                            repeatType: "mirror",
-                                            ease: "easeInOut",
-                                            delay: 1.2  // 统一的呼吸动画延迟
-                                        }
-                                    }}
-                                >
-                                    <span className="relative z-10">Explorer</span>
+                            {/* 移除背景以显示蓝色底色，并确保文字为白色 */}
+                            <div className="relative p-4 sm:p-6 rounded-xl">
+                                {/* 标题 */}
+                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2 sm:mb-3 tracking-tight">
                                     <motion.span
-                                        className="absolute bottom-1 sm:bottom-2 left-0 h-2 sm:h-3 bg-fuchsia-500 dark:bg-fuchsia-400 -z-10"
-                                        initial={{ width: 0 }}
-                                        animate={{ width: '100%' }}
-                                        transition={{ duration: 0.8, delay: 0.8 }}
-                                    />
-                                </motion.span>
-                            </h1>
-
-                            {/* 副标题 */}
-                            <motion.p
-                                className="text-base sm:text-lg md:text-xl text-white/90 dark:text-white/90 max-w-xl mb-6 sm:mb-8"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{
-                                    opacity: 1,
-                                    y: 0,
-                                    scale: [1, 1.03, 1]  // 呼吸效果稍微增强
-                                }}
-                                transition={{
-                                    duration: 0.5,
-                                    delay: 0.5,
-                                    scale: {
-                                        duration: 4,
-                                        repeat: Infinity,
-                                        repeatType: "mirror",
-                                        ease: "easeInOut",
-                                        delay: 1.2  // 统一的呼吸动画延迟
-                                    }
-                                }}
-                            >
-                                Find the best Amazon deals, limited-time offers, and exclusive coupons to save on your shopping!
-                            </motion.p>
-
-                            {/* 按钮组 */}
-                            <div className="flex flex-wrap gap-3 sm:gap-4">
-                                {/* 液态按钮效果 */}
-                                <motion.div
-                                    className="relative group w-full sm:w-auto"
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    style={{ filter: 'url(#liquid-button)' }}
-                                >
-                                    <Link
-                                        href="/deals"
-                                        className="relative inline-flex items-center justify-center w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-8 font-medium text-indigo-800 dark:text-indigo-900 bg-white hover:bg-white/90 dark:bg-white dark:hover:bg-white/90 rounded-full shadow-lg group-hover:shadow-xl transition-all z-10"
+                                        className="inline-block"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{
+                                            opacity: 1,
+                                            x: 0
+                                        }}
+                                        transition={{
+                                            duration: 0.7,
+                                            delay: 0.1
+                                        }}
                                     >
-                                        Browse All Deals
-
-                                        {/* 动态背景球体 */}
+                                        Hunt
+                                    </motion.span>{" "}
+                                    <motion.span
+                                        className="inline-block"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{
+                                            opacity: 1,
+                                            x: 0
+                                        }}
+                                        transition={{
+                                            duration: 0.7,
+                                            delay: 0.2
+                                        }}
+                                    >
+                                        Smart.
+                                    </motion.span>{" "}
+                                    <motion.span
+                                        className="relative inline-block"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{
+                                            opacity: 1,
+                                            x: 0
+                                        }}
+                                        transition={{
+                                            duration: 0.7,
+                                            delay: 0.3
+                                        }}
+                                    >
+                                        <span className="relative z-10">Save Big.</span>
                                         <motion.span
-                                            className="absolute -top-2 -right-2 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-fuchsia-500 dark:bg-fuchsia-400"
-                                            animate={{
-                                                x: [0, 5, 0],
-                                                y: [0, -5, 0],
-                                                scale: [1, 1.2, 1]
-                                            }}
-                                            transition={{
-                                                duration: 2,
-                                                repeat: Infinity,
-                                                repeatType: "mirror"
-                                            }}
+                                            className="absolute bottom-1 sm:bottom-2 left-0 h-2 sm:h-3 bg-[#F59328] dark:bg-[#F59328] -z-10"
+                                            initial={{ width: 0 }}
+                                            animate={{ width: '100%' }}
+                                            transition={{ duration: 0.8, delay: 0.8 }}
                                         />
-                                    </Link>
-                                </motion.div>
+                                    </motion.span>
+                                </h1>
 
-                                {/* 发光按钮效果 */}
-                                <motion.div
-                                    className="w-full sm:w-auto"
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    style={{ filter: 'url(#glow-effect)' }}
+                                {/* 副标题 */}
+                                <motion.p
+                                    className="text-base sm:text-lg md:text-xl text-white max-w-xl mb-6 sm:mb-8"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{
+                                        opacity: 1,
+                                        y: 0
+                                    }}
+                                    transition={{
+                                        duration: 0.5,
+                                        delay: 0.5
+                                    }}
                                 >
-                                    <Link
-                                        href="/category/top-deals"
-                                        className="inline-flex w-full sm:w-auto items-center justify-center h-12 sm:h-14 px-6 sm:px-8 font-medium text-white bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-700 hover:to-indigo-700 dark:from-fuchsia-500 dark:to-indigo-500 dark:hover:from-fuchsia-600 dark:hover:to-indigo-600 dark:text-white rounded-full shadow-lg hover:shadow-xl transition-all"
+                                    OOHunt tracks the best deals, sales, and coupons from Amazon, Walmart, Target and more - all in one place.
+                                </motion.p>
+
+                                {/* 按钮组 */}
+                                <div className="flex flex-wrap gap-3 sm:gap-4">
+                                    {/* 修改按钮为橙色 */}
+                                    <motion.div
+                                        className="relative group w-full sm:w-auto"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                     >
-                                        Today's Hot Deals
-                                    </Link>
-                                </motion.div>
+                                        <Link
+                                            href="/deals"
+                                            className="relative inline-flex items-center justify-center w-full sm:w-auto h-12 sm:h-14 px-6 sm:px-8 font-medium z-10 bg-[#F59328] hover:bg-[#F7A14A] text-white rounded-lg"
+                                        >
+                                            Start Shopping Smart
+                                        </Link>
+                                    </motion.div>
+                                </div>
                             </div>
                         </motion.div>
 
@@ -477,12 +402,12 @@ export function HeroSection() {
                         >
                             <div className="relative w-full max-w-md mx-auto md:ml-auto h-72 sm:h-80 md:h-96">
                                 {isLoading ? (
-                                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent dark:from-gray-800/30 dark:to-transparent backdrop-blur-md rounded-2xl p-5 sm:p-7 shadow-xl overflow-hidden border border-white/20 dark:border-indigo-500/20 flex items-center justify-center">
-                                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                                    <div className="absolute inset-0 w-full h-full bg-white dark:bg-gray-800 rounded-2xl p-5 sm:p-7 shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
                                     </div>
                                 ) : error ? (
-                                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-white/20 to-transparent dark:from-gray-800/30 dark:to-transparent backdrop-blur-md rounded-2xl p-5 sm:p-7 shadow-xl overflow-hidden border border-white/20 dark:border-indigo-500/20 flex items-center justify-center">
-                                        <p className="text-white text-center">Unable to load deals. Please try again later.</p>
+                                    <div className="absolute inset-0 w-full h-full bg-white dark:bg-gray-800 rounded-2xl p-5 sm:p-7 shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700 flex items-center justify-center">
+                                        <p className="text-secondary dark:text-gray-300 text-center">Unable to load deals. Please try again later.</p>
                                     </div>
                                 ) : (
                                     promoCards.map((card, index) => (
@@ -517,27 +442,12 @@ export function HeroSection() {
                                                         quality={90}
                                                         className="transition-transform duration-500 group-hover:scale-105"
                                                     />
-                                                    {/* 改进的渐变叠加层 - 更好的对比度和视觉效果 */}
-                                                    <div className="absolute inset-0 bg-gradient-to-b from-indigo-900/70 via-transparent to-black/70 transition-opacity duration-500 group-hover:opacity-80"></div>
-
-                                                    {/* 卡片装饰元素 */}
-                                                    <div className="absolute -top-3 -right-3 w-24 h-24 opacity-70">
-                                                        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full fill-indigo-500/30">
-                                                            <path d="M42.8,-68.2C55.5,-60.2,66.1,-49.4,71.9,-36.5C77.7,-23.7,78.7,-8.9,77.7,6C76.7,21,73.7,36.1,64.8,46.9C55.9,57.7,41.1,64.3,26.6,68.1C12,71.9,-2.2,73,-16.9,70.8C-31.6,68.6,-46.9,63.1,-57.5,52.8C-68.1,42.6,-74.1,27.8,-74.9,12.9C-75.6,-2,-71.1,-16.9,-64.2,-30.2C-57.3,-43.5,-48,-55.2,-36.5,-63.7C-25,-72.2,-11.2,-77.5,1.3,-79.6C13.8,-81.6,30.1,-76.2,42.8,-68.2Z" transform="translate(100 100)" />
-                                                        </svg>
-                                                    </div>
+                                                    {/* 简化渐变叠加层 - 使用半透明纯色 */}
+                                                    <div className="absolute inset-0 bg-black/40 transition-opacity duration-500 group-hover:opacity-50"></div>
                                                 </div>
                                             ) : (
-                                                <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-indigo-600 to-fuchsia-600 dark:from-indigo-700 dark:to-fuchsia-700">
-                                                    {/* 背景纹理 */}
-                                                    <div className="absolute inset-0 opacity-20 mix-blend-overlay">
-                                                        <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full">
-                                                            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                                                                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
-                                                            </pattern>
-                                                            <rect width="100" height="100" fill="url(#grid)" />
-                                                        </svg>
-                                                    </div>
+                                                <div className="absolute inset-0 w-full h-full bg-primary dark:bg-primary">
+                                                    {/* 移除背景纹理 */}
                                                 </div>
                                             )}
 
@@ -545,9 +455,9 @@ export function HeroSection() {
                                             <div className="absolute inset-0 p-5 sm:p-6 flex flex-col h-full">
                                                 {/* 顶部区域 */}
                                                 <div className="mb-auto">
-                                                    {/* 优化折扣标签 - 添加微交互和改进视觉效果 */}
+                                                    {/* 简化折扣标签 */}
                                                     <motion.div
-                                                        className="inline-block mb-3 bg-gradient-to-r from-fuchsia-600 to-indigo-600 dark:from-fuchsia-500 dark:to-indigo-500 text-white font-bold px-3 py-1.5 rounded-lg text-sm shadow-md"
+                                                        className="inline-block mb-3 bg-accent dark:bg-accent text-white font-bold px-3 py-1.5 rounded-lg text-sm shadow-md"
                                                         whileHover={{ scale: 1.05 }}
                                                         whileTap={{ scale: 0.95 }}
                                                         transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -565,14 +475,14 @@ export function HeroSection() {
                                                     </motion.h3>
                                                 </div>
 
-                                                {/* 底部区域 - 使用毛玻璃效果 - 左右布局 */}
+                                                {/* 底部区域 - 使用简单纯色背景 */}
                                                 <div className="mt-auto">
-                                                    {/* 优化后的毛玻璃效果底部信息栏 - 添加品牌图标 */}
-                                                    <div className="backdrop-blur-xl bg-white/15 dark:bg-white/10 rounded-xl py-2.5 px-4 shadow-lg border border-white/30 dark:border-white/20 transform transition-all duration-300 hover:bg-white/20 dark:hover:bg-white/15">
+                                                    {/* 简化半透明背景 */}
+                                                    <div className="bg-black/30 rounded-xl py-2.5 px-4 shadow-lg transform transition-all duration-300 hover:bg-black/40">
                                                         <div className="flex flex-row items-center sm:justify-between gap-3">
                                                             <div className="flex items-center gap-2 flex-1 min-w-0">
                                                                 {/* 动态品牌图标 */}
-                                                                <div className="w-6 h-6 rounded-full flex-shrink-0 bg-white/20 backdrop-blur-md flex items-center justify-center">
+                                                                <div className="w-6 h-6 rounded-full flex-shrink-0 bg-white/20 flex items-center justify-center">
                                                                     {card.brand ? (
                                                                         <span className="text-xs font-bold text-white">
                                                                             {card.brand.substring(0, 1).toUpperCase()}
@@ -599,7 +509,7 @@ export function HeroSection() {
 
                                                                     {/* 产品描述 */}
                                                                     <motion.p
-                                                                        className="text-sm text-white font-medium truncate drop-shadow-sm"
+                                                                        className="text-sm text-white font-medium truncate"
                                                                         initial={{ opacity: 0, x: -10 }}
                                                                         animate={{ opacity: 1, x: 0 }}
                                                                         transition={{ delay: 0.2 }}
@@ -621,7 +531,7 @@ export function HeroSection() {
                                                                     href={card.link}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="group inline-flex items-center justify-center h-8 px-3.5 sm:px-4 bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-700 hover:to-indigo-700 dark:from-fuchsia-500 dark:to-indigo-500 dark:hover:from-fuchsia-600 dark:hover:to-indigo-600 text-white rounded-full text-xs sm:text-sm font-medium transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+                                                                    className="group inline-flex items-center justify-center h-8 px-3.5 sm:px-4 bg-success hover:bg-success/90 dark:bg-success dark:hover:bg-success/90 text-white rounded-full text-xs sm:text-sm font-medium transition-all shadow-md hover:shadow-lg whitespace-nowrap"
                                                                 >
                                                                     <span>{card.ctaText}</span>
                                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 ml-1.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -634,7 +544,7 @@ export function HeroSection() {
                                                 </div>
                                             </div>
 
-                                            {/* 指示器 - 移至卡片顶部、更加醒目 */}
+                                            {/* 指示器 - 更简洁的设计 */}
                                             <div className="absolute bottom-3 sm:bottom-4 right-4 flex gap-1.5">
                                                 {promoCards.map((_, i) => (
                                                     <button

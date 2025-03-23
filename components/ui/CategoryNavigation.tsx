@@ -55,71 +55,71 @@ const productGroupToCategoryMapping: Record<string, { slug: string, name: string
 const categoryIcons: Record<string, { icon: React.ReactNode, color: string }> = {
     electronics: {
         icon: <Smartphone className="w-full h-full" />,
-        color: 'from-blue-500 to-indigo-600'
+        color: 'from-[#5a8a9f] to-[#3d5a80]'
     },
     home: {
         icon: <Home className="w-full h-full" />,
-        color: 'from-amber-500 to-orange-600'
+        color: 'from-[#81a4c4] to-[#5a8a9f]'
     },
     kitchen: {
         icon: <Coffee className="w-full h-full" />,
-        color: 'from-emerald-500 to-green-600'
+        color: 'from-[#6b8ea1] to-[#4d6d85]'
     },
     apparel: {
         icon: <Shirt className="w-full h-full" />,
-        color: 'from-pink-500 to-rose-600'
+        color: 'from-[#5a8a9f] to-[#3d5a80]'
     },
     sports: {
         icon: <Dumbbell className="w-full h-full" />,
-        color: 'from-cyan-500 to-blue-600'
+        color: 'from-[#4d6d85] to-[#3d5a80]'
     },
     beauty: {
         icon: <Sparkles className="w-full h-full" />,
-        color: 'from-purple-500 to-violet-600'
+        color: 'from-[#81a4c4] to-[#5a8a9f]'
     },
     furniture: {
         icon: <Sofa className="w-full h-full" />,
-        color: 'from-brown-500 to-amber-600'
+        color: 'from-[#6b8ea1] to-[#4d6d85]'
     },
     shoes: {
         icon: <Footprints className="w-full h-full" />,
-        color: 'from-yellow-500 to-red-500'
+        color: 'from-[#5a8a9f] to-[#3d5a80]'
     },
     computers: {
         icon: <Monitor className="w-full h-full" />,
-        color: 'from-blue-400 to-indigo-500'
+        color: 'from-[#4d6d85] to-[#3d5a80]'
     },
     'personal computer': {
         icon: <Monitor className="w-full h-full" />,
-        color: 'from-blue-400 to-indigo-500'
+        color: 'from-[#4d6d85] to-[#3d5a80]'
     },
     'lawn & patio': {
         icon: <Leaf className="w-full h-full" />,
-        color: 'from-green-500 to-teal-600'
+        color: 'from-[#6b8ea1] to-[#4d6d85]'
     },
     garden: {
         icon: <Leaf className="w-full h-full" />,
-        color: 'from-green-500 to-teal-600'
+        color: 'from-[#6b8ea1] to-[#4d6d85]'
     },
     wireless: {
         icon: <Wifi className="w-full h-full" />,
-        color: 'from-sky-500 to-blue-600'
+        color: 'from-[#5a8a9f] to-[#3d5a80]'
     },
     drugstore: {
         icon: <Pill className="w-full h-full" />,
-        color: 'from-red-500 to-pink-600'
+        color: 'from-[#81a4c4] to-[#5a8a9f]'
     },
     health: {
         icon: <Pill className="w-full h-full" />,
-        color: 'from-red-500 to-pink-600'
+        color: 'from-[#81a4c4] to-[#5a8a9f]'
     },
     automotive: {
         icon: <Car className="w-full h-full" />,
-        color: 'from-gray-500 to-gray-700'
+        color: 'from-[#7f8c8d] to-[#2c3e50]'
     },
     'automotive parts and accessories': {
         icon: <Car className="w-full h-full" />,
-        color: 'from-gray-500 to-gray-700'
+        color: 'from-[#7f8c8d] to-[#2c3e50]'
     }
 };
 
@@ -624,15 +624,15 @@ export function CategoryNavigation() {
     if (error) {
         return (
             <div className="my-6 lg:my-0 text-center px-4 lg:px-0">
-                <h2 className="text-2xl font-bold mb-4 lg:hidden bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Popular Categories</h2>
+                <h2 className="text-2xl font-bold mb-4 lg:hidden text-primary">Popular Categories</h2>
                 <div className="p-6 bg-red-50/80 dark:bg-red-900/20 backdrop-blur-md rounded-xl shadow-lg border border-red-100 dark:border-red-800/30">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-red-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-error mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    <p className="text-red-600 dark:text-red-400 mb-4 font-medium">{error}</p>
+                    <p className="text-error dark:text-error mb-4 font-medium">{error}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="px-6 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-full hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+                        className="px-6 py-2.5 bg-error text-white rounded-full hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-error focus:ring-opacity-50"
                     >
                         Reload
                     </button>
@@ -643,10 +643,10 @@ export function CategoryNavigation() {
 
     return (
         <div className="relative my-6 lg:my-0">
-            <div className="absolute left-0 right-0 h-48 lg:h-full bg-gradient-to-r from-primary/5 to-secondary/5 dark:from-primary/10 dark:to-secondary/10 -z-10 blur-3xl opacity-50"></div>
+            <div className="absolute left-0 right-0 h-48 lg:h-full bg-gray-100 dark:bg-gray-800/20 -z-10 opacity-50"></div>
 
             {/* Mobile and tablet title, hidden on large screens */}
-            <h2 className="text-2xl font-bold mb-4 text-center lg:hidden bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Popular Categories</h2>
+            <h2 className="text-2xl font-bold mb-4 text-center lg:hidden text-primary-dark dark:text-white">Popular Categories</h2>
 
             <div className="relative px-3 md:px-4 lg:px-0">
                 {/* Left scroll button - visible in non-desktop mode */}
@@ -656,7 +656,7 @@ export function CategoryNavigation() {
                             initial={{ opacity: 0, x: 10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 10 }}
-                            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-1.5 md:p-2 rounded-full shadow-md border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-light/50 lg:hidden"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-full shadow-md border border-gray-200 dark:border-gray-700 text-primary-dark dark:text-white hover:text-primary dark:hover:text-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-light/50 lg:hidden"
                             onClick={scrollLeft}
                             aria-label="Scroll left"
                         >
@@ -674,7 +674,7 @@ export function CategoryNavigation() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -10 }}
-                            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-1.5 md:p-2 rounded-full shadow-md border border-gray-100 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-light/50 lg:hidden"
+                            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white dark:bg-gray-800 p-1.5 md:p-2 rounded-full shadow-md border border-gray-200 dark:border-gray-700 text-primary-dark dark:text-white hover:text-primary dark:hover:text-primary-light focus:outline-none focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary-light/50 lg:hidden"
                             onClick={scrollRight}
                             aria-label="Scroll right"
                         >
@@ -693,309 +693,177 @@ export function CategoryNavigation() {
                     </div>
                 )}
 
-                {/* Scroll container - vertical layout on large screens */}
-                <div
+                {/* Category list - scrollable in non-desktop, vertical list in desktop */}
+                <div id="categoriesContainer"
                     ref={scrollContainerRef}
-                    className="overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto hide-scrollbar pb-2 pt-1 lg:pt-0 lg:pb-0 lg:max-h-[calc(100vh-12rem)] snap-x lg:snap-none snap-mandatory"
-                    style={{
-                        scrollbarWidth: 'none', // Firefox
-                        msOverflowStyle: 'none', // IE and Edge
-                        scrollBehavior: 'smooth'
-                    }}
+                    className={`
+                        overflow-x-auto lg:overflow-x-visible overflow-y-hidden lg:overflow-y-visible 
+                        scrollbar-hide relative pb-4 lg:pb-0
+                        flex lg:flex-col whitespace-nowrap space-x-4 lg:space-x-0 lg:space-y-2
+                    `}
                     onScroll={handleScroll}
                 >
-                    <div className="flex lg:flex-col space-x-3 lg:space-x-0  sm:space-x-4 md:space-x-5 lg:space-y-3 px-2 md:px-4 lg:px-0">
-                        {/* All Categories 按钮 - 始终显示在最前面 */}
+                    {/* All Categories button */}
+                    <motion.div
+                        key="all-categories"
+                        className="flex-shrink-0 w-32 sm:w-40 lg:w-full"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                            duration: 0.5,
+                            delay: 0.05,
+                            ease: [0.4, 0.0, 0.2, 1]
+                        }}
+                        whileHover={{ y: isMobile ? -8 : 0, transition: { duration: 0.3, type: "spring", stiffness: 300 } }}
+                        whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
+                    >
+                        <Link
+                            href="/products"
+                            className={`block ${isActiveCategory('all') ? 'pointer-events-none' : ''}`}
+                        >
+                            <motion.div
+                                className={`
+                                    relative overflow-hidden rounded-xl lg:rounded-lg
+                                    ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-3' : 'h-40 sm:h-44 md:h-48'}
+                                    bg-gray-100 dark:bg-gray-800/60
+                                    border border-gray-200 dark:border-gray-700
+                                    p-3 sm:p-4 lg:py-3 lg:px-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start
+                                `}
+                                whileHover={{
+                                    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                                    transition: { duration: 0.3 }
+                                }}
+                            >
+                                {/* Icon */}
+                                <motion.div
+                                    className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-10 lg:h-10 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center bg-white dark:bg-gray-700 text-primary dark:text-primary-light shadow-sm group-hover:shadow-md transition-all duration-300"
+                                    whileHover={{
+                                        scale: isMobile ? 1.1 : 1.05,
+                                        transition: { duration: 0.2 }
+                                    }}
+                                >
+                                    <motion.svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                                    </motion.svg>
+                                </motion.div>
+
+                                {/* Text */}
+                                <motion.h3
+                                    className="text-center lg:text-left font-medium text-xs sm:text-sm md:text-base lg:text-sm text-primary-dark dark:text-white transition-colors lg:flex-1"
+                                    initial={{ opacity: 0, y: 5 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: 0.2 }}
+                                >
+                                    All Categories
+                                </motion.h3>
+                            </motion.div>
+                        </Link>
+                    </motion.div>
+
+                    {/* Dynamic categories */}
+                    {categories.map((category, index) => (
                         <motion.div
-                            className="flex-shrink-0 w-[110px] sm:w-[135px] md:w-[160px] lg:w-full snap-center lg:snap-align-none"
+                            key={category.slug}
+                            className="flex-shrink-0 w-32 sm:w-40 lg:w-full group"
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{
                                 duration: 0.5,
-                                delay: 0.05,
+                                delay: index * 0.08,
                                 ease: [0.4, 0.0, 0.2, 1]
                             }}
                             whileHover={{ y: isMobile ? -8 : 0, transition: { duration: 0.3, type: "spring", stiffness: 300 } }}
                             whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
+                            onClick={() => handleCategoryClick(category.slug)}
                         >
                             <Link
-                                href="/categories"
-                                className="block group"
+                                href={`/products?product_groups=${encodeURIComponent(category.slug)}`}
+                                className={`block ${isActiveCategory(category.slug) ? 'pointer-events-none' : ''}`}
                             >
                                 <motion.div
                                     className={`
                                         relative overflow-hidden rounded-xl lg:rounded-lg
-                                        ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-3' : 'h-40 sm:h-44 md:h-48'}
-                                        bg-gradient-to-br from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20
-                                        border border-primary/20 dark:border-primary-light/20
-                                        p-3 sm:p-4 lg:py-3 lg:px-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start
+                                        ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2' : 'h-40 sm:h-44 md:h-48'}
+                                        ${isActiveCategory(category.slug)
+                                            ? 'bg-primary/20 dark:bg-primary/40 ring-2 ring-primary dark:ring-primary'
+                                            : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                                        }
+                                        p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start
                                     `}
                                     whileHover={{
                                         boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
                                         transition: { duration: 0.3 }
                                     }}
                                 >
-                                    {/* Icon */}
+                                    {/* Category icon */}
                                     <motion.div
-                                        className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-10 lg:h-10 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 text-primary dark:text-primary-light shadow-sm group-hover:shadow-md transition-all duration-300"
+                                        className={`
+                                            relative w-14 h-14 sm:w-16 sm:h-16 lg:w-10 lg:h-10 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
+                                            ${isActiveCategory(category.slug)
+                                                ? `bg-primary text-white`
+                                                : `bg-gray-100 dark:bg-gray-700 text-primary-dark dark:text-white`
+                                            }
+                                            shadow-sm transition-all duration-300
+                                        `}
                                         whileHover={{
                                             scale: isMobile ? 1.1 : 1.05,
                                             transition: { duration: 0.2 }
                                         }}
                                     >
-                                        <motion.svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-                                        </motion.svg>
+                                        {category.icon ? (
+                                            <motion.div
+                                                className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : ''}`}
+                                            >
+                                                {category.icon}
+                                            </motion.div>
+                                        ) : categoryIcons[category.slug] ? (
+                                            <motion.div
+                                                className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : 'group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}
+                                            >
+                                                {categoryIcons[category.slug].icon}
+                                            </motion.div>
+                                        ) : (
+                                            <motion.div
+                                                className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : 'group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}
+                                            >
+                                                {category.icon}
+                                            </motion.div>
+                                        )}
                                     </motion.div>
 
-                                    {/* Text */}
-                                    <motion.h3
-                                        className="text-center lg:text-left font-medium text-xs sm:text-sm md:text-base lg:text-sm text-primary dark:text-primary-light transition-colors lg:flex-1"
-                                        initial={{ opacity: 0, y: 5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.3, delay: 0.2 }}
-                                    >
-                                        All Categories
-                                    </motion.h3>
-
-                                    {/* Count badge - only shown on large screens */}
-                                    <div className="hidden lg:block">
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                                            All
-                                        </span>
+                                    {/* Category name and count */}
+                                    <div className="lg:flex-1 text-center lg:text-left">
+                                        <motion.h3
+                                            className="text-xs sm:text-sm md:text-base lg:text-sm font-medium text-primary-dark dark:text-white mb-1 sm:mb-2 lg:mb-0 transition-colors"
+                                            initial={{ opacity: 0, y: 5 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.3, delay: 0.1 }}
+                                        >
+                                            {category.name}
+                                        </motion.h3>
+                                        {category.count > 0 && (
+                                            <motion.p
+                                                className="text-xs text-secondary dark:text-gray-400 transition-colors"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.3, delay: 0.2 }}
+                                            >
+                                                {category.count} items
+                                            </motion.p>
+                                        )}
                                     </div>
                                 </motion.div>
                             </Link>
                         </motion.div>
-
-                        {/* 分类卡片 */}
-                        {categories.map((category, index) => (
-                            <motion.div
-                                key={category.id}
-                                className="flex-shrink-0 w-[110px] sm:w-[135px] md:w-[160px] lg:w-full snap-center lg:snap-align-none"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                    duration: 0.5,
-                                    delay: index * 0.08,
-                                    ease: [0.4, 0.0, 0.2, 1]
-                                }}
-                                whileHover={{ y: isMobile ? -8 : 0, transition: { duration: 0.3, type: "spring", stiffness: 300 } }}
-                                whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
-                            >
-                                <Link
-                                    href={`/products?product_groups=${encodeURIComponent(category.slug)}`}
-                                    className={`block ${isActiveCategory(category.slug) ? 'pointer-events-none' : ''}`}
-                                >
-                                    <motion.div
-                                        className={`
-                                            relative overflow-hidden rounded-xl lg:rounded-lg
-                                            ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2' : 'h-40 sm:h-44 md:h-48'}
-                                            ${isActiveCategory(category.slug)
-                                                ? 'bg-gradient-to-br from-primary/20 to-secondary/20 dark:from-primary/30 dark:to-secondary/30 ring-2 ring-primary/50 dark:ring-primary-light/50'
-                                                : 'bg-white/40 dark:bg-gray-800/40 backdrop-blur-md hover:bg-gradient-to-br hover:from-gray-50/80 hover:to-white/80 dark:hover:from-gray-800/80 dark:hover:to-gray-700/80 border border-gray-100/80 dark:border-gray-700/50 hover:border-primary/20 dark:hover:border-primary-light/20'
-                                            }
-                                            p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start
-                                        `}
-                                        whileHover={{
-                                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                                            transition: { duration: 0.3 }
-                                        }}
-                                    >
-                                        {/* Decorative element - random positioned dots */}
-                                        <motion.div
-                                            className="absolute top-0 right-0 w-16 sm:w-20 h-16 sm:h-20 opacity-10 lg:hidden"
-                                            animate={{
-                                                rotate: [0, 180],
-                                                scale: [1, 1.05, 1],
-                                            }}
-                                            transition={{
-                                                duration: 20,
-                                                repeat: Infinity,
-                                                repeatType: "reverse"
-                                            }}
-                                        >
-                                            <div className={`w-full h-full rounded-full bg-gradient-to-r ${category.color || 'from-gray-400 to-gray-500'}`}></div>
-                                        </motion.div>
-
-                                        {/* Category icon */}
-                                        <motion.div
-                                            className={`
-                                                relative w-14 h-14 sm:w-16 sm:h-16 lg:w-10 lg:h-10 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
-                                                ${isActiveCategory(category.slug)
-                                                    ? `bg-gradient-to-br ${category.color || 'from-gray-400 to-gray-500'} text-white`
-                                                    : `bg-gradient-to-br ${category.color ? `${category.color}/10` : 'from-gray-400/10 to-gray-500/10'} text-gray-700 dark:text-gray-200 group-hover:${category.color ? `${category.color}/20` : 'from-gray-400/20 to-gray-500/20'}`
-                                                }
-                                                shadow-sm group-hover:shadow-md transition-all duration-300
-                                            `}
-                                            whileHover={{
-                                                scale: isMobile ? 1.1 : 1.05,
-                                                rotate: isMobile ? [0, 5, -5, 0] : [0, 0, 0, 0],
-                                                transition: {
-                                                    scale: { duration: 0.2 },
-                                                    rotate: { duration: 0.5, repeat: 0 }
-                                                }
-                                            }}
-                                            animate={isMobile ? {
-                                                scale: [1, 1.03, 1],
-                                                rotate: [0, 2, -2, 0],
-                                            } : {
-                                                scale: 1,
-                                                rotate: 0
-                                            }}
-                                            transition={{
-                                                duration: 4,
-                                                repeat: Infinity,
-                                                repeatType: "reverse",
-                                                ease: "easeInOut"
-                                            }}
-                                        >
-                                            {/* 动态渲染图标：如果是ReactNode直接渲染，如果是string则用作path */}
-                                            {typeof category.icon === 'string' ? (
-                                                <motion.svg
-                                                    className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : 'group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                    initial={{ opacity: 0.8 }}
-                                                    animate={{ opacity: 1 }}
-                                                    transition={{
-                                                        duration: 2,
-                                                        repeat: Infinity,
-                                                        repeatType: "reverse"
-                                                    }}
-                                                >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={category.icon || 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'} />
-                                                </motion.svg>
-                                            ) : (
-                                                <motion.div
-                                                    className={`h-7 w-7 sm:h-8 sm:w-8 lg:h-5 lg:w-5 ${isActiveCategory(category.slug) ? 'text-white' : 'group-hover:text-gray-700 dark:group-hover:text-gray-300'}`}
-                                                    initial={{ opacity: 0.8 }}
-                                                    animate={{ opacity: 1 }}
-                                                    transition={{
-                                                        duration: 2,
-                                                        repeat: Infinity,
-                                                        repeatType: "reverse"
-                                                    }}
-                                                >
-                                                    {category.icon}
-                                                </motion.div>
-                                            )}
-
-                                            {/* Highlight light effect */}
-                                            <motion.div
-                                                className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"
-                                                animate={{
-                                                    scale: [1, 1.1, 1],
-                                                    opacity: [0, 0.2, 0]
-                                                }}
-                                                transition={{
-                                                    duration: 3,
-                                                    repeat: Infinity,
-                                                    repeatType: "reverse"
-                                                }}
-                                            ></motion.div>
-
-                                            {/* Add decorative particle effect - only display in non-desktop mode */}
-                                            {isMobile && (
-                                                <motion.div
-                                                    className="absolute w-full h-full"
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                >
-                                                    {[...Array(3)].map((_, i) => (
-                                                        <motion.div
-                                                            key={i}
-                                                            className={`absolute w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-gradient-to-r ${category.color || 'from-gray-300 to-gray-400'}`}
-                                                            initial={{
-                                                                x: 0,
-                                                                y: 0,
-                                                                opacity: 0
-                                                            }}
-                                                            animate={{
-                                                                x: [0, (i + 1) * 6, (i + 1) * -4, 0],
-                                                                y: [0, (i + 1) * -6, (i + 1) * 4, 0],
-                                                                opacity: [0, 0.7, 0.7, 0],
-                                                                scale: [0, 1, 1, 0]
-                                                            }}
-                                                            transition={{
-                                                                duration: 4 + i,
-                                                                repeat: Infinity,
-                                                                repeatType: "loop",
-                                                                delay: i * 0.7,
-                                                                ease: "easeInOut"
-                                                            }}
-                                                        />
-                                                    ))}
-                                                </motion.div>
-                                            )}
-                                        </motion.div>
-
-                                        {/* Category name */}
-                                        <motion.h3
-                                            className={`
-                                                text-center lg:text-left font-medium text-xs sm:text-sm md:text-base lg:text-sm
-                                                ${isActiveCategory(category.slug)
-                                                    ? 'text-primary dark:text-primary-light'
-                                                    : 'text-gray-700 dark:text-gray-200 group-hover:text-primary/80 dark:group-hover:text-primary-light/80'
-                                                }
-                                                transition-colors lg:flex-1
-                                            `}
-                                            initial={{ opacity: 0, y: 5 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3, delay: index * 0.08 + 0.2 }}
-                                            whileHover={{
-                                                scale: isMobile ? 1.05 : 1,
-                                                transition: { duration: 0.2 }
-                                            }}
-                                        >
-                                            {category.name}
-                                        </motion.h3>
-
-                                        {/* Add count display - only shown in large screen sidebar mode */}
-                                        <div className="hidden lg:block">
-                                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                                                {category.count}
-                                            </span>
-                                        </div>
-                                    </motion.div>
-                                </Link>
-                            </motion.div>
-                        ))}
-                    </div>
+                    ))}
                 </div>
             </div>
-
-            {/* 添加自定义CSS，隐藏滚动条但保留滚动功能，并增加滑动过渡效果 */}
-            <style jsx global>{`
-                .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
-                }
-                .hide-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                    scroll-behavior: smooth;
-                    -webkit-overflow-scrolling: touch;
-                }
-                @media (max-width: 767px) {
-                    .hide-scrollbar {
-                        scroll-snap-type: x mandatory;
-                        scroll-snap-stop: always;
-                    }
-                }
-                .snap-center {
-                    scroll-snap-align: center;
-                }
-                .snap-x {
-                    scroll-snap-type: x mandatory;
-                }
-            `}</style>
         </div>
     );
 }

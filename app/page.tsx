@@ -1,5 +1,5 @@
-import { HeroSection } from "@/components/ui/HeroSection";
 import { CategoryNavigation } from "@/components/ui/CategoryNavigation";
+import { HeroSection } from "@/components/ui/HeroSection";
 import { FeaturedDeals } from "@/components/ui/FeaturedDeals";
 import { RecommendationCarousel } from "@/components/ui/RecommendationCarousel";
 
@@ -10,7 +10,7 @@ export default function Home() {
       <div className="lg:col-span-2 lg:sticky lg:top-24 lg:self-start lg:h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:border-r lg:border-r-gray-200/50 dark:lg:border-r-gray-700/50">
         <div className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm lg:rounded-lg lg:p-3">
           <div className="mb-3 lg:border-b lg:border-gray-200 dark:lg:border-gray-700 pb-2">
-            <h2 className="text-xl font-bold text-center lg:text-left bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+            <h2 className="text-xl font-bold text-center lg:text-left bg-clip-text text-transparent bg-gradient-to-r from-[#2c3e50] to-[#95a5a6]">
               Categories
             </h2>
           </div>
