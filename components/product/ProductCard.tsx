@@ -66,7 +66,7 @@ export default function ProductCard({ product, showActions = false, isNew = fals
                         animate={{ scale: 1 }}
                         className={`absolute ${isNew ? 'top-10 sm:top-16' : 'top-2 sm:top-4'} left-2 sm:left-4 z-10`}
                     >
-                        <div className="bg-[#00A8E1] text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm">
+                        <div className="bg-[#0574F7] text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm">
                             Prime
                         </div>
                     </motion.div>

@@ -1,7 +1,7 @@
 import { CategoryNavigation } from "@/components/ui/CategoryNavigation";
 import { HeroSection } from "@/components/ui/HeroSection";
 import { FeaturedDeals } from "@/components/ui/FeaturedDeals";
-import { RecommendationCarousel } from "@/components/ui/RecommendationCarousel";
+
 
 export default function Home() {
   return (
@@ -36,8 +36,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 个性化推荐轮播 */}
-        <RecommendationCarousel title="You may also like" />
 
         {/* 品牌推荐区域 */}
         <div className="mt-4 p-6 bg-gradient-to-r from-secondary-light/10 to-tiffany/5 rounded-xl">
@@ -55,7 +53,7 @@ export default function Home() {
         </div>
 
         {/* 底部广告条 */}
-        <div className="mt-4 p-6 bg-gradient-primary rounded-xl text-white text-center">
+        <div className="mt-4 p-6 bg-primary-Prime rounded-xl text-white text-center">
           <h3 className="text-xl font-bold mb-2">Download our APP for more deals!</h3>
           <p className="mb-4">Get the latest deals first-hand, don't miss any money-saving opportunity</p>
           <div className="flex justify-center space-x-4">

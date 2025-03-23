@@ -9,11 +9,12 @@
   --color-primary-dark: #2c3e50; /* 深蓝色 */
   --color-primary-button: oklch(0.596 0.145 163.225); /*按钮颜色*/
   --color-primary-button-hover: oklch(0.508 0.118 165.612); /*按钮颜色*/
-  --color-primary-badge: oklch(0.852 0.199 91.936); /*按钮颜色*/
-  --color-primary-badge-dark: oklch(0.795 0.184 86.047); /*较深的按钮颜色*/
+  --color-primary-badge: #F39C12; /*按钮颜色*/
+  --color-primary-badge-dark: #F39C12; /*较深的按钮颜色*/
   --color-secondary: #7f8c8d; /* 中性灰色 */
   --color-secondary-light: #95a5a6; /* 淡灰色 */
   --color-secondary-dark: #576574; /* 深灰色 */
+  --color-primary-Prime: #0574F7; /*按钮颜色*/
   
   --color-accent: #f39c12; /* 柔和橙色 */
   --color-accent-light: #f5b041; /* 淡橙色 */

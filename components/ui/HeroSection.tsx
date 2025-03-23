@@ -261,13 +261,13 @@ export function HeroSection() {
             {svgFilters}
 
             {/* 替换背景为浅蓝色 */}
-            <div className="absolute inset-0 rounded-xl bg-[#4A7CAC] dark:bg-[#4A7CAC]" style={{ zIndex: 2 }}></div>
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#1B5479] to-[#287EB7] dark:from-[#1B5479] dark:to-[#287EB7]" style={{ zIndex: 2 }}></div>
 
             {/* 简化背景装饰元素 */}
             <div className="absolute inset-0 overflow-hidden rounded-xl" style={{ zIndex: 1 }}>
                 {/* 简化左侧装饰球 */}
                 <motion.div
-                    className="absolute -left-16 top-1/4 w-32 h-32 rounded-full bg-[#5A8CBB] dark:bg-[#5A8CBB]"
+                    className="absolute -left-16 top-1/4 w-32 h-32 rounded-full bg-[#287EB7] dark:bg-[#287EB7]"
                     animate={{
                         y: [0, -10, 0],
                     }}
@@ -280,7 +280,7 @@ export function HeroSection() {
 
                 {/* 简化右侧装饰球 */}
                 <motion.div
-                    className="absolute -right-20 top-2/3 w-40 h-40 rounded-full bg-[#5A8CBB] dark:bg-[#5A8CBB]"
+                    className="absolute -right-20 top-2/3 w-40 h-40 rounded-full bg-[#1B5479] dark:bg-[#1B5479]"
                     animate={{
                         y: [0, 10, 0],
                     }}

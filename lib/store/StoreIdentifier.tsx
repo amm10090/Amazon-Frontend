@@ -23,11 +23,6 @@ export const StoreIdentifier: React.FC<StoreIdentifierProps> = ({
         return (
             <div className={`flex items-center ${align === 'right' ? 'justify-end' : ''} ${className.includes('mb-') ? '' : 'mb-2'} ${className}`}>
                 {store.icon}
-                {showName && (
-                    <span className="text-xs font-medium text-secondary dark:text-gray-400 ml-1.5">
-                        {store.name}
-                    </span>
-                )}
             </div>
         );
     } else if (store.icon) {

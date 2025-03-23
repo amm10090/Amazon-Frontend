@@ -478,7 +478,7 @@ export default function ProductsPage() {
 
                         {/* Prime badge - 移动端更紧凑 */}
                         {product.isPrime && (
-                            <div className="absolute top-1 left-1 sm:top-1.5 sm:left-1.5 md:top-2 md:left-2 bg-yellow-400 text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
+                            <div className="absolute top-1 left-1 sm:top-1.5 sm:left-1.5 md:top-2 md:left-2 bg-[#0574F7] text-white text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
                                 Prime
                             </div>
                         )}
@@ -622,7 +622,7 @@ export default function ProductsPage() {
             <LiquidFilter />
 
             {/* 英雄区块与动画SVG插图 - 优化移动端显示 */}
-            <section className="relative h-[30vh] md:h-[35vh] min-h-[300px] md:min-h-[400px] w-[100vw] left-[calc(-50vw+50%)] right-0 -mt-5 overflow-hidden bg-[oklch(0.488_0.178_241.966)] bg-gradient-to-r from-[oklch(0.488_0.178_241.966)] via-[oklch(0.588_0.158_241.966)] to-[oklch(0.688_0.138_241.966)]">
+            <section className="relative h-[30vh] md:h-[35vh] min-h-[300px] md:min-h-[400px] w-[100vw] left-[calc(-50vw+50%)] right-0 -mt-5 overflow-hidden bg-gradient-to-br from-[#1B5479] to-[#287EB7]">
                 <motion.div
                     className="absolute inset-0 bg-[url('/images/dot-pattern.svg')] opacity-10"
                     animate={{
@@ -644,11 +644,11 @@ export default function ProductsPage() {
                         transition={{ duration: 0.5, delay: 0.2 }}
                     >
                         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 md:mb-4">Discover Premium Products</h1>
-                        <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4 md:mb-8">Curated global selections for an exceptional shopping experience</p>
+                        <p className="text-base sm:text-lg md:text-xl text-white mb-4 md:mb-8">Curated global selections for an exceptional shopping experience</p>
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="px-6 sm:px-8 py-2 sm:py-3 bg-gradient-to-r from-[oklch(0.588_0.178_241.966)] to-[oklch(0.688_0.158_241.966)] text-white font-semibold rounded-full shadow-lg hover:from-[oklch(0.538_0.178_241.966)] hover:to-[oklch(0.638_0.158_241.966)] transition-all duration-300"
+                            className="px-6 sm:px-8 py-2 sm:py-3 bg-[#0574F7] text-white font-semibold rounded-full shadow-lg hover:bg-[#0574F7]/90 transition-all duration-300"
                             onClick={() => catalogRef.current?.scrollIntoView({ behavior: 'smooth' })}
                         >
                             Explore Now

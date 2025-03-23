@@ -277,7 +277,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                                                 <motion.div
                                                     initial={{ scale: 0 }}
                                                     animate={{ scale: 1 }}
-                                                    className="bg-primary-badge text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
+                                                    className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
                                                 >
                                                     Prime
                                                 </motion.div>
@@ -358,7 +358,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                                                     )}
                                                 </div>
                                                 {savingsPercentage > 0 && (
-                                                    <span className={`text-xs font-bold text-white px-2 py-0.5 rounded ${savingsPercentage > 30 ? 'bg-primary-badge-dark' :
+                                                    <span className={`text-xs font-bold text-white px-2 py-0.5 rounded ${savingsPercentage > 30 ? 'bg-primary-badge' :
                                                         savingsPercentage > 10 ? 'bg-accent' :
                                                             'bg-secondary'
                                                         }`}>
