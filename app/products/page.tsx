@@ -506,16 +506,12 @@ function ProductsContent() {
                 transition={{ duration: 0.3 }}
                 className="relative group cursor-pointer h-full"
                 onClick={() => {
-                    // 优先使用cj_url，因为佣金更高，如果没有则使用普通url
-                    const linkUrl = product.cj_url || product.url;
-
-                    if (linkUrl) window.open(linkUrl, '_blank');
+                    // 跳转到商品详情页
+                    router.push(`/product/${product.id}`);
                 }}
                 onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                        const linkUrl = product.cj_url || product.url;
-
-                        if (linkUrl) window.open(linkUrl, '_blank');
+                        router.push(`/product/${product.id}`);
                     }
                 }}
                 tabIndex={0}

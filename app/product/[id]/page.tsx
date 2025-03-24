@@ -1,3 +1,4 @@
+import { type Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
@@ -7,6 +8,11 @@ import { adaptProducts } from '@/lib/utils';
 import type { Product } from '@/types/api';
 
 import ProductClient from './ProductClient';
+
+type ProductPageProps = {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
 // Function to fetch product data on the server
 async function getProduct(id: string): Promise<Product | null> {
@@ -39,16 +45,20 @@ async function getProduct(id: string): Promise<Product | null> {
         }
 
         return null;
-    } catch {
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Error fetching product:', error);
+
         return null;
     }
 }
 
 // Generate page metadata
-export async function generateMetadata({ params }: { params: { id: string } }) {
-    // Next.js requires params to be awaited
-    const resolvedParams = await Promise.resolve(params);
-    const id = resolvedParams.id;
+export async function generateMetadata(
+    props: ProductPageProps
+): Promise<Metadata> {
+    const params = await props.params;
+    const id = params.id;
 
     const product = await getProduct(id);
 
@@ -66,10 +76,11 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 }
 
 // Main page component
-export default async function ProductPage({ params }: { params: { id: string } }) {
-    // Next.js requires params to be awaited
-    const resolvedParams = await Promise.resolve(params);
-    const id = resolvedParams.id;
+export default async function ProductPage(
+    props: ProductPageProps
+) {
+    const params = await props.params;
+    const id = params.id;
 
     const product = await getProduct(id);
 

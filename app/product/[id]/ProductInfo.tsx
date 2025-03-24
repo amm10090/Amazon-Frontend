@@ -34,8 +34,11 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     };
 
     const handleViewDeal = () => {
-        if (product.url) {
-            window.open(product.url, '_blank');
+        // 优先使用cj_url，因为佣金更高，如果没有则使用普通url
+        const linkUrl = product.cj_url || product.url;
+
+        if (linkUrl) {
+            window.open(linkUrl, '_blank');
         }
     };
 
@@ -63,7 +66,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             {/* Store badge */}
             <div className="store-badge flex items-center space-x-2">
                 <StoreIdentifier
-                    url={product.url || ''}
+                    url={product.cj_url || product.url || ''}
                     align="left"
                     showName={true}
                     className="flex items-center"
