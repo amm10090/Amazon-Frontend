@@ -1,9 +1,9 @@
-import type { AxiosError } from 'axios';
-import axios from 'axios';
+import axios, { type AxiosError } from 'axios';
 
 import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats, BrandStats } from '@/types/api';
 
-const DEFAULT_API_URL = '/api';
+// 删除未使用的变量，使用下划线标记
+const _DEFAULT_API_URL = '/api';
 const DEFAULT_TIMEOUT = 15000;
 
 const api = axios.create({
@@ -55,7 +55,7 @@ export const productsApi = {
         api_provider?: string;
     }) => {
         // 将前端参数映射到API参数
-        const apiParams: any = { ...params };
+        const apiParams: Record<string, unknown> = { ...params };
 
         // 重命名一些参数以匹配API预期
         if (params?.limit) apiParams.page_size = params.limit;
@@ -138,8 +138,8 @@ export const userApi = {
     removeFavorite: (productId: string) => api.delete<ApiResponse<void>>(`/user/favorites/${productId}`),
 
     // 用户偏好设置
-    getPreferences: () => api.get<ApiResponse<{ [key: string]: any }>>('/user/preferences'),
-    updatePreferences: (preferences: { [key: string]: any }) => api.put<ApiResponse<void>>('/user/preferences', preferences),
+    getPreferences: () => api.get<ApiResponse<Record<string, unknown>>>('/user/preferences'),
+    updatePreferences: (preferences: Record<string, unknown>) => api.put<ApiResponse<void>>('/user/preferences', preferences),
 };
 
 export default api; 

@@ -9,7 +9,7 @@ import {
   NavbarItem,
   NavbarMenuItem,
 } from "@heroui/navbar";
-import { Input , Link } from "@heroui/react";
+import { Input, Link } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import NextLink from "next/link";
 import { useState, useEffect } from "react";
@@ -95,9 +95,9 @@ export const Navbar = () => {
           </NavbarBrand>
           {/* 桌面端导航菜单 */}
           <NavbarItem className="hidden sm:flex gap-4">
-            {siteConfig.navItems.map((item, index) => (
+            {siteConfig.navItems.map((item) => (
               <NextLink
-                key={`${item.href}-${index}`}
+                key={item.href}
                 href={item.href}
                 className="text-default-600 font-medium hover:text-primary transition-colors"
               >
@@ -176,7 +176,7 @@ export const Navbar = () => {
               >
                 {siteConfig.navMenuItems.map((item, index) => (
                   <motion.div
-                    key={`${item}-${index}`}
+                    key={item.label || `menu-item-${item.href}`}
                     custom={index}
                     variants={menuItemVariants}
                     initial="hidden"

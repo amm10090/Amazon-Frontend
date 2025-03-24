@@ -14,8 +14,8 @@ export interface AmazonOffer {
     deal_type: string | null;
     coupon_type: string | null;
     coupon_value: number | null;
-    coupon_history: any | null;
-    commission: any | null;
+    coupon_history: Record<string, unknown> | null;
+    commission: Record<string, unknown> | null;
 }
 
 export interface BrowseNode {
@@ -32,7 +32,7 @@ export interface AmazonProduct {
     main_image: string;
     offers: AmazonOffer[];
     timestamp: string;
-    coupon_info: any | null;
+    coupon_info: Record<string, unknown> | null;
     binding: string | null;
     product_group: string;
     categories: string[];

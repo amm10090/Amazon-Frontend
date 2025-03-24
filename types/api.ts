@@ -29,8 +29,8 @@ export interface ProductOffer {
     deal_type?: string | null;
     coupon_type?: string | null;
     coupon_value?: number | null;
-    coupon_history?: any | null;
-    commission?: any | null;
+    coupon_history?: Record<string, unknown> | null;
+    commission?: Record<string, unknown> | null;
 }
 
 // 浏览节点类型
@@ -67,7 +67,7 @@ export interface Product {
     offers?: ProductOffer[];
     browse_nodes?: BrowseNode[];
     timestamp?: string;
-    coupon_info?: any;
+    coupon_info?: Record<string, unknown>;
     api_provider?: string;
 }
 
@@ -120,10 +120,10 @@ export interface CategoryStats {
             products?: number;
             children?: { [key: string]: string };
             parent?: string;
-            [key: string]: any
+            [key: string]: unknown;
         }
     };
-    browse_tree: { [key: string]: any };
+    browse_tree: Record<string, unknown>;
     bindings: { [key: string]: number };
     product_groups: { [key: string]: number };
     total_categories?: number;

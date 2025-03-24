@@ -4,12 +4,10 @@ import { motion } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-
-
 import { useBrandStats } from '@/lib/hooks';
 
 export type ProductFilterProps = {
-    onFilter: (filter: any) => void;
+    onFilter: (filter: Record<string, unknown>) => void;
     hideButtons?: boolean;
 }
 
@@ -205,9 +203,9 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                     { label: "$25-$50", values: [25, 50] },
                     { label: "$50-$100", values: [50, 100] },
                     { label: "$100+", values: [100, max] }
-                ].map((range, index) => (
+                ].map((range, _) => (
                     <button
-                        key={index}
+                        key={`price-range-${range.label}`}
                         onClick={() => onChange([range.values[0], range.values[1]])}
                         className={`text-xs py-1 px-2 rounded-full transition-colors ${value[0] === range.values[0] && value[1] === range.values[1]
                             ? 'bg-gradient-to-r from-blue-500 to-green-500 text-white'
@@ -288,7 +286,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     });
 
     const [availableBrands, setAvailableBrands] = useState<string[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, _setLoading] = useState(false);
     const [expandedSections, setExpandedSections] = useState({
         price: true,
         discount: true,
@@ -348,6 +346,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                 // 标记品牌数据已处理
                 brandsDataProcessed.current = true;
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.error('处理品牌数据时出错:', error);
                 setAvailableBrands([]);
             }
@@ -407,6 +406,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
             // 构建URL参数
             const params = buildUrlParams(currentFilterSnapshot);
 
+            // eslint-disable-next-line no-console
             console.log('更新URL参数:', params.toString(), '原有分类参数:', searchParams.get('product_groups') || searchParams.get('category'));
             router.replace(`${pathname}?${params.toString()}`, { scroll: false });
         }
@@ -557,6 +557,15 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                 <div
                     className="flex justify-between items-center mb-4 cursor-pointer"
                     onClick={() => toggleSection('price')}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            toggleSection('price');
+                        }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={expandedSections.price}
                 >
                     <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Price Range</h3>
                     <motion.span
@@ -592,6 +601,15 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                 <div
                     className="flex justify-between items-center mb-4 cursor-pointer"
                     onClick={() => toggleSection('discount')}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            toggleSection('discount');
+                        }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={expandedSections.discount}
                 >
                     <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Discount</h3>
                     <motion.span
@@ -613,7 +631,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                         className="space-y-2"
                     >
                         {discountOptions.map(discount => (
-                            <div key={discount} className="flex items-center">
+                            <div key={`discount-option-${discount}`} className="flex items-center">
                                 <Checkbox
                                     id={`discount-${discount}`}
                                     checked={filter.discount >= discount}
@@ -631,6 +649,15 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                 <div
                     className="flex justify-between items-center mb-4 cursor-pointer"
                     onClick={() => toggleSection('brands')}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            toggleSection('brands');
+                        }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={expandedSections.brands}
                 >
                     <h3 className="text-sm font-semibold text-gray-800 dark:text-white">Brands</h3>
                     <motion.span
@@ -653,8 +680,8 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                     >
                         {loading || isBrandStatsLoading ? (
                             <div className="animate-pulse space-y-2">
-                                {[...Array(5)].map((_, i) => (
-                                    <div key={i} className="h-6 bg-gray-200 dark:bg-gray-700 rounded" />
+                                {['first', 'second', 'third', 'fourth', 'fifth'].map((id) => (
+                                    <div key={`brand-skeleton-${id}`} className="h-6 bg-gray-200 dark:bg-gray-700 rounded" />
                                 ))}
                             </div>
                         ) : availableBrands.length > 0 ? (

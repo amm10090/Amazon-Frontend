@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 
 import { ProductCategoryNav } from '@/components/product/ProductCategoryNav';
 import { useCategoryStats } from '@/lib/hooks';
@@ -113,7 +113,8 @@ const CategoryGroups = ({
     );
 };
 
-export default function CategoriesPage() {
+// 将主要内容移到此组件
+function CategoriesContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [activeLetter, setActiveLetter] = useState<string | null>(null);
@@ -131,8 +132,6 @@ export default function CategoriesPage() {
         // 设置导航状态
         setIsNavigating(true);
 
-        console.log('选中分类:', category);
-
         // 获取存储的原始路径（使用 try-catch 防止服务器端错误）
         let prevPath = '/products'; // 默认导航到商品页面
 
@@ -141,30 +140,22 @@ export default function CategoriesPage() {
 
             if (storedPath) {
                 prevPath = storedPath;
-                console.log('从sessionStorage读取路径:', prevPath);
-            } else {
-                console.log('未找到存储的路径，使用默认路径:', prevPath);
             }
-        } catch (error) {
-            console.error('读取sessionStorage时出错:', error);
+        } catch {
+            // 读取sessionStorage错误处理
         }
 
         // 检查是否是产品页面路径
-        const isProductPage = prevPath.startsWith('/products');
-
-        console.log('是否为产品页面:', isProductPage);
+        const _isProductPage = prevPath.startsWith('/products');
 
         // 构建URL对象更可靠地处理参数
         let url;
 
         try {
             url = new URL(prevPath, window.location.origin);
-        } catch (error) {
-            console.error('构建URL对象时出错:', error);
+        } catch {
             url = new URL('/products', window.location.origin);
         }
-
-        console.log('原始URL参数:', url.searchParams.toString());
 
         // 清除旧的分类参数（同时清除category和product_groups）
         url.searchParams.delete('category');
@@ -173,7 +164,6 @@ export default function CategoriesPage() {
         // 设置新的分类参数（统一使用product_groups保持一致性）
         if (category) {
             url.searchParams.set('product_groups', category);
-            console.log('设置分类参数:', category);
         }
 
         // 重置分页到第一页
@@ -184,14 +174,10 @@ export default function CategoriesPage() {
         // 构建最终URL (只保留pathname和search部分)
         const finalUrl = `${url.pathname}${url.search}`;
 
-        console.log('最终导航URL:', finalUrl);
-
         // 添加时间戳到URL，防止缓存问题
         const urlWithTimestamp = finalUrl.includes('?')
             ? `${finalUrl}&_ts=${Date.now()}`
             : `${finalUrl}?_ts=${Date.now()}`;
-
-        console.log('添加时间戳的URL:', urlWithTimestamp);
 
         // 延迟50ms后导航，确保页面状态完成更新
         setTimeout(() => {
@@ -226,15 +212,11 @@ export default function CategoriesPage() {
 
         // 如果当前不在分类页面，或者没有存储过路径，则存储当前路径
         if (currentPath !== '/categories' || !existingPath) {
-            console.log('存储导航路径:', currentFullUrl);
             sessionStorage.setItem('prevPath', currentFullUrl);
-        } else {
-            console.log('保持现有导航路径:', existingPath);
         }
 
         // 如果直接访问了分类页面且没有存储过路径，设置默认路径为产品页面
         if (currentPath === '/categories' && !existingPath) {
-            console.log('设置默认导航路径为产品页面');
             sessionStorage.setItem('prevPath', '/products');
         }
     }, []);
@@ -300,7 +282,7 @@ export default function CategoriesPage() {
                             <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                     </button>
-                    <h1 className="text-xl font-bold">分类浏览</h1>
+                    <h1 className="text-xl font-bold">Categories</h1>
                 </div>
 
                 {/* 添加分类导航 */}
@@ -336,5 +318,16 @@ export default function CategoriesPage() {
                 )}
             </main>
         </div>
+    );
+}
+
+// 主页面组件使用Suspense包装
+export default function CategoriesPage() {
+    return (
+        <Suspense fallback={<div className="w-full h-screen flex items-center justify-center">
+            <div className="animate-pulse text-xl font-semibold">Loading categories...</div>
+        </div>}>
+            <CategoriesContent />
+        </Suspense>
     );
 } 

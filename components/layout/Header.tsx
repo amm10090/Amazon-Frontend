@@ -12,6 +12,11 @@ interface Category {
     count?: number;
 }
 
+interface BrowseNode {
+    name?: string;
+    count?: number;
+}
+
 const Header = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const { theme, toggleTheme } = useUserStore();
@@ -20,7 +25,7 @@ const Header = () => {
 
     // 从browse_nodes中提取分类列表
     const categories: Category[] = categoryStats?.browse_nodes ?
-        Object.entries(categoryStats.browse_nodes).map(([id, data]: [string, any]) => ({
+        Object.entries(categoryStats.browse_nodes).map(([id, data]: [string, BrowseNode]) => ({
             id,
             name: data.name || id,
             count: data.count || 0

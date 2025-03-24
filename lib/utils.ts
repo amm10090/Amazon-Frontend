@@ -1,4 +1,7 @@
+/// <reference types="node" />
+
 import type { ComponentProduct } from '@/types';
+import type { Product } from '@/types/api';
 
 /**
  * 格式化价格
@@ -68,11 +71,11 @@ export function generateId(length: number = 8): string {
  * @param wait 等待时间
  * @returns 防抖后的函数
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
     func: T,
     wait: number
 ): (...args: Parameters<T>) => void {
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
 
     return function executedFunction(...args: Parameters<T>) {
         const later = () => {
@@ -91,7 +94,7 @@ export function debounce<T extends (...args: any[]) => any>(
  * @param limit 时间限制
  * @returns 节流后的函数
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
     func: T,
     limit: number
 ): (...args: Parameters<T>) => void {
@@ -111,9 +114,13 @@ export function throttle<T extends (...args: any[]) => any>(
  * @param apiProducts API返回的产品数据
  * @returns 适配后的产品数据
  */
-export function adaptProducts(apiProducts: any[]): ComponentProduct[] {
+export function adaptProducts(apiProducts: Product[]): ComponentProduct[] {
     if (!Array.isArray(apiProducts)) {
-        console.error('无效的商品数据:', apiProducts);
+        // 使用 console.warn 代替 console.error 并在生产环境禁用
+        if (process.env.NODE_ENV !== 'production') {
+            // eslint-disable-next-line no-console
+            console.warn('无效的商品数据:', apiProducts);
+        }
 
         return [];
     }
@@ -159,7 +166,7 @@ export function adaptProducts(apiProducts: any[]): ComponentProduct[] {
             rating: p.rating || 0,
             reviews: p.reviews || 0,
             url: p.url || '',
-            cj_url: p.cj_url || null,
+            cj_url: p.cj_url || undefined,
             isPrime: mainOffer?.is_prime || false,
             isFreeShipping: mainOffer?.is_free_shipping_eligible || false,
             isAmazonFulfilled: mainOffer?.is_amazon_fulfilled || false,

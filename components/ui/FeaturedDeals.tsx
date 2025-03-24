@@ -10,6 +10,36 @@ import { StoreIdentifier } from '@/lib/store';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
 import type { Product } from '@/types/api';
 
+// 定义API响应的接口，替代any类型
+interface ProductResponse {
+    data?: {
+        items?: Product[];
+    };
+    items?: Product[];
+}
+
+// 辅助函数，用于安全获取响应中的商品项
+function getResponseItems(response: ProductResponse): Product[] {
+    // 如果response.items存在且非空，返回它
+    if (response.items && response.items.length > 0) {
+        return response.items;
+    }
+    // 如果response.data.items存在且非空，返回它
+    if (response.data?.items && response.data.items.length > 0) {
+        return response.data.items;
+    }
+
+    // 都不存在则返回空数组
+    return [];
+}
+
+// 检查响应是否包含有效的商品
+function hasValidItems(response: ProductResponse): boolean {
+    if (!response) return false;
+
+    return (Array.isArray(response.items) && response.items.length > 0) ||
+        (!!response.data && Array.isArray(response.data.items) && response.data.items.length > 0);
+}
 
 interface FeaturedDealsProps {
     limit?: number;
@@ -43,10 +73,12 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                     page: randomOffset > 0 ? Math.floor(randomOffset / 10) + 1 : 1 // 随机页码
                 });
 
+                const responseData = response.data as ProductResponse || {};
+
                 // Try different possible response structures
-                if ((response.data as any)?.items && (response.data as any).items.length > 0) {
-                    // Randomize the items returned
-                    const items = [...(response.data as any).items];
+                if (hasValidItems(responseData)) {
+                    // 使用辅助函数获取items，确保类型安全
+                    const items = [...getResponseItems(responseData)];
 
                     // Fisher-Yates shuffle algorithm for true randomness
                     for (let i = items.length - 1; i > 0; i--) {
@@ -86,9 +118,11 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                         page: Math.floor(Math.random() * 3) + 1 // 随机页码1-3
                     });
 
-                    if ((fallbackResponse.data as any)?.items && (fallbackResponse.data as any).items.length > 0) {
-                        // Randomize the items returned
-                        const items = [...(fallbackResponse.data as any).items];
+                    const fallbackData = fallbackResponse.data as ProductResponse || {};
+
+                    if (hasValidItems(fallbackData)) {
+                        // 使用辅助函数获取items，确保类型安全
+                        const items = [...getResponseItems(fallbackData)];
 
                         // Fisher-Yates shuffle algorithm for true randomness
                         for (let i = items.length - 1; i > 0; i--) {
@@ -126,9 +160,11 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                             page: Math.floor(Math.random() * 5) + 1 // 随机页码1-5
                         });
 
-                        if ((anyProductsResponse.data as any)?.items && (anyProductsResponse.data as any).items.length > 0) {
-                            // Randomize the items returned
-                            const items = [...(anyProductsResponse.data as any).items];
+                        const anyProductsData = anyProductsResponse.data as ProductResponse || {};
+
+                        if (hasValidItems(anyProductsData)) {
+                            // 使用辅助函数获取items，确保类型安全
+                            const items = [...getResponseItems(anyProductsData)];
 
                             // Fisher-Yates shuffle algorithm for true randomness
                             for (let i = items.length - 1; i > 0; i--) {
@@ -156,6 +192,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                     }
                 }
             } catch (err) {
+                // eslint-disable-next-line no-console
                 console.error('Failed to fetch today\'s best deals:', err);
                 setError('Unable to load deals. Please try again later.');
             } finally {
@@ -186,9 +223,12 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
             <div className={`bg-gray-100 dark:bg-gray-800 rounded-xl p-6 animate-pulse ${className}`}>
                 <div className="h-8 w-48 bg-gray-300 dark:bg-gray-700 rounded mb-4" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[...Array(limit)].map((_, i) => (
-                        <div key={i} className="h-64 bg-gray-300 dark:bg-gray-700 rounded-lg" />
-                    ))}
+                    {Array.from({ length: limit }).map(() => {
+                        // 为每个占位符生成一个唯一ID，不依赖索引
+                        const uniqueId = `placeholder-${Math.random().toString(36).substring(2, 9)}`;
+
+                        return <div key={uniqueId} className="h-64 bg-gray-300 dark:bg-gray-700 rounded-lg" />;
+                    })}
                 </div>
             </div>
         );
@@ -198,7 +238,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
         return (
             <div className={`bg-gray-100 dark:bg-gray-800 rounded-xl p-6 ${className}`}>
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold text-primary-dark dark:text-white">Today's Best Deals</h2>
+                    <h2 className="text-2xl font-bold text-primary-dark dark:text-white">Today&apos;s Best Deals</h2>
                 </div>
                 <div className="flex justify-center items-center h-64">
                     <p className="text-secondary dark:text-gray-400">{error || 'No deals available at the moment'}</p>
@@ -220,7 +260,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                     className="text-2xl font-bold text-primary-dark dark:text-white"
                     variants={itemVariants}
                 >
-                    Today's Best Deals
+                    Today&apos;s Best Deals
                 </motion.h2>
 
                 <motion.div variants={itemVariants}>
@@ -320,7 +360,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                                         <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800">
                                             <motion.div
                                                 whileHover={{ scale: 1.05 }}
-                                                className="h-full w-full"
+                                                className="h-full w-full relative"
                                             >
                                                 {productImage ? (
                                                     <Image
@@ -401,6 +441,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                             </motion.div>
                         );
                     } catch (error) {
+                        // eslint-disable-next-line no-console
                         console.error(`Error rendering product at index ${index}:`, error);
 
                         return null; // Skip rendering this product if there's an error

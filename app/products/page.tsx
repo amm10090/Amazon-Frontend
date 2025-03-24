@@ -2,8 +2,9 @@
 
 import axios from 'axios';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 
 import { ProductCategoryNav } from '@/components/product/ProductCategoryNav';
 import ProductList from '@/components/ProductList';
@@ -16,6 +17,43 @@ import type { ComponentProduct } from '@/types';
 import type { AmazonProduct } from '@/types/amazonApi';
 import type { Product } from '@/types/api';
 
+// 定义DrawerFilters接口
+interface DrawerFilters {
+    min_price?: number;
+    max_price?: number;
+    min_discount?: number;
+    brands?: string | string[];
+    is_prime_only?: boolean;
+}
+
+// 筛选器参数接口
+interface FilterParams extends DrawerFilters {
+    api_provider?: string;
+    min_commission?: number;
+    min_rating?: number;
+}
+
+// 添加类型定义
+interface ProductsApiResponse {
+    items: Product[];
+    total: number;
+}
+
+// API参数类型
+interface ApiParams {
+    product_groups?: string;
+    brands?: string;
+    page?: number;
+    page_size?: number;
+    min_price?: number;
+    max_price?: number;
+    min_discount?: number;
+    sort_by?: string;
+    sort_order?: string;
+    product_type?: string;
+    is_prime_only?: boolean;
+    limit?: number;
+}
 
 // 交互式动画SVG组件替代原3D模型
 const CategoryIllustration = ({ category }: { category: string }) => {
@@ -170,15 +208,18 @@ const LiquidFilter = () => (
 );
 
 // 类型谓词函数，用于区分产品类型
-const isAmazonProduct = (product: AmazonProduct | Product): product is AmazonProduct => {
+const _isAmazonProduct = (product: AmazonProduct | Product): product is AmazonProduct => {
     return 'asin' in product;
 };
 
-const isProduct = (product: AmazonProduct | Product): product is Product => {
+const _isProduct = (product: AmazonProduct | Product): product is Product => {
     return 'id' in product;
 };
 
-export default function ProductsPage() {
+// 使用 Client Component 包装搜索参数逻辑
+function ProductsContent() {
+    const searchParamsFromUrl = useSearchParams();
+
     const [searchParams, setSearchParams] = useState({
         product_groups: '' as string,
         brands: '' as string,
@@ -194,10 +235,7 @@ export default function ProductsPage() {
     });
 
     // 添加临时筛选状态，用于抽屉内部筛选
-    const [drawerFilters, setDrawerFilters] = useState<any>(null);
-
-    // 从URL加载参数
-    const searchParamsFromUrl = useSearchParams();
+    const [drawerFilters, setDrawerFilters] = useState<DrawerFilters | null>(null);
 
     // 跟踪参数是否已从URL加载的状态
     const [urlParamsLoaded, setUrlParamsLoaded] = useState(false);
@@ -247,6 +285,7 @@ export default function ProductsPage() {
             brands: brands,
             is_prime_only: is_prime_only
         });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParamsFromUrl]);
 
     // 引入useRouter和usePathname
@@ -307,7 +346,7 @@ export default function ProductsPage() {
     // 只有当urlParamsLoaded为true时才获取产品数据，确保使用的是从URL加载的参数
     const { data, isLoading, isError, mutate } = useProducts(urlParamsLoaded ? searchParams : undefined);
     const [isDirectLoading, setIsDirectLoading] = useState(false);
-    const [directData, setDirectData] = useState<any>(null);
+    const [directData, setDirectData] = useState<ProductsApiResponse | null>(null);
     const { scrollYProgress } = useScroll();
     const headerOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.97]);
     const headerY = useTransform(scrollYProgress, [0, 0.2], [0, -20]);
@@ -331,7 +370,7 @@ export default function ProductsPage() {
                     setIsDirectLoading(true);
 
                     // 创建参数对象，转换参数名
-                    const apiParams: any = { ...searchParams };
+                    const apiParams: ApiParams = { ...searchParams };
 
                     if (searchParams.limit) apiParams.page_size = searchParams.limit;
                     delete apiParams.limit;
@@ -343,8 +382,7 @@ export default function ProductsPage() {
                     const response = await axios.get('/api/products/list', { params: apiParams });
 
                     setDirectData(response.data);
-                } catch (err) {
-                    // 保留错误处理，但移除日志
+                } catch {
                 } finally {
                     setIsDirectLoading(false);
                 }
@@ -355,6 +393,7 @@ export default function ProductsPage() {
 
         // 每当searchParams变化时，重置directData，确保会获取新数据
         setDirectData(null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isError, data, isLoading, searchParams]);
 
     // 添加页面加载完成事件
@@ -411,24 +450,35 @@ export default function ProductsPage() {
     };
 
     // 处理筛选条件变更
-    const handleFilterChange = (filters: any) => {
+    const handleFilterChange = useCallback((filters: FilterParams) => {
         // 移除不支持的参数
-        const { api_provider, min_commission, min_rating, ...validFilters } = filters;
+        const { api_provider: _api_provider, min_commission: _min_commission, min_rating: _min_rating, ...validFilters } = filters;
+
+        // 创建新的筛选器对象，确保类型兼容
+        const newFilters: Partial<typeof searchParams> = {};
+
+        // 手动处理每个属性，确保类型兼容
+        if (validFilters.min_price !== undefined) newFilters.min_price = validFilters.min_price;
+        if (validFilters.max_price !== undefined) newFilters.max_price = validFilters.max_price;
+        if (validFilters.min_discount !== undefined) newFilters.min_discount = validFilters.min_discount;
+        if (validFilters.is_prime_only !== undefined) newFilters.is_prime_only = validFilters.is_prime_only;
 
         // 确保品牌参数为字符串类型
-        if (validFilters.brands && Array.isArray(validFilters.brands)) {
-            validFilters.brands = validFilters.brands.join(',');
+        if (validFilters.brands) {
+            newFilters.brands = Array.isArray(validFilters.brands)
+                ? validFilters.brands.join(',')
+                : validFilters.brands;
         }
 
         setSearchParams(prev => ({
             ...prev,
-            ...validFilters,
+            ...newFilters,
             page: 1
         }));
-    };
+    }, []);
 
     // 关闭抽屉函数
-    const closeDrawer = () => {
+    const closeDrawer = useCallback(() => {
         // 应用当前抽屉中的筛选条件
         if (drawerFilters) {
             handleFilterChange(drawerFilters);
@@ -444,7 +494,7 @@ export default function ProductsPage() {
             overlayElem.classList.add('pointer-events-none');
             document.body.classList.remove('overflow-hidden');
         }
-    };
+    }, [drawerFilters, handleFilterChange]);
 
     // 渲染单个商品
     const renderProduct = (product: ComponentProduct) => {
@@ -461,14 +511,26 @@ export default function ProductsPage() {
 
                     if (linkUrl) window.open(linkUrl, '_blank');
                 }}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        const linkUrl = product.cj_url || product.url;
+
+                        if (linkUrl) window.open(linkUrl, '_blank');
+                    }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-label={`View ${product.title}`}
             >
                 <div className="relative h-full flex flex-col overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300">
                     {/* 图片容器固定比例 */}
                     <div className="relative w-full pt-[100%]">
-                        <img
+                        <Image
                             src={product.image}
                             alt={product.title}
-                            className="absolute inset-0 w-full h-full object-contain object-center transform group-hover:scale-105 transition-transform duration-300"
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-contain object-center transform group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                         />
 
@@ -622,7 +684,7 @@ export default function ProductsPage() {
         return () => {
             document.removeEventListener('click', handleFilterButtonClick);
         };
-    }, []);// 这个effect只需要运行一次
+    }, [closeDrawer]);// 添加closeDrawer依赖
 
     return (
         <div className="min-h-screen pb-20">
@@ -790,9 +852,18 @@ export default function ProductsPage() {
                     </div>
 
                     {/* 移动端和平板端抽屉式筛选器面板的背景遮罩 */}
-                    <div id="drawer-overlay" className="fixed inset-0 bg-black bg-opacity-50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out"
+                    <div id="drawer-overlay"
+                        className="fixed inset-0 bg-black bg-opacity-50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out"
                         onClick={closeDrawer}
-                     />
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                closeDrawer();
+                            }
+                        }}
+                        tabIndex={0}
+                        role="button"
+                        aria-label="Close filter drawer"
+                    />
 
                     {/* 移动端和平板端抽屉式筛选器面板 */}
                     <div id="mobile-filter-drawer" className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg z-50 transform translate-y-full transition-transform duration-300 ease-in-out max-h-[85vh] overflow-y-auto sm:max-h-[90vh] sm:overflow-y-auto no-scrollbar">
@@ -802,6 +873,13 @@ export default function ProductsPage() {
                                 <button
                                     className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                     onClick={closeDrawer}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            closeDrawer();
+                                        }
+                                    }}
+                                    tabIndex={0}
+                                    aria-label="Close filter drawer"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -854,7 +932,7 @@ export default function ProductsPage() {
                     <div className="lg:col-span-3">
                         <ApiStateWrapper
                             isLoading={isLoading || isDirectLoading}
-                            isError={isError && !directData}
+                            isError={!!isError && !directData}
                             isEmpty={!adaptedProducts?.length}
                             emptyMessage="No matching products found"
                             data={adaptedProducts}
@@ -865,5 +943,16 @@ export default function ProductsPage() {
                 </div>
             </section>
         </div>
+    );
+}
+
+// 主页面组件
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={<div className="w-full h-screen flex items-center justify-center">
+            <div className="animate-pulse text-xl font-semibold">正在加载商品...</div>
+        </div>}>
+            <ProductsContent />
+        </Suspense>
     );
 }

@@ -55,7 +55,7 @@ export default function Home() {
         {/* 底部广告条 */}
         <div className="mt-4 p-6 bg-primary-Prime rounded-xl text-white text-center">
           <h3 className="text-xl font-bold mb-2">Download our APP for more deals!</h3>
-          <p className="mb-4">Get the latest deals first-hand, don't miss any money-saving opportunity</p>
+          <p className="mb-4">Get the latest deals first-hand, don&apos;t miss any money-saving opportunity</p>
           <div className="flex justify-center space-x-4">
             <button className="px-6 py-2 bg-white text-primary rounded-full font-medium hover:bg-white/90 transition-colors">
               App Store

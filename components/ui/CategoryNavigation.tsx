@@ -3,7 +3,7 @@
 import { motion, useAnimation, useMotionValue, useTransform, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { useCategoryStats } from '@/lib/hooks';
 
@@ -138,19 +138,19 @@ const categoryIcons: Record<string, { emoji: string, color: string }> = {
 export function CategoryNavigation() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<string | null>(null);
+    const [_activeTab, _setActiveTab] = useState<string | null>(null);
     const pathname = usePathname();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const controls = useAnimation();
-    const x = useMotionValue(0);
-    const dragStart = useRef(0);
-    const dragEnd = useRef(0);
+    const _controls = useAnimation();
+    const _x = useMotionValue(0);
+    const _dragStart = useRef(0);
+    const _dragEnd = useRef(0);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(false);
     const [needNavigation, setNeedNavigation] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [activeCardIndex, setActiveCardIndex] = useState(0);
-    const [scrollDirection, setScrollDirection] = useState<'left' | 'right' | null>(null);
+    const [_scrollDirection, setScrollDirection] = useState<'left' | 'right' | null>(null);
     const lastScrollPosition = useRef(0);
     const [activePointIndex, setActivePointIndex] = useState<number>(0);
 
@@ -159,6 +159,71 @@ export function CategoryNavigation() {
 
     // 添加存储卡片位置的ref
     const cardPositions = useRef<number[]>([]);
+
+    // 更新当前激活的卡片索引 - 优化性能和精确度
+    const updateActiveCardIndex = useCallback(() => {
+        if (!scrollContainerRef.current || categories.length === 0) return;
+
+        const container = scrollContainerRef.current;
+        const { scrollLeft, clientWidth } = container;
+        const scrollCenter = scrollLeft + clientWidth / 2;
+
+        // 获取所有卡片元素
+        const cards = Array.from(container.querySelectorAll('.snap-center'));
+
+        // 找到中心点最接近的卡片
+        let closestCardIndex = 0;
+        let minDistance = Infinity;
+
+        cards.forEach((card, index) => {
+            const cardElement = card as HTMLElement;
+            const cardCenter = cardElement.offsetLeft + cardElement.offsetWidth / 2;
+            const distance = Math.abs(scrollCenter - cardCenter);
+
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestCardIndex = index;
+            }
+        });
+
+        // 只有当索引变化时才更新状态，减少不必要的渲染
+        if (closestCardIndex !== activeCardIndex) {
+            setActiveCardIndex(closestCardIndex);
+        }
+    }, [categories.length, activeCardIndex]);
+
+    // 检查是否需要导航控件（当内容宽度超过容器宽度时）
+    const checkIfNavigationNeeded = useCallback(() => {
+        if (!scrollContainerRef.current) return;
+
+        const { scrollWidth, clientWidth } = scrollContainerRef.current;
+        const needsNav = scrollWidth > clientWidth + 10; // 添加一点余量
+
+        setNeedNavigation(needsNav);
+
+        // 检查是否为移动设备
+        const newIsMobile = window.innerWidth < 768;
+
+        setIsMobile(newIsMobile);
+
+        // 如果需要导航，则同时检查箭头状态
+        if (needsNav) {
+            const { scrollLeft } = scrollContainerRef.current;
+
+            setShowLeftArrow(scrollLeft > 20);
+            setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 20);
+        }
+    }, []);
+
+    // 检测滚动容器的滚动位置，更新箭头显示状态
+    const handleScroll = useCallback(() => {
+        if (!scrollContainerRef.current || !needNavigation) return;
+
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+
+        setShowLeftArrow(scrollLeft > 20);
+        setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 20);
+    }, [needNavigation]);
 
     // 使用 useCategoryStats 钩子获取分类数据
     const { data: categoryStats, isLoading, isError } = useCategoryStats({
@@ -174,7 +239,7 @@ export function CategoryNavigation() {
     });
 
     // 添加scrollXProgress的事件监听，用于实时更新方向和激活索引
-    useMotionValueEvent(scrollXProgress, "change", (latest) => {
+    useMotionValueEvent(scrollXProgress, "change", (_latest) => {
         if (!scrollContainerRef.current) return;
 
         // 更新滚动方向
@@ -237,7 +302,7 @@ export function CategoryNavigation() {
     );
 
     // 将indicatorProgress转换为整数索引，用于高亮显示当前激活的圆点
-    const currentActiveIndex = useTransform(indicatorProgress, (progress) => Math.round(progress));
+    const _currentActiveIndex = useTransform(indicatorProgress, (progress) => Math.round(progress));
 
     // 使用useMotionValueEvent监听indicatorProgress变化并更新activePointIndex
     useMotionValueEvent(indicatorProgress, "change", (latest) => {
@@ -248,77 +313,37 @@ export function CategoryNavigation() {
         }
     });
 
-    // 预先定义固定数量的点指示器transform，避免在map循环中创建
-    const dotScales = Array.from({ length: 10 }).map((_, i) =>
-        useTransform(indicatorProgress, (p) => {
-            const diff = Math.abs(p - i);
+    // 改为使用普通函数，而不是在循环中使用React Hooks
+    const _calculateDotScale = (progress: number, index: number) => {
+        const diff = Math.abs(progress - index);
 
-            return diff <= 0.5 ? 1.3 - (0.3 * (diff * 2)) : 1;
-        })
-    );
-
-    const indicatorOpacities = Array.from({ length: 10 }).map((_, i) =>
-        useTransform(indicatorProgress, (p) => {
-            const diff = Math.abs(p - i);
-
-            return diff < 0.8 ? Math.max(0, 1 - (diff / 0.8)) : 0;
-        })
-    );
-
-    const indicatorScaleXs = Array.from({ length: 10 }).map((_, i) =>
-        useTransform(indicatorProgress, (p) => {
-            const diff = Math.abs(p - i);
-
-            return diff < 0.8 ? Math.max(0, 1 - (diff / 0.8)) : 0;
-        })
-    );
-
-    const buttonScales = Array.from({ length: 10 }).map((_, i) =>
-        useTransform(indicatorProgress, (p) => {
-            const diff = Math.abs(p - i);
-
-            return diff <= 0.5 ? 1 + (0.15 * (1 - diff * 2)) : 1;
-        })
-    );
-
-    const dotColors = Array.from({ length: 10 }).map((_, i) =>
-        useTransform(currentActiveIndex, (activeIndex) =>
-            activeIndex === i ? 'var(--color-primary)' : 'var(--color-gray-300)'
-        )
-    );
-
-    // 检查是否需要导航控件（当内容宽度超过容器宽度时）
-    const checkIfNavigationNeeded = () => {
-        if (!scrollContainerRef.current) return;
-
-        const { scrollWidth, clientWidth } = scrollContainerRef.current;
-        const needsNav = scrollWidth > clientWidth + 10; // 添加一点余量
-
-        setNeedNavigation(needsNav);
-
-        // 检查是否为移动设备
-        const newIsMobile = window.innerWidth < 768;
-
-        setIsMobile(newIsMobile);
-
-        // 如果需要导航，则同时检查箭头状态
-        if (needsNav) {
-            const { scrollLeft } = scrollContainerRef.current;
-
-            setShowLeftArrow(scrollLeft > 20);
-            setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 20);
-        }
+        return diff <= 0.5 ? 1.3 - (0.3 * (diff * 2)) : 1;
     };
 
-    // 检测滚动容器的滚动位置，更新箭头显示状态
-    const handleScroll = () => {
-        if (!scrollContainerRef.current || !needNavigation) return;
+    const _calculateOpacity = (progress: number, index: number) => {
+        const diff = Math.abs(progress - index);
 
-        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-
-        setShowLeftArrow(scrollLeft > 20);
-        setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 20);
+        return diff < 0.8 ? Math.max(0, 1 - (diff / 0.8)) : 0;
     };
+
+    const _calculateScaleX = (progress: number, index: number) => {
+        const diff = Math.abs(progress - index);
+
+        return diff < 0.8 ? Math.max(0, 1 - (diff / 0.8)) : 0;
+    };
+
+    const _calculateButtonScale = (progress: number, index: number) => {
+        const diff = Math.abs(progress - index);
+
+        return diff <= 0.5 ? 1 + (0.15 * (1 - diff * 2)) : 1;
+    };
+
+    const _getDotColor = (activeIndex: number, index: number) => {
+        return activeIndex === index ? 'var(--color-primary)' : 'var(--color-gray-300)';
+    };
+
+    // 使用useTransform转换indicatorProgress的值
+    const _transformedIndicatorProgress = useTransform(indicatorProgress, value => value);
 
     // 监听窗口尺寸变化
     useEffect(() => {
@@ -335,7 +360,7 @@ export function CategoryNavigation() {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-    }, [categories]);
+    }, [checkIfNavigationNeeded]); // 添加checkIfNavigationNeeded作为依赖项
 
     // 处理API返回的分类数据 - 重写依赖处理逻辑
     useEffect(() => {
@@ -360,7 +385,7 @@ export function CategoryNavigation() {
 
                 // 将对象转换为数组，过滤数量大于50的分类，并按照数量排序
                 const sortedCategories = Object.entries(productGroups)
-                    .filter(([groupName, count]) => count > 50)
+                    .filter(([_groupName, count]) => count > 50)
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 8) // 取前8个
                     .map(([groupName, count], index) => {
@@ -395,7 +420,7 @@ export function CategoryNavigation() {
                 setCategories(sortedCategories);
                 setError(null);
                 processedDataRef.current = true;
-            } catch (err) {
+            } catch {
                 setError('Unable to load categories. Please try again later.');
                 processedDataRef.current = true;
             }
@@ -438,7 +463,7 @@ export function CategoryNavigation() {
                 scrollContainer.removeEventListener('scroll', function handleScrollEnd() { });
             }
         };
-    }, []); // 保持空依赖数组，避免重复添加事件监听
+    }, [handleScroll, updateActiveCardIndex, checkIfNavigationNeeded]); // 添加checkIfNavigationNeeded作为依赖项
 
     // 当分类数据变化时更新激活卡片索引
     useEffect(() => {
@@ -446,39 +471,7 @@ export function CategoryNavigation() {
             // 分类数据加载后更新一次指示器状态
             setTimeout(updateActiveCardIndex, 300);
         }
-    }, [categories]);
-
-    // 更新当前激活的卡片索引 - 优化性能和精确度
-    const updateActiveCardIndex = () => {
-        if (!scrollContainerRef.current || categories.length === 0) return;
-
-        const container = scrollContainerRef.current;
-        const { scrollLeft, clientWidth } = container;
-        const scrollCenter = scrollLeft + clientWidth / 2;
-
-        // 获取所有卡片元素
-        const cards = Array.from(container.querySelectorAll('.snap-center'));
-
-        // 找到中心点最接近的卡片
-        let closestCardIndex = 0;
-        let minDistance = Infinity;
-
-        cards.forEach((card, index) => {
-            const cardElement = card as HTMLElement;
-            const cardCenter = cardElement.offsetLeft + cardElement.offsetWidth / 2;
-            const distance = Math.abs(scrollCenter - cardCenter);
-
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestCardIndex = index;
-            }
-        });
-
-        // 只有当索引变化时才更新状态，减少不必要的渲染
-        if (closestCardIndex !== activeCardIndex) {
-            setActiveCardIndex(closestCardIndex);
-        }
-    };
+    }, [categories, updateActiveCardIndex]); // 添加updateActiveCardIndex依赖项
 
     // 判断一个分类是否被激活
     const isActiveCategory = (slug: string) => {
@@ -490,7 +483,7 @@ export function CategoryNavigation() {
                 const productGroups = urlParams.get('product_groups');
 
                 return productGroups === slug;
-            } catch (error) {
+            } catch {
                 // 如果解析URL参数出错，返回false
                 return false;
             }
@@ -540,7 +533,7 @@ export function CategoryNavigation() {
     };
 
     // 滚动到指定卡片
-    const scrollToCard = (index: number) => {
+    const _scrollToCard = (index: number) => {
         if (!scrollContainerRef.current || !categories[index]) return;
 
         const container = scrollContainerRef.current;
@@ -587,7 +580,7 @@ export function CategoryNavigation() {
             container.removeEventListener('touchstart', handleTouchStart);
             container.removeEventListener('touchend', handleTouchEnd);
         };
-    }, []);
+    }, [updateActiveCardIndex]); // 添加依赖项
 
     // 计算每个卡片的位置
     useEffect(() => {
@@ -607,10 +600,10 @@ export function CategoryNavigation() {
 
         // 初始更新一次激活的卡片索引
         updateActiveCardIndex();
-    }, [categories]);
+    }, [categories, updateActiveCardIndex]); // 添加updateActiveCardIndex依赖项
 
     // 检查是否在侧边栏中
-    const isSidebar = typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false;
+    const _isSidebar = typeof window !== 'undefined' ? window.matchMedia('(min-width: 1024px)').matches : false;
 
     useEffect(() => {
         const checkIsSidebar = () => {
@@ -638,14 +631,19 @@ export function CategoryNavigation() {
                 <h2 className="text-2xl font-bold mb-4 text-center lg:hidden bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Popular Categories</h2>
                 <div className="overflow-hidden">
                     <div className="flex lg:flex-col space-x-4 lg:space-x-0 lg:space-y-3 py-2">
-                        {Array.from({ length: 8 }).map((_, index) => (
-                            <div key={index} className="flex-shrink-0 w-32 md:w-40 lg:w-full">
-                                <div className="bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl p-4 animate-pulse h-40 lg:h-16">
-                                    <div className="w-16 h-16 mx-auto lg:hidden bg-gray-200 dark:bg-gray-700 rounded-full mb-4" />
-                                    <div className="h-4 w-20 lg:w-full mx-auto bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                        {Array.from({ length: 8 }).map((_, i) => {
+                            // 生成唯一标识符，避免使用索引作为key
+                            const uniqueId = `skeleton-${i}-${Math.random().toString(36).substring(2, 9)}`;
+
+                            return (
+                                <div key={uniqueId} className="flex-shrink-0 w-32 md:w-40 lg:w-full">
+                                    <div className="bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl p-4 animate-pulse h-40 lg:h-16">
+                                        <div className="w-16 h-16 mx-auto lg:hidden bg-gray-200 dark:bg-gray-700 rounded-full mb-4" />
+                                        <div className="h-4 w-20 lg:w-full mx-auto bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
                 </div>
             </div>

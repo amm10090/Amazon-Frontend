@@ -7,14 +7,14 @@ import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryS
 import { productsApi, userApi } from './api';
 
 // 通用fetcher类型
-type Fetcher<T> = (...args: any[]) => Promise<AxiosResponse<ApiResponse<T>>>;
+type _Fetcher<T> = (...args: unknown[]) => Promise<AxiosResponse<ApiResponse<T>>>;
 
 // SWR配置类型
 type SWRHookResponse<T> = {
     data?: T;
     isLoading: boolean;
-    isError: any;
-    mutate?: () => Promise<any>;
+    isError: unknown;
+    mutate?: () => Promise<unknown>;
 };
 
 // 产品列表
@@ -31,9 +31,10 @@ export function useProducts(params?: {
     product_groups?: string;
     brands?: string;
     api_provider?: string;
-}): SWRHookResponse<{ items: any[], total: number, page: number, page_size: number }> {
+}): SWRHookResponse<{ items: Product[], total: number, page: number, page_size: number }> {
     // 创建一个唯一的key，确保参数变化时会重新获取
     const cacheKey = JSON.stringify(['/products/list', params]);
+    const paramsString = JSON.stringify(params);
 
     const { data, error, isLoading, mutate } = useSWR(
         cacheKey,
@@ -52,7 +53,7 @@ export function useProducts(params?: {
         if (params) {
             mutate();
         }
-    }, [JSON.stringify(params), mutate]);
+    }, [params, paramsString, mutate]);
 
     return {
         data: data?.data?.data,
@@ -105,7 +106,7 @@ export function useCategoryStats(params?: {
     page_size?: number;
     sort_by?: string;
     sort_order?: 'asc' | 'desc';
-}): SWRHookResponse<CategoryStats> & { rawData?: any } {
+}): SWRHookResponse<CategoryStats> & { rawData?: Record<string, unknown> } {
     // 设置默认参数值
     const defaultParams = {
         page: 1,
@@ -132,7 +133,7 @@ export function useCategoryStats(params?: {
     };
 
     // 处理API返回的数据
-    const processData = (rawData: any): CategoryStats => {
+    const processData = (rawData: Record<string, unknown>): CategoryStats => {
         if (!rawData) {
             return defaultData;
         }
@@ -140,9 +141,9 @@ export function useCategoryStats(params?: {
         try {
             // 直接使用API响应中的数据
             const result: CategoryStats = {
-                browse_nodes: rawData.browse_nodes || {},
-                browse_tree: rawData.browse_tree || {},
-                bindings: rawData.bindings || {},
+                browse_nodes: (rawData.browse_nodes as CategoryStats['browse_nodes']) || {},
+                browse_tree: (rawData.browse_tree as CategoryStats['browse_tree']) || {},
+                bindings: (rawData.bindings as CategoryStats['bindings']) || {},
                 product_groups: {}
             };
 
@@ -151,7 +152,7 @@ export function useCategoryStats(params?: {
                 if (typeof rawData.product_groups === 'object' && !Array.isArray(rawData.product_groups)) {
                     // 确保所有的值都是数字，并且过滤掉count为0的分类
                     result.product_groups = Object.fromEntries(
-                        Object.entries(rawData.product_groups)
+                        Object.entries(rawData.product_groups as Record<string, number>)
                             .filter(([_, count]) => Number(count) > 0)
                             .map(([key, value]) => [
                                 key,
@@ -162,16 +163,16 @@ export function useCategoryStats(params?: {
             }
 
             return result;
-        } catch (error) {
+        } catch {
             return defaultData;
         }
     };
 
-    const processedData = processData(data?.data);
+    const processedData = processData((data?.data as unknown) as Record<string, unknown> || {});
 
     return {
         data: processedData,
-        rawData: data?.data,
+        rawData: (data?.data as unknown) as Record<string, unknown>,
         isLoading,
         isError: error,
     };
@@ -216,7 +217,7 @@ export function usePriceHistory(productId: string): SWRHookResponse<PriceHistory
 }
 
 // 收藏列表
-export function useFavorites(): SWRHookResponse<Product[]> & { mutate: () => Promise<any> } {
+export function useFavorites(): SWRHookResponse<Product[]> & { mutate: () => Promise<unknown> } {
     const { data: response, error, isLoading, mutate } = useSWR(
         '/user/favorites',
         () => userApi.getFavorites(),
@@ -307,7 +308,7 @@ export function useBrandStats(params?: {
     page_size?: number;
     sort_by?: string;
     sort_order?: 'asc' | 'desc';
-}): SWRHookResponse<BrandStats> & { rawData?: any } {
+}): SWRHookResponse<BrandStats> & { rawData?: Record<string, unknown> } {
     // 设置默认参数值
     const defaultParams = {
         page: 1,
@@ -340,7 +341,7 @@ export function useBrandStats(params?: {
 
     return {
         data: data?.data || defaultBrandStats,
-        rawData: data?.data,
+        rawData: (data?.data as unknown) as Record<string, unknown>,
         isLoading,
         isError: error,
     };

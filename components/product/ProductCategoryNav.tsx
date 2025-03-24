@@ -12,6 +12,19 @@ type ProductCategoryNavProps = {
     displayMode?: 'scroll' | 'expand'; // 显示模式: scroll-滚动模式, expand-展开收起模式
 };
 
+// 定义API响应类型
+interface BrowseNode {
+    name?: string;
+    count?: number;
+}
+
+interface CategoryStatsResponse {
+    data: {
+        product_groups: Record<string, number>;
+        browse_nodes?: Record<string, BrowseNode>;
+    };
+}
+
 // 动画变体配置
 const variants = {
     container: {
@@ -57,7 +70,7 @@ const groupCategoriesByAlphabet = (categories: Array<{ name: string, count: numb
 };
 
 // 字母索引组件
-const AlphabetIndex = ({
+const _AlphabetIndex = ({
     groups,
     onSelectLetter,
     activeLetter
@@ -90,7 +103,7 @@ const AlphabetIndex = ({
 };
 
 // 分类组组件
-const CategoryGroups = ({
+const _CategoryGroups = ({
     groups,
     selectedCategory,
     onCategorySelect
@@ -163,7 +176,6 @@ export function ProductCategoryNav({
 
         // 只在URL有分类参数，且与当前选中分类不同时更新父组件状态
         if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
-            console.log('组件挂载时，从URL加载分类:', categoryFromUrl);
             onCategorySelect(categoryFromUrl);
         }
     }, [categoryFromUrl, selectedCategory, onCategorySelect]);
@@ -174,7 +186,7 @@ export function ProductCategoryNav({
         page_size: 50
     });
 
-    const [directData, setDirectData] = useState<any>(null);
+    const [directData, setDirectData] = useState<CategoryStatsResponse | null>(null);
     const [directLoading, setDirectLoading] = useState(false);
 
     // 检测设备类型
@@ -199,7 +211,6 @@ export function ProductCategoryNav({
         const fetchDirectlyIfNeeded = async () => {
             if ((isError || (!data && !isLoading)) && !directData && !directLoading) {
                 try {
-                    console.log('Attempting to fetch category stats directly');
                     setDirectLoading(true);
 
                     const response = await axios.get('/api/categories/stats', {
@@ -211,10 +222,8 @@ export function ProductCategoryNav({
                         }
                     });
 
-                    console.log('Directly fetched category data:', response.data);
                     setDirectData(response.data);
-                } catch (err) {
-                    console.error('Failed to fetch category data directly:', err);
+                } catch {
                 } finally {
                     setDirectLoading(false);
                 }
@@ -222,6 +231,7 @@ export function ProductCategoryNav({
         };
 
         fetchDirectlyIfNeeded();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isError, data, isLoading, directData]);
 
     // Get category data, prioritize SWR data, if not available use directly fetched data
@@ -237,7 +247,7 @@ export function ProductCategoryNav({
         .sort((a, b) => b.count - a.count);
 
     // 按字母分组分类
-    const groupedCategories = useMemo(() => {
+    const _groupedCategories = useMemo(() => {
         return groupCategoriesByAlphabet(categories);
     }, [categories]);
 
@@ -320,7 +330,7 @@ export function ProductCategoryNav({
         return initialCategories.some(cat => cat.name === categoryName);
     }, [initialCategories]);
 
-    const isInExtendedList = useCallback((categoryName: string) => {
+    const _isInExtendedList = useCallback((categoryName: string) => {
         return extendedCategories.some(cat => cat.name === categoryName);
     }, [extendedCategories]);
 
@@ -347,8 +357,6 @@ export function ProductCategoryNav({
 
     // Handle click on "All" button
     const handleAllClick = useCallback(() => {
-        console.log('点击全部分类按钮');
-
         // 记住这次选择的分类
         lastSelectedCategoryRef.current = '';
 
@@ -374,8 +382,6 @@ export function ProductCategoryNav({
 
     // Handle click on category button
     const handleCategorySelect = useCallback((category: string) => {
-        console.log('点击分类按钮:', category);
-
         // 记住这次选择的分类
         lastSelectedCategoryRef.current = category;
 
@@ -416,7 +422,6 @@ export function ProductCategoryNav({
             // 在导航前存储当前路径（完整URL）
             const currentPath = window.location.pathname + window.location.search;
 
-            console.log('保存当前路径:', currentPath);
             sessionStorage.setItem('prevPath', currentPath);
 
             // 导航到分类页面并传递当前选中的分类
@@ -430,8 +435,8 @@ export function ProductCategoryNav({
         return (
             <div className="py-2">
                 <div className="animate-pulse flex items-center space-x-1 overflow-x-auto">
-                    {[...Array(8)].map((_, i) => (
-                        <div key={i} className="h-7 bg-gray-200 dark:bg-gray-700 rounded-full w-16 md:w-20 flex-shrink-0" />
+                    {["home", "electronics", "fashion", "books", "toys", "beauty", "sports", "kitchen"].map((category) => (
+                        <div key={`skeleton-${category}`} className="h-7 bg-gray-200 dark:bg-gray-700 rounded-full w-16 md:w-20 flex-shrink-0" />
                     ))}
                 </div>
             </div>

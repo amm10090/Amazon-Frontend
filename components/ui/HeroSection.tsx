@@ -30,8 +30,8 @@ interface ProductOffer {
     deal_type: string | null;
     coupon_type: string | null;
     coupon_value: number | null;
-    coupon_history: any | null;
-    commission: any | null;
+    coupon_history: Record<string, unknown> | null;
+    commission: Record<string, unknown> | null;
 }
 
 interface BrowseNode {
@@ -48,7 +48,7 @@ interface Product {
     main_image: string;
     offers: ProductOffer[];
     timestamp: string;
-    coupon_info: any | null;
+    coupon_info: Record<string, unknown> | null;
     binding: string;
     product_group: string;
     categories: string[];
@@ -70,14 +70,14 @@ interface PromoCard {
 }
 
 export function HeroSection() {
-    const [bubbles, setBubbles] = useState<Bubble[]>([]);
+    const [_bubbles, setBubbles] = useState<Bubble[]>([]);
     const [activePromo, setActivePromo] = useState(0);
-    const [products, setProducts] = useState<Product[]>([]);
+    const [_products, setProducts] = useState<Product[]>([]);
     const [promoCards, setPromoCards] = useState<PromoCard[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const { theme } = useTheme();
-    const isDark = theme === 'dark';
+    const _isDark = theme === 'dark';
 
     // 动画控制器
     const controls = useAnimation();
@@ -154,8 +154,7 @@ export function HeroSection() {
                 }
 
                 setIsLoading(false);
-            } catch (err) {
-                console.error('Failed to fetch products:', err);
+            } catch {
                 setError('Failed to load deals');
                 setIsLoading(false);
 
@@ -437,14 +436,17 @@ export function HeroSection() {
                                             {/* 产品图片背景 - 全尺寸，提高可视性 */}
                                             {card.image ? (
                                                 <div className="absolute inset-0 w-full h-full group">
-                                                    <Image
-                                                        src={card.image}
-                                                        alt={card.title}
-                                                        fill
-                                                        style={{ objectFit: 'cover' }}
-                                                        quality={90}
-                                                        className="transition-transform duration-500 group-hover:scale-105"
-                                                    />
+                                                    <div className="relative w-full h-full">
+                                                        <Image
+                                                            src={card.image}
+                                                            alt={card.title}
+                                                            fill
+                                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                            style={{ objectFit: 'cover' }}
+                                                            quality={90}
+                                                            className="transition-transform duration-500 group-hover:scale-105"
+                                                        />
+                                                    </div>
                                                     {/* 简化渐变叠加层 - 使用半透明纯色 */}
                                                     <div className="absolute inset-0 bg-black/40 transition-opacity duration-500 group-hover:opacity-50" />
                                                 </div>
@@ -549,15 +551,15 @@ export function HeroSection() {
 
                                             {/* 指示器 - 更简洁的设计 */}
                                             <div className="absolute bottom-3 sm:bottom-4 right-4 flex gap-1.5">
-                                                {promoCards.map((_, i) => (
+                                                {promoCards.map((card) => (
                                                     <button
-                                                        key={i}
-                                                        onClick={() => setActivePromo(i)}
-                                                        className={`w-2 h-2 rounded-full transition-all ${activePromo === i
+                                                        key={`promo-indicator-${card.id}`}
+                                                        onClick={() => setActivePromo(promoCards.findIndex(c => c.id === card.id))}
+                                                        className={`w-2 h-2 rounded-full transition-all ${activePromo === promoCards.findIndex(c => c.id === card.id)
                                                             ? 'bg-white w-4 sm:w-5'
                                                             : 'bg-white/40 hover:bg-white/60'
                                                             }`}
-                                                        aria-label={`Switch to promo card ${i + 1}`}
+                                                        aria-label={`Switch to promo card ${card.title}`}
                                                     />
                                                 ))}
                                             </div>

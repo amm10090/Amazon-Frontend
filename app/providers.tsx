@@ -3,8 +3,7 @@
 
 import { HeroUIProvider } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import type { ThemeProviderProps } from "next-themes";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { ThemeProvider as NextThemesProvider, type ThemeProviderProps } from "next-themes";
 import * as React from "react";
 
 export interface ProvidersProps {
