@@ -61,4 +61,5 @@ export interface ComponentProduct {
   availability?: string;
   couponValue?: number;
   couponType?: string | null;
+  apiProvider?: string;
 }

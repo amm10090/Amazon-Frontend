@@ -1,23 +1,33 @@
-import axios, { type AxiosError } from 'axios';
+import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
 
 import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats, BrandStats } from '@/types/api';
 
-// 删除未使用的变量，使用下划线标记
-const _DEFAULT_API_URL = '/api';
+// API Base URL configuration
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const SERVER_API_URL = process.env.SERVER_API_URL || API_BASE_URL;
 const DEFAULT_TIMEOUT = 15000;
 
-const api = axios.create({
-    baseURL: '/api',
-    timeout: DEFAULT_TIMEOUT,
-    headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        ...(process.env.NEXT_PUBLIC_API_KEY && {
-            'X-API-Key': process.env.NEXT_PUBLIC_API_KEY
-        })
-    },
-    withCredentials: false
-});
+// Function to determine if code is running on server or client
+const isServer = () => typeof window === 'undefined';
+
+// Create axios instance with dynamic base URL
+const createApiClient = (config?: AxiosRequestConfig) => {
+    return axios.create({
+        baseURL: isServer() ? SERVER_API_URL : '/api',
+        timeout: DEFAULT_TIMEOUT,
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...(process.env.NEXT_PUBLIC_API_KEY && {
+                'X-API-Key': process.env.NEXT_PUBLIC_API_KEY
+            })
+        },
+        withCredentials: false,
+        ...config
+    });
+};
+
+const api = createApiClient();
 
 // 请求拦截器
 api.interceptors.request.use(

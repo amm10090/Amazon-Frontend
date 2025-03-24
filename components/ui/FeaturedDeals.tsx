@@ -323,7 +323,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                                 custom={index}
                                 className="relative"
                             >
-                                <Link href={productUrl} className="block" target={deal.url || deal.cj_url ? "_blank" : "_self"}>
+                                <Link href={`/product/${productId}`} className="block">
                                     <motion.div
                                         className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden h-full flex flex-col"
                                         whileHover={{ y: -8, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.03)' }}
