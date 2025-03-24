@@ -4,23 +4,53 @@ import { Suspense } from 'react';
 import { FeaturedDeals } from '@/components/ui/FeaturedDeals';
 import { productsApi } from '@/lib/api';
 import { adaptProducts } from '@/lib/utils';
+import type { Product } from '@/types/api';
 
 import ProductClient from './ProductClient';
 
-// 定义getProduct函数用于服务器端获取商品数据
-async function getProduct(id: string) {
-    try {
-        const response = await productsApi.getProductById(id);
+// Function to fetch product data on the server
+async function getProduct(id: string): Promise<Product | null> {
+    if (!id) {
+        return null;
+    }
 
-        return response.data?.data;
+    try {
+        // Check if ID is in ASIN format (10-13 alphanumeric chars)
+        const upperCaseId = id.toUpperCase();
+        const isAsin = /^[A-Z0-9]{10,13}$/.test(upperCaseId);
+
+        if (isAsin) {
+            // Use query API to get product by ASIN
+            const response = await productsApi.queryProduct({
+                asin: upperCaseId,
+                include_metadata: false
+            });
+
+            if (response && response.data) {
+                return response.data as unknown as Product;
+            }
+        } else {
+            // Get product by ID
+            const response = await productsApi.getProductById(id);
+
+            if (response && response.data) {
+                return response.data as unknown as Product;
+            }
+        }
+
+        return null;
     } catch {
         return null;
     }
 }
 
-// 生成页面元数据
+// Generate page metadata
 export async function generateMetadata({ params }: { params: { id: string } }) {
-    const product = await getProduct(params.id);
+    // Next.js requires params to be awaited
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
+
+    const product = await getProduct(id);
 
     if (!product) {
         return {
@@ -35,11 +65,15 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
     };
 }
 
-// 主页面组件，使用async表示这是一个服务器组件
+// Main page component
 export default async function ProductPage({ params }: { params: { id: string } }) {
-    const product = await getProduct(params.id);
+    // Next.js requires params to be awaited
+    const resolvedParams = await Promise.resolve(params);
+    const id = resolvedParams.id;
 
-    // 将API产品数据转换为组件使用的格式
+    const product = await getProduct(id);
+
+    // Convert API product data to component format
     const adaptedProduct = product ? adaptProducts([product])[0] : null;
 
     if (!adaptedProduct) {
@@ -64,15 +98,21 @@ export default async function ProductPage({ params }: { params: { id: string } }
     }
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            {/* 商品详情主体 - 使用客户端组件包装器处理交互部分 */}
+        <div className="bg-gray-50 dark:bg-gray-900 py-8">
+            {/* Product details main content */}
             <ProductClient product={adaptedProduct} />
 
-            {/* 相似商品推荐 */}
-            <div className="mt-12">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-                    You May Also Like
-                </h2>
+            {/* Similar products section */}
+            <div className="container mx-auto px-4 mt-12">
+                <div className="section-header flex justify-between items-center mb-6">
+                    <h2 className="section-title text-2xl font-bold text-gray-800 dark:text-white">
+                        Similar Products
+                    </h2>
+                    <Link href="/products" className="see-all text-primary hover:text-primary-dark dark:hover:text-primary-light transition-colors">
+                        See All →
+                    </Link>
+                </div>
+
                 <Suspense fallback={<div className="h-64 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />}>
                     <FeaturedDeals limit={4} />
                 </Suspense>

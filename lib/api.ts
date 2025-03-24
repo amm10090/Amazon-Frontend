@@ -49,6 +49,27 @@ api.interceptors.response.use(
 
 // API endpoints
 export const productsApi = {
+    /**
+     * 通过ASIN查询商品详情
+     * 使用POST请求，支持更丰富的查询选项
+     * @param params - 查询参数
+     * @param params.asin - 商品ASIN码
+     * @param params.include_metadata - 是否包含原始元数据
+     * @param params.include_browse_nodes - 筛选特定的浏览节点ID数组
+     * @returns API响应对象，包含商品数据
+     */
+    queryProduct: (params: {
+        asin: string;
+        include_metadata?: boolean;
+        include_browse_nodes?: string[] | null;
+    }) => {
+        if (!params.asin) {
+            throw new Error('ASIN is required for product query');
+        }
+
+        return api.post<ApiResponse<Product>>('/products/query', params);
+    },
+
     // 商品相关
     getProducts: (params?: {
         product_type?: 'discount' | 'coupon' | 'all';

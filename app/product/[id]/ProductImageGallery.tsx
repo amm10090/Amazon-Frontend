@@ -14,11 +14,11 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
     const [selectedImage, setSelectedImage] = useState(product.image);
     const [selectedIndex, setSelectedIndex] = useState(0);
 
-    // 模拟多张图片的处理
-    // 实际项目中应该从product的图片数组中获取
+    // Simulating multiple images
+    // In a real project, these would come from a product images array
     const images = [
         product.image,
-        product.image, // 暂时重复使用主图
+        product.image, // temporarily duplicating main image
         product.image,
         product.image,
     ];
@@ -30,8 +30,13 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
 
     return (
         <div className="product-gallery">
-            {/* 主图展示区域 */}
-            <div className="main-image-container mb-4 relative rounded-lg overflow-hidden bg-white h-[400px] md:h-[500px]">
+            {/* Main image display area */}
+            <div className="main-image-container relative mb-5 bg-white rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-[350px] md:h-[400px]">
+                {/* Hot Deal badge */}
+                <div className="absolute top-4 left-4 z-10 bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-md">
+                    HOT DEAL
+                </div>
+
                 <motion.div
                     key={selectedIndex}
                     initial={{ opacity: 0 }}
@@ -47,32 +52,18 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
                         className="object-contain"
                         priority
                     />
-
-                    {/* 折扣标签 */}
-                    {product.discount > 0 && (
-                        <div className="absolute top-4 right-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
-                            -{Math.round(product.discount)}% OFF
-                        </div>
-                    )}
-
-                    {/* Prime标签 */}
-                    {product.isPrime && (
-                        <div className="absolute top-4 left-4 bg-[#0574F7] text-white text-sm font-bold px-3 py-1 rounded-full">
-                            Prime
-                        </div>
-                    )}
                 </motion.div>
             </div>
 
-            {/* 缩略图区域 */}
-            <div className="thumbnails-container flex space-x-4 overflow-x-auto py-2">
+            {/* Thumbnails area */}
+            <div className="thumbnails-container flex space-x-3">
                 {images.map((image, index) => (
                     <div
                         key={`${product.id}-thumbnail-position-${index + 1}`}
-                        className={`thumbnail-item cursor-pointer rounded-md overflow-hidden border-2 transition-all ${selectedIndex === index
+                        className={`thumbnail-item cursor-pointer w-20 h-20 flex-shrink-0 border ${selectedIndex === index
                             ? 'border-primary'
-                            : 'border-transparent hover:border-gray-300'
-                            }`}
+                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                            } rounded-md overflow-hidden transition-all`}
                         onClick={() => handleThumbnailClick(image, index)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
@@ -81,15 +72,15 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
                         }}
                         tabIndex={0}
                         role="button"
-                        aria-label={`查看图片 ${index + 1}`}
+                        aria-label={`View image ${index + 1}`}
                     >
-                        <div className="relative w-16 h-16 md:w-20 md:h-20">
+                        <div className="relative w-full h-full">
                             <Image
                                 src={image}
                                 alt={`Thumbnail ${index + 1}`}
                                 fill
                                 sizes="80px"
-                                className="object-cover"
+                                className="object-contain p-1"
                             />
                         </div>
                     </div>
