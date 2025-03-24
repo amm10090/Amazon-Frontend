@@ -9,68 +9,49 @@ import ProductImageGallery from './ProductImageGallery';
 import ProductInfo from './ProductInfo';
 
 export default function ProductClient({ product }: { product: ComponentProduct }) {
-    // 根据产品类别生成面包屑导航
+    // Generate breadcrumb navigation based on product data
     const breadcrumbItems = useMemo(() => {
         const items: BreadcrumbItem[] = [
             { label: 'Home', href: '/' },
+            { label: 'Products', href: '/products' },
         ];
 
-        if (product.category) {
-            // 添加主要类别
+        // Parse product.category with fallback handling
+        const category = product.category || '';
+        const categoryName = category ||
+            (product.title?.includes('Digital') ? 'Digital Devices & Accessories' : '');
+
+        // Only add category if we have a valid name
+        if (categoryName) {
+            // 先将空格替换为+号，然后使用encodeURIComponent但保留+号
+            const productGroup = encodeURIComponent(categoryName).replace(/%20/g, '+');
+
             items.push({
-                label: product.category,
-                href: `/products?product_groups=${encodeURIComponent(product.category.toLowerCase())}`
+                label: categoryName,
+                href: `/products?product_groups=${productGroup}`
             });
-
-            // 如果是服装/舞蹈相关类别，添加子类别
-            if (product.category.toLowerCase() === 'apparel' ||
-                product.title.toLowerCase().includes('dance') ||
-                product.title.toLowerCase().includes('舞蹈')) {
-                items.push({
-                    label: 'Dance Supplies',
-                    href: `/products?product_groups=apparel&subcategory=dance`
-                });
-            }
-
-            // 如果是电子产品类别，添加对应子类别
-            if (product.category.toLowerCase() === 'electronics' ||
-                product.category.toLowerCase() === '电子产品') {
-                items.push({
-                    label: 'Headphones',
-                    href: `/products?product_groups=electronics&subcategory=headphones`
-                });
-
-                // 如果是无线耳机，添加子类别
-                if (product.title.toLowerCase().includes('wireless') ||
-                    product.title.toLowerCase().includes('无线')) {
-                    items.push({
-                        label: 'Wireless Headphones',
-                        href: `/products?product_groups=electronics&subcategory=headphones&type=wireless`
-                    });
-                }
-            }
         }
 
         return items;
     }, [product]);
 
-    // 确保没有额外的渲染
+    // Ensure no extra rendering
     const cleanedProduct = useMemo(() => {
-        // 创建一个新对象，避免直接修改原始数据
+        // Create a new object to avoid directly modifying original data
         return {
             ...product,
-            // 确保任何可能导致零渲染的属性被正确处理
+            // Ensure any properties that might cause zero rendering are properly handled
         };
     }, [product]);
 
     return (
         <div className="container mx-auto px-4">
-            {/* 面包屑导航 */}
-            <Breadcrumb items={breadcrumbItems} />
+            {/* Breadcrumb navigation with all items clickable */}
+            <Breadcrumb items={breadcrumbItems} allItemsClickable={true} />
 
-            {/* 产品详情卡片 */}
+            {/* Product detail card */}
             <div className="product-container bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md mb-8 relative">
-                {/* Prime徽章 - 移到整个商品卡片的右上角 */}
+                {/* Prime badge - moved to the top right of the entire product card */}
                 {product.isPrime && (
                     <div className="absolute top-2 right-2 z-10">
                         <div className="bg-[#0574F7] text-white text-sm font-bold px-3 py-1 rounded-md">
@@ -80,17 +61,17 @@ export default function ProductClient({ product }: { product: ComponentProduct }
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-                    {/* 产品图片画廊 */}
+                    {/* Product image gallery */}
                     <div className="product-gallery p-6 md:p-8 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700">
                         <ProductImageGallery product={cleanedProduct} />
                     </div>
 
-                    {/* 产品信息 */}
+                    {/* Product information */}
                     <div className="product-info p-6 md:p-8">
                         <ProductInfo product={cleanedProduct} />
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
     );
 } 

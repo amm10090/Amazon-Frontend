@@ -9,9 +9,10 @@ export interface BreadcrumbItem {
 
 interface BreadcrumbProps {
     items: BreadcrumbItem[];
+    allItemsClickable?: boolean;
 }
 
-export default function Breadcrumb({ items }: BreadcrumbProps) {
+export default function Breadcrumb({ items, allItemsClickable = false }: BreadcrumbProps) {
     if (!items || items.length === 0) return null;
 
     return (
@@ -25,7 +26,7 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
                             <span className="mx-2 text-gray-400">›</span>
                         )}
 
-                        {isLast ? (
+                        {isLast && !allItemsClickable ? (
                             <span className="text-gray-600 dark:text-gray-300">
                                 {item.label}
                             </span>
