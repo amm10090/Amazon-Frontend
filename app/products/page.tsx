@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 
+import FavoriteButton from '@/components/common/FavoriteButton';
 import { ProductCategoryNav } from '@/components/product/ProductCategoryNav';
 import ProductList from '@/components/ProductList';
 import { ProductFilter } from '@/components/products/ProductFilter';
@@ -519,6 +520,21 @@ function ProductsContent() {
                 aria-label={`View ${product.title}`}
             >
                 <div className="relative h-full flex flex-col overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300">
+                    {/* 收藏按钮 */}
+                    <div
+                        className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 md:top-2 md:right-2 z-30"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        role="button"
+                        tabIndex={0}
+                    >
+                        <FavoriteButton
+                            productId={product.id}
+                            size="sm"
+                            className="bg-white/80 dark:bg-gray-800/80 shadow-sm hover:bg-white dark:hover:bg-gray-800"
+                        />
+                    </div>
+
                     {/* 图片容器固定比例 */}
                     <div className="relative w-full pt-[100%]">
                         <Image
@@ -547,9 +563,9 @@ function ProductsContent() {
                             </div>
                         )}
 
-                        {/* Discount tag - 移动端更紧凑 */}
+                        {/* Discount tag - 移动端更紧凑 - 修改位置避免与收藏按钮重叠 */}
                         {product.discount > 0 && (
-                            <div className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 md:top-2 md:right-2 bg-red-500 text-white text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
+                            <div className="absolute top-1 right-8 sm:top-1.5 sm:right-9 md:top-2 md:right-10 bg-red-500 text-white text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
                                 -{Math.round(product.discount)}%
                             </div>
                         )}

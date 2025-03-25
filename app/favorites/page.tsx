@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * 收藏页面
- * 显示用户收藏的所有商品
+ * Favorites Page
+ * Displays all products favorited by the user
  */
 
 import Link from 'next/link';
@@ -15,38 +15,38 @@ import ProductCard from '@/components/common/ProductCard';
 import { useEnrichedFavorites } from '@/lib/favorites/hooks';
 import { adaptProducts } from '@/lib/utils';
 
-// 导入组件
-// 注意: 根据你的项目结构，这些路径可能需要调整
+// Import components
+// Note: Depending on your project structure, these paths may need to be adjusted
 
 /**
- * 收藏页面组件
+ * Favorites Page Component
  */
 export default function FavoritesPage() {
-    // 使用自定义Hook获取带完整信息的收藏列表
+    // Use custom hook to get favorites with complete information
     const { favorites, isLoading, error, refreshFavorites } = useEnrichedFavorites();
 
-    // 调试输出
+    // Debug output
     useEffect(() => {
     }, [favorites]);
 
-    // 适配商品数据为前端组件格式
+    // Adapt product data to frontend component format
     const adaptedProducts = adaptProducts(favorites || []);
 
-    // 调试输出
+    // Debug output
     useEffect(() => {
     }, [adaptedProducts]);
 
-    // 页面标题
-    const pageTitle = '我的收藏';
+    // Page title
+    const pageTitle = 'My Favorites';
 
-    // 渲染商品卡片
+    // Render product cards
     const renderProductCards = () => {
         if (!Array.isArray(adaptedProducts) || adaptedProducts.length === 0) {
             return (
                 <EmptyState
-                    title="暂无收藏"
-                    description="您还没有收藏任何商品，去浏览一些商品并添加到收藏吧！"
-                    actionText="浏览商品"
+                    title="No Favorites"
+                    description="You haven't added any products to your favorites yet. Browse some products and add them to your favorites!"
+                    actionText="Browse Products"
                     actionLink="/"
                 />
             );
@@ -73,23 +73,23 @@ export default function FavoritesPage() {
                     onClick={() => refreshFavorites()}
                     className="rounded bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
                 >
-                    刷新列表
+                    Refresh List
                 </button>
             </div>
 
-            {/* 收藏数量统计 */}
+            {/* Favorites count */}
             {!isLoading && !error && Array.isArray(adaptedProducts) && (
                 <p className="mb-6 text-gray-600">
-                    共收藏了 <span className="font-medium">{adaptedProducts.length}</span> 件商品
+                    You have favorited <span className="font-medium">{adaptedProducts.length}</span> products
                 </p>
             )}
 
-            {/* 内容区域 */}
+            {/* Content area */}
             {isLoading ? (
-                <LoadingState message="加载收藏列表中..." />
+                <LoadingState message="Loading favorites..." />
             ) : error ? (
                 <ErrorState
-                    message="加载收藏列表失败"
+                    message="Failed to load favorites"
                     error={error as Error}
                     retry={refreshFavorites}
                 />
@@ -97,13 +97,13 @@ export default function FavoritesPage() {
                 renderProductCards()
             )}
 
-            {/* 返回首页 */}
+            {/* Return to homepage */}
             <div className="mt-8 text-center">
                 <Link
                     href="/"
                     className="text-blue-500 hover:underline"
                 >
-                    返回首页
+                    Return to Home
                 </Link>
             </div>
         </div>

@@ -19,8 +19,8 @@ const ErrorState: React.FC<ErrorStateProps> = ({
     const errorMessage = error
         ? typeof error === 'string'
             ? error
-            : error.message || '未知错误'
-        : '未知错误';
+            : error.message || 'Unknown error'
+        : 'Unknown error';
 
     return (
         <div className="flex flex-col items-center justify-center rounded-lg border border-red-100 bg-red-50 p-8 text-center">
@@ -54,7 +54,7 @@ const ErrorState: React.FC<ErrorStateProps> = ({
                     onClick={retry}
                     className="rounded-md bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 >
-                    重试
+                    Retry
                 </button>
             )}
         </div>

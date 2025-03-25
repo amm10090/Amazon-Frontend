@@ -17,8 +17,8 @@ import {
  */
 export async function POST(
     request: NextRequest,
-    { params }: { params: { productId: string } }
-) {
+    { params }: { params: Promise<{ productId: string }> }
+): Promise<NextResponse> {
     try {
         // 获取并验证客户端ID
         const clientId = request.headers.get('x-client-id');
@@ -35,7 +35,7 @@ export async function POST(
         }
 
         // 获取商品ID
-        const { productId } = params;
+        const { productId } = await params;
 
         if (!productId || typeof productId !== 'string') {
             return NextResponse.json(
@@ -77,8 +77,8 @@ export async function POST(
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { productId: string } }
-) {
+    { params }: { params: Promise<{ productId: string }> }
+): Promise<NextResponse> {
     try {
         // 获取并验证客户端ID
         const clientId = request.headers.get('x-client-id');
@@ -95,7 +95,7 @@ export async function DELETE(
         }
 
         // 获取商品ID
-        const { productId } = params;
+        const { productId } = await params;
 
         if (!productId || typeof productId !== 'string') {
             return NextResponse.json(

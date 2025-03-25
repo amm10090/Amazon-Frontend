@@ -10,7 +10,7 @@ interface LoadingStateProps {
  * 显示一个加载动画和可选的加载消息
  */
 const LoadingState: React.FC<LoadingStateProps> = ({
-    message = '加载中...',
+    message = 'Loading...',
     size = 'md',
 }) => {
     // 根据尺寸确定样式

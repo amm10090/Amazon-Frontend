@@ -1,7 +1,9 @@
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
 
+import { StoreIdentifier } from '@/lib/store';
 import type { ComponentProduct } from '@/types';
 
 import FavoriteButton from './FavoriteButton';
@@ -12,90 +14,144 @@ interface ProductCardProps {
 }
 
 /**
- * 产品卡片组件
- * 显示产品信息，包括图片、标题、价格等
+ * Product Card Component
+ * Displays product information including image, title, price, etc.
  */
 const ProductCard: React.FC<ProductCardProps> = ({
     product,
     showFavoriteButton = true
 }) => {
-    // 调试输出商品数据
-    // eslint-disable-next-line no-console
-    console.log('ProductCard接收到的商品数据:', product);
 
-    const { id, title, price, rating, image, discount } = product;
+    const { id, title, price, image, discount, url, isPrime, brand } = product;
 
-    // 计算折扣价格
+    // Calculate discount price
     const discountPrice = discount
         ? price - (price * discount / 100)
         : price;
 
+    // Original price
+    const originalPrice = price;
+
     return (
-        <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md transition-all hover:shadow-lg">
-            {/* 产品图片 */}
-            <Link href={`/product/${id}`} className="relative h-48 overflow-hidden">
-                <Image
-                    src={image || '/placeholder-product.jpg'}
-                    alt={title || '商品图片'}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-300 hover:scale-105"
-                />
-
-                {/* 折扣标签 */}
-                {discount > 0 && (
-                    <div className="absolute left-0 top-0 bg-red-500 px-2 py-1 text-sm font-bold text-white">
-                        -{discount.toFixed(0)}%
-                    </div>
-                )}
-            </Link>
-
-            {/* 产品信息 */}
-            <div className="flex flex-1 flex-col p-4">
-                <Link href={`/product/${id}`} className="mb-2 text-lg font-medium text-gray-900 hover:text-blue-600">
-                    {title || `商品 ${id}`}
-                </Link>
-
-                {/* 价格信息 */}
-                <div className="mb-2 flex items-center">
-                    <span className="text-xl font-bold text-gray-900">
-                        ¥{(discountPrice || 0).toFixed(2)}
-                    </span>
-
-                    {discount > 0 && (
-                        <span className="ml-2 text-sm text-gray-500 line-through">
-                            ¥{(price || 0).toFixed(2)}
-                        </span>
-                    )}
-                </div>
-
-                {/* 评分 */}
-                {rating && (
-                    <div className="mb-2 flex items-center">
-                        <div className="flex items-center">
-                            {["star1", "star2", "star3", "star4", "star5"].map((starId, i) => (
-                                <svg
-                                    key={`${id}-${starId}`}
-                                    className={`h-4 w-4 ${i < Math.floor(rating) ? 'text-yellow-500' : 'text-gray-300'
-                                        }`}
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                >
-                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.799-2.034c-.784-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                            ))}
-                            <span className="ml-1 text-sm text-gray-600">{rating.toFixed(1)}</span>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* 收藏按钮 */}
+        <div className="relative">
+            {/* Favorite button */}
             {showFavoriteButton && (
-                <div className="absolute right-2 top-2">
-                    <FavoriteButton productId={id} size="md" />
+                <div
+                    className="absolute top-3 right-3 z-20"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    role="button"
+                    tabIndex={0}
+                >
+                    <FavoriteButton
+                        productId={id}
+                        size="md"
+                        className="bg-white/80 dark:bg-gray-800/80 shadow-sm hover:bg-white dark:hover:bg-gray-800"
+                    />
                 </div>
             )}
+
+            <Link href={`/product/${id}`} className="block">
+                <motion.div
+                    className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden h-full flex flex-col"
+                    whileHover={{ y: -8, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.03)' }}
+                    transition={{ duration: 0.3 }}
+                >
+                    {/* Prime badge */}
+                    {isPrime && (
+                        <div className="absolute top-3 left-3 z-10">
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
+                            >
+                                Prime
+                            </motion.div>
+                        </div>
+                    )}
+
+
+                    {/* Product image */}
+                    <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800">
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            className="h-full w-full relative"
+                        >
+                            {image ? (
+                                <Image
+                                    src={image || '/placeholder-product.jpg'}
+                                    alt={title || 'Product Image'}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                    className="object-cover"
+                                    quality={80}
+                                />
+                            ) : (
+                                <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                    No image available
+                                </div>
+                            )}
+                        </motion.div>
+                    </div>
+
+                    {/* Product information */}
+                    <div className="p-4 flex-grow flex flex-col">
+                        {/* Store identifier */}
+                        {url && (
+                            <StoreIdentifier
+                                url={url}
+                                align="right"
+                            />
+                        )}
+
+                        {/* Brand information */}
+                        {brand && (
+                            <div className="mb-2">
+                                <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-1 rounded inline-block">
+                                    {brand}
+                                </span>
+                            </div>
+                        )}
+
+                        <h3 className="text-lg font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
+                            {title || `Product ${id}`}
+                        </h3>
+
+                        {/* Price information */}
+                        <div className="flex items-center justify-between mt-auto mb-2">
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-xl font-semibold text-primary dark:text-primary-light">
+                                    ${(discountPrice || 0).toFixed(2)}
+                                </span>
+                                {discount > 0 && (
+                                    <span className="text-sm text-secondary dark:text-gray-400 line-through">
+                                        ${(originalPrice || 0).toFixed(2)}
+                                    </span>
+                                )}
+                            </div>
+                            {discount > 0 && (
+                                <span className={`text-xs font-bold text-white px-2 py-0.5 rounded ${discount > 30 ? 'bg-primary-badge' :
+                                    discount > 10 ? 'bg-accent' :
+                                        'bg-secondary'
+                                    }`}>
+                                    -{Math.round(discount)}%
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* View details button */}
+                    <div className="px-4 pb-4">
+                        <motion.div
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                            className="w-full py-2 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-button-light dark:hover:bg-primary-button text-white text-center rounded-full font-medium shadow-sm transition-colors"
+                        >
+                            View Details
+                        </motion.div>
+                    </div>
+                </motion.div>
+            </Link>
         </div>
     );
 };

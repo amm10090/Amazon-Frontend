@@ -69,8 +69,8 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
                 ${animationClass}
                 ${isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}
                 ${className}`}
-            aria-label={isFavorite ? '取消收藏' : '添加收藏'}
-            title={isFavorite ? '取消收藏' : '添加收藏'}
+            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
             <Heart
                 className={iconSize}
@@ -79,7 +79,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
 
             {withText && (
                 <span className={`ml-1 text-sm ${isFavorite ? 'font-medium' : ''}`}>
-                    {isFavorite ? '已收藏' : '收藏'}
+                    {isFavorite ? 'Favorited' : 'Favorite'}
                 </span>
             )}
         </button>

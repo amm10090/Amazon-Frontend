@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { useState, useEffect } from 'react';
 
+import FavoriteButton from '@/components/common/FavoriteButton';
+
 interface Bubble {
     top: string;
     left: string;
@@ -67,6 +69,7 @@ interface PromoCard {
     link: string;
     image?: string;
     brand?: string;
+    productId?: string;
 }
 
 export function HeroSection() {
@@ -146,7 +149,8 @@ export function HeroSection() {
                             ctaText: isCoupon ? "Get Coupon" : "Shop Now",
                             link: product.url,
                             image: product.main_image,
-                            brand: product.brand
+                            brand: product.brand,
+                            productId: product.asin
                         };
                     });
 
@@ -167,7 +171,8 @@ export function HeroSection() {
                         discount: "Up to 70% OFF",
                         ctaText: "Shop Now",
                         link: "/category/kitchen-appliances",
-                        brand: "Kitchen Appliances"
+                        brand: "Kitchen Appliances",
+                        productId: "fallback-product-1"
                     },
                     {
                         id: 2,
@@ -176,7 +181,8 @@ export function HeroSection() {
                         discount: "15% OFF First Order",
                         ctaText: "Learn More",
                         link: "/category/smart-home",
-                        brand: "Smart Home"
+                        brand: "Smart Home",
+                        productId: "fallback-product-2"
                     },
                     {
                         id: 3,
@@ -185,7 +191,8 @@ export function HeroSection() {
                         discount: "Extra 10% OFF",
                         ctaText: "Get Coupon",
                         link: "/coupons/electronics",
-                        brand: "Electronics"
+                        brand: "Electronics",
+                        productId: "fallback-product-3"
                     }
                 ]);
             }
@@ -433,6 +440,23 @@ export function HeroSection() {
                                                 display: activePromo === index ? 'block' : 'none'
                                             }}
                                         >
+                                            {/* 收藏按钮 - 放置在卡片外层，使用绝对定位 */}
+                                            {activePromo === index && (
+                                                <div
+                                                    className="absolute top-3 right-3 z-20"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    onKeyDown={(e) => e.stopPropagation()}
+                                                    role="button"
+                                                    tabIndex={0}
+                                                >
+                                                    <FavoriteButton
+                                                        productId={card.productId || card.id.toString()}
+                                                        size="sm"
+                                                        className="bg-white/80 dark:bg-gray-800/80 shadow-sm hover:bg-white dark:hover:bg-gray-800"
+                                                    />
+                                                </div>
+                                            )}
+
                                             {/* 产品图片背景 - 全尺寸，提高可视性 */}
                                             {card.image ? (
                                                 <div className="absolute inset-0 w-full h-full group">
