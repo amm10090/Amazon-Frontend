@@ -161,6 +161,44 @@ export const productsApi = {
         shipping_time: string;
         shipping_method: string;
     }>>(`/cj/products/${pid}/shipping`, { params }),
+
+    /**
+     * 搜索产品
+     * @param params 搜索参数
+     * @param params.keyword 搜索关键词，必填
+     * @param params.page 页码，从1开始
+     * @param params.page_size 每页返回的产品数量，范围：1-100
+     * @param params.sort_by 排序字段："relevance"、"price"、"discount"或"created"
+     * @param params.sort_order 排序方向："asc"或"desc"
+     * @param params.min_price 最低价格过滤
+     * @param params.max_price 最高价格过滤
+     * @param params.min_discount 最低折扣率过滤，范围：0-100
+     * @param params.is_prime_only 是否只显示Prime商品
+     * @param params.product_groups 商品分类过滤，多个分类用逗号分隔
+     * @param params.brands 品牌过滤，多个品牌用逗号分隔
+     * @param params.api_provider 数据来源过滤："pa-api"或"cj-api"
+     * @returns API响应对象，包含搜索结果数据
+     */
+    searchProducts: (params: {
+        keyword: string;
+        page?: number;
+        page_size?: number;
+        sort_by?: 'relevance' | 'price' | 'discount' | 'created';
+        sort_order?: 'asc' | 'desc';
+        min_price?: number;
+        max_price?: number;
+        min_discount?: number;
+        is_prime_only?: boolean;
+        product_groups?: string;
+        brands?: string;
+        api_provider?: string;
+    }) => {
+        if (!params.keyword) {
+            throw new Error('关键词是必填的搜索参数');
+        }
+
+        return api.get<ApiResponse<ListResponse<Product>>>('/search/products', { params });
+    },
 };
 
 export const userApi = {

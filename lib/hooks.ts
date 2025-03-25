@@ -345,4 +345,53 @@ export function useBrandStats(params?: {
         isLoading,
         isError: error,
     };
+}
+
+// 产品搜索
+export function useProductSearch(params: {
+    keyword: string;
+    page?: number;
+    page_size?: number;
+    sort_by?: 'relevance' | 'price' | 'discount' | 'created';
+    sort_order?: 'asc' | 'desc';
+    min_price?: number;
+    max_price?: number;
+    min_discount?: number;
+    is_prime_only?: boolean;
+    product_groups?: string;
+    brands?: string;
+    api_provider?: string;
+}): SWRHookResponse<{ items: Product[], total: number, page: number, page_size: number }> {
+    // 只有当keyword存在且非空时才执行查询
+    const shouldFetch = Boolean(params.keyword && params.keyword.trim());
+
+    // 创建一个唯一的key，确保参数变化时会重新获取
+    const cacheKey = shouldFetch ? JSON.stringify(['/search/products', params]) : null;
+    const paramsString = JSON.stringify(params);
+
+    const { data, error, isLoading, mutate } = useSWR(
+        cacheKey,
+        () => productsApi.searchProducts(params),
+        {
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+            dedupingInterval: 0, // 禁用缓存去重，确保每次参数变化都重新获取
+            shouldRetryOnError: true,
+            errorRetryCount: 3
+        }
+    );
+
+    // 当参数变化时，主动触发重新获取数据
+    useEffect(() => {
+        if (shouldFetch) {
+            mutate();
+        }
+    }, [shouldFetch, paramsString, mutate]);
+
+    return {
+        data: data?.data?.data,
+        isLoading,
+        isError: error,
+        mutate,
+    };
 } 
