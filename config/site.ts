@@ -2,60 +2,60 @@ export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
   name: "Amazon Deals",
-  description: "亚马逊优惠信息展示平台",
+  description: "Amazon Deals Display Platform",
   navItems: [
     {
-      label: "首页",
+      label: "Home",
       href: "/",
     },
     {
-      label: "全部商品",
+      label: "All Products",
       href: "/products",
     },
     {
-      label: "限时特惠",
+      label: "Limited Time Deals",
       href: "/deals",
     },
     {
-      label: "我的收藏",
+      label: "My Favorites",
       href: "/favorites",
     },
     {
-      label: "关于我们",
+      label: "About Us",
       href: "/about",
     },
   ],
   navMenuItems: [
     {
-      label: "首页",
+      label: "Home",
       href: "/",
     },
     {
-      label: "全部商品",
+      label: "All Products",
       href: "/products",
     },
     {
-      label: "限时特惠",
+      label: "Limited Time Deals",
       href: "/deals",
     },
     {
-      label: "热门分类",
+      label: "Popular Categories",
       href: "/categories",
     },
     {
-      label: "我的收藏",
+      label: "My Favorites",
       href: "/favorites",
     },
     {
-      label: "使用指南",
+      label: "User Guide",
       href: "/guide",
     },
     {
-      label: "联系我们",
+      label: "Contact Us",
       href: "/contact",
     },
     {
-      label: "关于我们",
+      label: "About Us",
       href: "/about",
     },
   ],

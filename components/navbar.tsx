@@ -9,16 +9,15 @@ import {
   NavbarItem,
   NavbarMenuItem,
 } from "@heroui/navbar";
-import { Input, Link } from "@heroui/react";
+import { Input, Link, Button } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import NextLink from "next/link";
 import { useState, useEffect } from "react";
 
 import { SearchIcon } from "@/components/icons";
-import { ThemeSwitch } from "@/components/theme-switch";
 import { siteConfig } from "@/config/site";
 
-// 动画变体
+// Animation variants
 const navbarVariants = {
   initial: { height: 80 },
   scrolled: { height: 64 }
@@ -46,7 +45,7 @@ export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // 监听滚动
+  // Listen for scroll events
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -67,11 +66,12 @@ export const Navbar = () => {
       <HeroUINavbar
         maxWidth="xl"
         position="sticky"
-        className={`bg-background/80 dark:bg-default-100/80 backdrop-blur-lg border-b border-divider/50 dark:border-divider/30 transition-all duration-300 ${isScrolled ? "shadow-md" : ""
+        className={`bg-background/80 backdrop-blur-lg border-b border-divider/50 transition-all duration-300 ${isScrolled ? "shadow-md" : ""
           }`}
       >
-        <NavbarContent className="flex gap-4 flex-1" justify="start">
-          <NavbarBrand as="li" className="gap-3 max-w-fit">
+        {/* Logo and Search Bar Content - Left Side */}
+        <NavbarContent className="flex flex-1 items-center gap-4" justify="start">
+          <NavbarBrand as="li" className="gap-3 max-w-fit mr-4">
             <motion.div
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -93,7 +93,32 @@ export const Navbar = () => {
               </NextLink>
             </motion.div>
           </NavbarBrand>
-          {/* 桌面端导航菜单 */}
+
+          {/* Search Bar */}
+          <div className="relative max-w-xl w-full">
+            <Input
+              aria-label="Search"
+              classNames={{
+                base: "w-full",
+                inputWrapper: "bg-white shadow-md border-none rounded-full px-6 py-2.5 focus:outline-none focus:border-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none",
+                input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0"
+              }}
+              placeholder="Search for deals, brands, or products..."
+              size="md"
+              type="search"
+            />
+            <Button
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full px-6 py-2 opacity-100 hover:opacity-100"
+              size="sm"
+            >
+              Hunt
+            </Button>
+          </div>
+        </NavbarContent>
+
+        {/* Navigation Menu Content - Right Side */}
+        <NavbarContent className="flex" justify="end">
+          {/* Desktop navigation menu */}
           <NavbarItem className="hidden sm:flex gap-4">
             {siteConfig.navItems.map((item) => (
               <NextLink
@@ -105,60 +130,12 @@ export const Navbar = () => {
               </NextLink>
             ))}
           </NavbarItem>
-          <NavbarItem className="flex-1">
-            <div className="w-full flex justify-start">
-              <motion.div
-                initial={false}
-                animate={{
-                  width: isSearchFocused
-                    ? "clamp(200px, 50vw, 400px)"
-                    : "clamp(120px, 20vw, 200px)",
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 25,
-                }}
-                className="relative"
-              >
-                <Input
-                  aria-label="搜索商品"
-                  classNames={{
-                    inputWrapper: "bg-content1 dark:bg-content1/70",
-                    input: "text-sm dark:text-white/90 truncate",
-                    base: "w-full max-w-full"
-                  }}
-                  placeholder={isSearchFocused ? "搜索心仪的商品..." : "搜索心仪的..."}
-                  startContent={
-                    <motion.div
-                      variants={searchIconVariants}
-                      animate={isSearchFocused ? "animate" : "initial"}
-                      transition={{ duration: 0.5 }}
-                    >
-                      <SearchIcon className="text-base text-default-400 pointer-events-none shrink-0" />
-                    </motion.div>
-                  }
-                  type="search"
-                  size="sm"
-                  variant="bordered"
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => setIsSearchFocused(false)}
-                />
-              </motion.div>
-            </div>
-          </NavbarItem>
-        </NavbarContent>
-
-        <NavbarContent className="flex basis-1/5 sm:basis-full" justify="end">
-          <NavbarItem className="flex gap-2">
-            <ThemeSwitch />
-          </NavbarItem>
-          <NavbarItem className="sm:hidden">
+          <NavbarItem className="sm:hidden ml-2">
             <motion.div
               whileTap={{ scale: 0.9 }}
             >
               <NavbarMenuToggle
-                className="w-10 h-10 p-2 -mr-2 text-default-500 bg-default-100/50 dark:bg-default-100/20 hover:bg-default-200/70 dark:hover:bg-default-100/40 rounded-lg transition-colors"
+                className="w-10 h-10 p-2 -mr-2 text-default-500 bg-default-100/50 hover:bg-default-200/70 rounded-lg transition-colors"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               />
             </motion.div>
@@ -167,7 +144,7 @@ export const Navbar = () => {
 
         <AnimatePresence>
           {isMenuOpen && (
-            <NavbarMenu className="pt-6 pb-6 gap-4 shadow-lg dark:shadow-dark">
+            <NavbarMenu className="pt-6 pb-6 gap-4 shadow-lg">
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -185,23 +162,10 @@ export const Navbar = () => {
                   >
                     <NavbarMenuItem>
                       <Link
-                        className="w-full px-4 py-3 text-lg hover:bg-default-100 dark:hover:bg-default-50 rounded-lg transition-colors relative overflow-hidden"
-                        color={
-                          index === 2
-                            ? "primary"
-                            : index === siteConfig.navMenuItems.length - 1
-                              ? "danger"
-                              : "foreground"
-                        }
-                        href="#"
+                        className="w-full px-4 py-3 text-lg hover:bg-default-100 rounded-lg transition-colors relative overflow-hidden"
+                        href={item.href}
                         size="lg"
                       >
-                        <motion.div
-                          className="absolute inset-0 bg-current"
-                          initial={{ scale: 0, opacity: 0 }}
-                          whileHover={{ scale: 1, opacity: 0.1 }}
-                          transition={{ duration: 0.3 }}
-                        />
                         {item.label}
                       </Link>
                     </NavbarMenuItem>
