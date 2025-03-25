@@ -946,7 +946,7 @@ function ProductsContent() {
 export default function ProductsPage() {
     return (
         <Suspense fallback={<div className="w-full h-screen flex items-center justify-center">
-            <div className="animate-pulse text-xl font-semibold">正在加载商品...</div>
+            <div className="animate-pulse text-xl font-semibold">Loading products...</div>
         </div>}>
             <ProductsContent />
         </Suspense>
