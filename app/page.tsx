@@ -1,6 +1,7 @@
 import { CategoryNavigation } from "@/components/ui/CategoryNavigation";
 import { FeaturedDeals } from "@/components/ui/FeaturedDeals";
 import { HeroSection } from "@/components/ui/HeroSection";
+import { NewsletterSubscribe } from "@/components/ui/NewsletterSubscribe";
 
 
 export default function Home() {
@@ -37,34 +38,10 @@ export default function Home() {
         </div>
 
 
-        {/* 品牌推荐区域 */}
-        <div className="mt-4 p-6 bg-gradient-to-r from-secondary-light/10 to-tiffany/5 rounded-xl">
-          <h2 className="text-2xl font-bold mb-6 text-primary text-center">Hot brands</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 justify-items-center">
-            {["Apple", "Samsung", "Sony", "Nike", "Adidas", "Amazon"].map((brand) => (
-              <div
-                key={brand}
-                className="w-32 h-32 bg-white rounded-lg shadow-md flex items-center justify-center hover:shadow-lg transition-shadow"
-              >
-                <p className="text-lg font-medium text-text">{brand}</p>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* 底部广告条 */}
-        <div className="mt-4 p-6 bg-primary-Prime rounded-xl text-white text-center">
-          <h3 className="text-xl font-bold mb-2">Download our APP for more deals!</h3>
-          <p className="mb-4">Get the latest deals first-hand, don&apos;t miss any money-saving opportunity</p>
-          <div className="flex justify-center space-x-4">
-            <button className="px-6 py-2 bg-white text-primary rounded-full font-medium hover:bg-white/90 transition-colors">
-              App Store
-            </button>
-            <button className="px-6 py-2 bg-white text-primary rounded-full font-medium hover:bg-white/90 transition-colors">
-              Google Play
-            </button>
-          </div>
-        </div>
+
+        {/* 邮箱订阅组件 */}
+        <NewsletterSubscribe />
       </div>
     </div>
   );
