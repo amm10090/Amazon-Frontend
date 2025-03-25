@@ -8,6 +8,10 @@
 
 - [StoreIdentifier 商店来源标识组件](./components/StoreIdentifier.md) - 用于显示商品来源店铺的标识组件
 
+### API文档
+
+- [Amazon Frontend API 文档](./API.md) - 详细的API使用说明和示例代码
+
 ## 如何使用本文档
 
 每个组件文档包含以下内容：
