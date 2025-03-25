@@ -115,65 +115,112 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
  * @returns 适配后的产品数据
  */
 export function adaptProducts(apiProducts: Product[]): ComponentProduct[] {
+    if (!apiProducts) {
+        return [];
+    }
+
     if (!Array.isArray(apiProducts)) {
-        // 使用 console.warn 代替 console.error 并在生产环境禁用
-        if (process.env.NODE_ENV !== 'production') {
-            // eslint-disable-next-line no-console
-            console.warn('无效的商品数据:', apiProducts);
+        // 如果是单个对象，尝试包装为数组
+        if (apiProducts && typeof apiProducts === 'object') {
+            return adaptProducts([apiProducts as unknown as Product]);
         }
 
         return [];
     }
 
     return apiProducts.map(p => {
-        // 获取主要优惠信息
-        const mainOffer = p.offers && p.offers.length > 0 ? p.offers[0] : null;
-
-        // 获取价格信息
-        const price = mainOffer ? mainOffer.price : (p.price || 0);
-
-        // 计算原价和折扣
-        let originalPrice = price;
-        let discount = 0;
-
-        if (mainOffer) {
-            // 如果有savings，直接使用
-            if (mainOffer.savings) {
-                originalPrice = price + mainOffer.savings;
-                discount = mainOffer.savings_percentage || Math.round((mainOffer.savings / originalPrice) * 100);
-            }
-            // 如果有savings_percentage但没有savings
-            else if (mainOffer.savings_percentage) {
-                discount = mainOffer.savings_percentage;
-                originalPrice = Math.round(price / (1 - discount / 100) * 100) / 100;
-            }
+        if (!p) {
+            return {
+                id: 'unknown',
+                title: '未知商品',
+                price: 0,
+                originalPrice: 0,
+                discount: 0,
+                image: '/placeholder-product.jpg',
+                category: ''
+            };
         }
 
-        // 获取优惠券信息
-        const couponValue = mainOffer?.coupon_value || 0;
-        const couponType = mainOffer?.coupon_type || null;
+        try {
+            // 获取主要优惠信息
+            const mainOffer = p.offers && p.offers.length > 0 ? p.offers[0] : null;
 
-        return {
-            id: p.asin || p.id || '',
-            title: p.title || '',
-            price: price,
-            originalPrice: originalPrice,
-            discount: discount,
-            image: p.main_image || p.image_url || '',
-            category: p.product_group || p.binding || p.categories?.[0] || '',
-            description: p.description || '',
-            brand: p.brand || '',
-            rating: p.rating || 0,
-            reviews: p.reviews || 0,
-            url: p.url || '',
-            cj_url: p.cj_url || undefined,
-            isPrime: mainOffer?.is_prime || false,
-            isFreeShipping: mainOffer?.is_free_shipping_eligible || false,
-            isAmazonFulfilled: mainOffer?.is_amazon_fulfilled || false,
-            availability: mainOffer?.availability || '无库存',
-            couponValue: couponValue,
-            couponType: couponType,
-            apiProvider: p.api_provider
-        };
+            // 获取价格信息
+            const price = mainOffer ? mainOffer.price : (p.price || 0);
+
+            // 计算原价和折扣
+            let originalPrice = price;
+            let discount = 0;
+
+            if (mainOffer) {
+                // 如果有savings，直接使用
+                if (mainOffer.savings) {
+                    originalPrice = price + mainOffer.savings;
+                    discount = mainOffer.savings_percentage || Math.round((mainOffer.savings / originalPrice) * 100);
+                }
+                // 如果有savings_percentage但没有savings
+                else if (mainOffer.savings_percentage) {
+                    discount = mainOffer.savings_percentage;
+                    originalPrice = Math.round(price / (1 - discount / 100) * 100) / 100;
+                }
+            }
+
+            // 如果有discount_rate但没有计算过discount
+            if (p.discount_rate && discount === 0) {
+                discount = p.discount_rate;
+                if (discount > 0 && originalPrice === price) {
+                    originalPrice = Math.round(price / (1 - discount / 100) * 100) / 100;
+                }
+            }
+
+            // 如果有original_price但没有计算过originalPrice
+            if (p.original_price && originalPrice === price) {
+                originalPrice = p.original_price;
+                if (discount === 0) {
+                    discount = calculateDiscount(originalPrice, price);
+                }
+            }
+
+            // 获取优惠券信息
+            const couponValue = mainOffer?.coupon_value || 0;
+            const couponType = mainOffer?.coupon_type || null;
+
+            // 获取图片URL，处理不同的字段名
+            const imageUrl = p.main_image || p.image_url || (p as { image?: string }).image || '/placeholder-product.jpg';
+
+            return {
+                id: p.asin || p.id || '',
+                title: p.title || '',
+                price: price,
+                originalPrice: originalPrice,
+                discount: discount,
+                image: imageUrl,
+                category: p.product_group || p.binding || p.categories?.[0] || '',
+                description: p.description || '',
+                brand: p.brand || '',
+                rating: p.rating || 0,
+                reviews: p.reviews || 0,
+                url: p.url || '',
+                cj_url: p.cj_url || undefined,
+                isPrime: mainOffer?.is_prime || false,
+                isFreeShipping: mainOffer?.is_free_shipping_eligible || false,
+                isAmazonFulfilled: mainOffer?.is_amazon_fulfilled || false,
+                availability: mainOffer?.availability || '无库存',
+                couponValue: couponValue,
+                couponType: couponType,
+                apiProvider: p.api_provider
+            };
+        } catch {
+            // 返回基本信息
+            return {
+                id: p.asin || p.id || 'error',
+                title: p.title || '数据处理错误',
+                price: p.price || 0,
+                originalPrice: p.original_price || p.price || 0,
+                discount: 0,
+                image: p.main_image || p.image_url || '/placeholder-product.jpg',
+                category: ''
+            };
+        }
     });
 } 

@@ -5,10 +5,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
+import FavoriteButton from '@/components/common/FavoriteButton';
 import { productsApi } from '@/lib/api';
 import { StoreIdentifier } from '@/lib/store';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
 import type { Product } from '@/types/api';
+
+// 导入FavoriteButton组件
 
 // 定义API响应的接口，替代any类型
 interface ProductResponse {
@@ -323,6 +326,22 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                                 custom={index}
                                 className="relative"
                             >
+                                {/* 收藏按钮 - 添加在商品卡片外部，确保它可以接收单独的点击事件 */}
+                                <div
+                                    className="absolute top-3 right-3 z-20"
+                                    onClick={(e) => e.stopPropagation()}
+                                    onKeyDown={(e) => e.stopPropagation()}
+                                    role="button"
+                                    tabIndex={0}
+                                >
+                                    <FavoriteButton
+                                        productId={productId}
+                                        size="md"
+                                        withAnimation={true}
+                                        className="bg-white/80 dark:bg-gray-800/80 shadow-sm hover:bg-white dark:hover:bg-gray-800"
+                                    />
+                                </div>
+
                                 <Link href={`/product/${productId}`} className="block">
                                     <motion.div
                                         className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden h-full flex flex-col"
@@ -342,8 +361,8 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                                             </div>
                                         )}
 
-                                        {/* Coupon badge only - discount moved to price line */}
-                                        <div className="absolute top-3 right-3 z-10">
+                                        {/* Coupon badge - 移动到右上角但位置调整为距离右侧12px，避免与收藏按钮重叠 */}
+                                        <div className="absolute top-3 right-12 z-10">
                                             {hasCoupon && (
                                                 <motion.div
                                                     initial={{ scale: 0.9 }}

@@ -7,10 +7,12 @@
 ### 组件文档
 
 - [StoreIdentifier 商店来源标识组件](./components/StoreIdentifier.md) - 用于显示商品来源店铺的标识组件
+- [收藏功能](./Favorites.md) - 收藏功能的完整使用指南，包含前端组件和API
 
 ### API文档
 
 - [Amazon Frontend API 文档](./API.md) - 详细的API使用说明和示例代码
+- [收藏功能 API](./Favorites.md#后端api) - 收藏功能相关的API端点和使用示例
 
 ## 如何使用本文档
 
