@@ -15,6 +15,7 @@ interface ApiStateWrapperProps<T> {
     loadingMessage?: string;
     emptyMessage?: string;
     onRetry?: (() => void) | undefined;
+    loadingFallback?: React.ReactNode;
     children: (data: T) => React.ReactNode;
 }
 
@@ -27,9 +28,14 @@ export default function ApiStateWrapper<T>({
     loadingMessage = "正在加载数据...",
     emptyMessage = "没有找到数据",
     onRetry,
+    loadingFallback,
     children
 }: ApiStateWrapperProps<T>) {
     if (isLoading) {
+        if (loadingFallback) {
+            return <>{loadingFallback}</>;
+        }
+
         return (
             <div className="w-full py-12">
                 <LoadingSpinner size="lg" message={loadingMessage} />

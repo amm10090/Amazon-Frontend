@@ -1,6 +1,5 @@
 "use client";
 
-import axios from 'axios';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -217,6 +216,29 @@ const _isProduct = (product: AmazonProduct | Product): product is Product => {
     return 'id' in product;
 };
 
+// 添加商品骨架屏组件
+const ProductSkeleton = () => (
+    <div className="relative group h-full">
+        <div className="relative h-full flex flex-col overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 animate-pulse">
+            {/* 图片骨架 */}
+            <div className="relative w-full pt-[100%] bg-gray-200 dark:bg-gray-700" />
+
+            {/* 内容区域 */}
+            <div className="p-2 sm:p-3 md:p-4 flex-grow flex flex-col">
+                {/* 标题骨架 */}
+                <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+                <div className="w-2/3 h-4 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+
+                {/* 价格区域骨架 */}
+                <div className="mt-auto pt-1 sm:pt-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-0.5 sm:gap-1">
+                    <div className="w-16 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
+                    <div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded" />
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 // 使用 Client Component 包装搜索参数逻辑
 function ProductsContent() {
     const searchParamsFromUrl = useSearchParams();
@@ -240,6 +262,13 @@ function ProductsContent() {
 
     // 跟踪参数是否已从URL加载的状态
     const [urlParamsLoaded, setUrlParamsLoaded] = useState(false);
+
+    // 添加缓存状态展示
+    const [cacheStatus, setCacheStatus] = useState<{
+        isCached: boolean;
+        responseTime: number;
+        expires: string;
+    } | null>(null);
 
     // 添加useEffect，确保从URL参数正确加载
     useEffect(() => {
@@ -363,7 +392,7 @@ function ProductsContent() {
         }
     }, [searchParams, urlParamsLoaded, mutate]);
 
-    // 如果SWR获取失败，尝试直接使用axios获取
+    // 如果SWR获取失败，尝试直接使用fetch获取
     useEffect(() => {
         const fetchDirectlyIfNeeded = async () => {
             if ((isError || (!data && !isLoading)) && !isDirectLoading) {
@@ -380,10 +409,42 @@ function ProductsContent() {
                     if (apiParams.brands === '') delete apiParams.brands;
                     if (apiParams.product_groups === '') delete apiParams.product_groups;
 
-                    const response = await axios.get('/api/products/list', { params: apiParams });
+                    // 使用新的缓存路由端点
+                    const queryParams = new URLSearchParams();
 
-                    setDirectData(response.data);
+                    // 添加所有有效参数
+                    Object.entries(apiParams)
+                        .filter(([_, value]) => value !== undefined && value !== null)
+                        .forEach(([key, value]) => {
+                            queryParams.append(key, String(value));
+                        });
+
+                    const queryString = queryParams.toString();
+                    const url = `/api/products/list${queryString ? `?${queryString}` : ''}`;
+
+                    // 发起请求
+                    const response = await fetch(url);
+
+                    // 检查响应头中的缓存状态
+                    if (response.ok) {
+                        const responseData = await response.json();
+
+                        setDirectData(responseData);
+
+                        // 获取并更新缓存状态
+                        const isCached = response.headers.get('X-Cache-Source') === 'cache-hit';
+                        const responseTime = parseInt(response.headers.get('X-Response-Time') || '0');
+                        const expires = response.headers.get('X-Cache-Expires') || '';
+
+                        setCacheStatus({
+                            isCached,
+                            responseTime,
+                            expires
+                        });
+                    }
                 } catch {
+                    // 错误处理
+                    setCacheStatus(null);
                 } finally {
                     setIsDirectLoading(false);
                 }
@@ -625,6 +686,13 @@ function ProductsContent() {
                 <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">
                         Showing <span className="font-medium">{products.length}</span> of <span className="font-medium">{data?.total || directData?.total || 0}</span> products
+                        {cacheStatus && (
+                            <span className="ml-2 text-xs text-gray-500">
+                                {cacheStatus.isCached ?
+                                    `(cached, ${cacheStatus.responseTime}ms)` :
+                                    `(fresh, ${cacheStatus.responseTime}ms)`}
+                            </span>
+                        )}
                     </p>
                     <div className="flex items-center gap-2">
                         <label htmlFor="sort" className="text-sm text-gray-600 dark:text-gray-400">
@@ -662,6 +730,17 @@ function ProductsContent() {
                 />
             </motion.div>
         </AnimatePresence>
+    );
+
+    const skeletonIds = useMemo(() => Array.from({ length: 6 }, () => Math.random().toString(36).substring(2)), []);
+
+    // 渲染骨架屏
+    const renderSkeletons = () => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {skeletonIds.map((id) => (
+                <ProductSkeleton key={`product-skeleton-${id}`} />
+            ))}
+        </div>
     );
 
     // 添加事件监听器来处理筛选器内部按钮点击
@@ -948,6 +1027,7 @@ function ProductsContent() {
                             isEmpty={!adaptedProducts?.length}
                             emptyMessage="No matching products found"
                             data={adaptedProducts}
+                            loadingFallback={renderSkeletons()}
                         >
                             {renderProductList}
                         </ApiStateWrapper>

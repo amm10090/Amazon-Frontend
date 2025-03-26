@@ -71,7 +71,7 @@ export const productsApi = {
     },
 
     // 商品相关
-    getProducts: (params?: {
+    getProducts: async (params?: {
         product_type?: 'discount' | 'coupon' | 'all';
         page?: number;
         limit?: number;
@@ -85,24 +85,62 @@ export const productsApi = {
         brands?: string;
         api_provider?: string;
     }) => {
-        // 将前端参数映射到API参数
-        const apiParams: Record<string, unknown> = { ...params };
+        try {
+            // 将前端参数映射到API参数
+            const apiParams: Record<string, unknown> = { ...params };
 
-        // 重命名一些参数以匹配API预期
-        if (params?.limit) apiParams.page_size = params.limit;
-        if (params?.sort_by) apiParams.sort_by = params.sort_by;
-        if (params?.sort_order) apiParams.sort_order = params.sort_order;
+            // 重命名一些参数以匹配API预期
+            if (params?.limit) apiParams.page_size = params.limit;
+            if (params?.sort_by) apiParams.sort_by = params.sort_by;
+            if (params?.sort_order) apiParams.sort_order = params.sort_order;
 
-        // 移除空的分类和品牌参数
-        if (params?.brands === '') delete apiParams.brands;
-        if (params?.product_groups === '') delete apiParams.product_groups;
+            // 移除空的分类和品牌参数
+            if (params?.brands === '') delete apiParams.brands;
+            if (params?.product_groups === '') delete apiParams.product_groups;
 
-        // 移除不需要的参数
-        delete apiParams.limit;
+            // 移除不需要的参数
+            delete apiParams.limit;
 
-        return api.get<ApiResponse<ListResponse<Product>>>('/products/list', { params: apiParams });
+            // 构建查询参数
+            const queryParams = new URLSearchParams();
+
+            // 添加所有查询参数
+            Object.entries(apiParams).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    queryParams.append(key, String(value));
+                }
+            });
+
+            // 获取完整URL
+            const queryString = queryParams.toString();
+            const baseUrl = isServer() ? SERVER_API_URL : '';
+            // 只有在queryString非空时才添加?
+            const url = `${baseUrl}/api/products/list${queryString ? `?${queryString}` : ''}`;
+
+            // 使用fetch API发起请求，利用Next.js的自动缓存
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            return {
+                data: data
+            };
+        } catch {
+            // 错误处理
+            return {
+                data: {
+                    items: [],
+                    total: 0,
+                    page: 1,
+                    page_size: 10
+                }
+            };
+        }
     },
-
     getProductsStats: (productType?: 'discount' | 'coupon') =>
         api.get<ApiResponse<ProductStats>>('/products/stats', { params: { product_type: productType } }),
 

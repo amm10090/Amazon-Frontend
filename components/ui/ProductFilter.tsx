@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 
 import { useCategoryStats } from '@/lib/hooks';
 
-import LoadingSpinner from './LoadingSpinner';
 
 interface CategoryItem {
     id: string;
@@ -18,6 +17,18 @@ interface ProductFilterProps {
     selectedCategory: string | null;
     selectedSort: string;
 }
+
+// 添加分类骨架组件
+const CategorySkeleton = () => (
+    <div className="flex flex-wrap gap-2">
+        <div className="w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+        <div className="w-28 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+        <div className="w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+        <div className="w-24 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+        <div className="w-32 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+        <div className="w-18 h-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+    </div>
+);
 
 export function ProductFilter({
     onFilter,
@@ -90,9 +101,7 @@ export function ProductFilter({
                     </motion.button>
 
                     {categoriesLoading ? (
-                        <div className="flex items-center justify-center p-2">
-                            <LoadingSpinner size="sm" />
-                        </div>
+                        <CategorySkeleton />
                     ) : (
                         categoryItems.slice(0, 8).map((cat) => (
                             <motion.button

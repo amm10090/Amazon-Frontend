@@ -42,9 +42,11 @@ export function useProducts(params?: {
         {
             revalidateOnFocus: false,
             revalidateOnReconnect: false,
-            dedupingInterval: 0, // 禁用缓存去重，确保每次参数变化都重新获取
+            dedupingInterval: 30000, // 30秒内相同请求不重复获取
             shouldRetryOnError: true,
-            errorRetryCount: 3
+            errorRetryCount: 3,
+            revalidateIfStale: false, // 不自动重新获取旧数据
+            focusThrottleInterval: 10000, // 限制焦点重新验证的频率
         }
     );
 
