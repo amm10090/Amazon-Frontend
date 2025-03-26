@@ -51,8 +51,24 @@ export async function GET(request: Request) {
 
         const data = await response.json();
 
-        // 使用 NextResponse 返回数据
-        return NextResponse.json(data);
+        // 计算缓存相关的时间
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + revalidate * 1000);
+
+        // 设置缓存头信息
+        const cacheHeaders = {
+            'X-Cache-Config': 'enabled',
+            'X-Cache-Revalidate': `${revalidate}`,
+            'X-Cache-Revalidate-Unit': 'seconds',
+            'X-Cache-Max-Age': `${revalidate}`,
+            'X-Cache-Expires': expiresAt.toISOString(),
+            'X-Cache-Generated': now.toISOString()
+        };
+
+        // 使用 NextResponse 返回数据并添加缓存头信息
+        return NextResponse.json(data, {
+            headers: cacheHeaders
+        });
     } catch {
 
         // 返回默认的空数据结构
@@ -63,12 +79,30 @@ export async function GET(request: Request) {
             product_groups: {}
         };
 
+        // 计算缓存相关的时间，即使是错误响应也添加缓存头
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + revalidate * 1000);
+
+        // 设置缓存头信息
+        const cacheHeaders = {
+            'X-Cache-Config': 'enabled',
+            'X-Cache-Revalidate': `${revalidate}`,
+            'X-Cache-Revalidate-Unit': 'seconds',
+            'X-Cache-Max-Age': `${revalidate}`,
+            'X-Cache-Expires': expiresAt.toISOString(),
+            'X-Cache-Generated': now.toISOString(),
+            'X-Cache-Error': 'true'
+        };
+
         return NextResponse.json(
             {
                 success: false,
                 data: defaultData,
             },
-            { status: 500 }
+            {
+                status: 500,
+                headers: cacheHeaders
+            }
         );
     }
 } 

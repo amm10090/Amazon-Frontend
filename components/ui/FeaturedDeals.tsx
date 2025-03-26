@@ -6,43 +6,9 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
 import FavoriteButton from '@/components/common/FavoriteButton';
-import { productsApi } from '@/lib/api';
 import { StoreIdentifier } from '@/lib/store';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
 import type { Product } from '@/types/api';
-
-// 导入FavoriteButton组件
-
-// 定义API响应的接口，替代any类型
-interface ProductResponse {
-    data?: {
-        items?: Product[];
-    };
-    items?: Product[];
-}
-
-// 辅助函数，用于安全获取响应中的商品项
-function getResponseItems(response: ProductResponse): Product[] {
-    // 如果response.items存在且非空，返回它
-    if (response.items && response.items.length > 0) {
-        return response.items;
-    }
-    // 如果response.data.items存在且非空，返回它
-    if (response.data?.items && response.data.items.length > 0) {
-        return response.data.items;
-    }
-
-    // 都不存在则返回空数组
-    return [];
-}
-
-// 检查响应是否包含有效的商品
-function hasValidItems(response: ProductResponse): boolean {
-    if (!response) return false;
-
-    return (Array.isArray(response.items) && response.items.length > 0) ||
-        (!!response.data && Array.isArray(response.data.items) && response.data.items.length > 0);
-}
 
 interface FeaturedDealsProps {
     limit?: number;
@@ -54,149 +20,32 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch today's best deals
+    // Fetch today's best deals using the new API route
     useEffect(() => {
         const fetchDeals = async () => {
             try {
                 setLoading(true);
 
-                // 生成随机参数确保每次请求不同的数据
-                const randomOffset = Math.floor(Math.random() * 50); // 随机起始位置
-                const randomSortOptions = ['created', 'price', 'discount'] as const; // 随机排序选项
-                const randomSort = randomSortOptions[Math.floor(Math.random() * randomSortOptions.length)];
+                // 调用新的API路由获取精选商品
+                const response = await fetch(`/api/products/featured?limit=${limit}`);
 
-                // First try with stricter filters
-                const response = await productsApi.getProducts({
-                    limit: limit * 3, // 获取更多商品以便随机选择
-                    min_discount: 30,
-                    is_prime_only: true,
-                    product_type: 'all',
-                    sort_by: randomSort,
-                    sort_order: Math.random() > 0.5 ? 'asc' : 'desc',
-                    page: randomOffset > 0 ? Math.floor(randomOffset / 10) + 1 : 1 // 随机页码
-                });
-
-                const responseData = response.data as ProductResponse || {};
-
-                // Try different possible response structures
-                if (hasValidItems(responseData)) {
-                    // 使用辅助函数获取items，确保类型安全
-                    const items = [...getResponseItems(responseData)];
-
-                    // Fisher-Yates shuffle algorithm for true randomness
-                    for (let i = items.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-
-                        [items[i], items[j]] = [items[j], items[i]];
-                    }
-                    setDeals(items.slice(0, limit));
-                    setLoading(false);
-
-                    return;
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
                 }
-                else if (response.data?.data?.items && response.data.data.items.length > 0) {
-                    // Randomize the items returned
-                    const items = [...response.data.data.items];
 
-                    // Fisher-Yates shuffle algorithm for true randomness
-                    for (let i = items.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
+                const result = await response.json();
 
-                        [items[i], items[j]] = [items[j], items[i]];
-                    }
-                    setDeals(items.slice(0, limit));
-                    setLoading(false);
-
-                    return;
-                }
-                else {
-                    // If no results, try a more relaxed query
-                    const fallbackResponse = await productsApi.getProducts({
-                        limit: limit * 4, // 获取更多商品
-                        min_discount: 10,
-                        product_type: 'all',
-                        is_prime_only: true,
-                        sort_by: randomSort,
-                        sort_order: Math.random() > 0.5 ? 'asc' : 'desc',
-                        page: Math.floor(Math.random() * 3) + 1 // 随机页码1-3
-                    });
-
-                    const fallbackData = fallbackResponse.data as ProductResponse || {};
-
-                    if (hasValidItems(fallbackData)) {
-                        // 使用辅助函数获取items，确保类型安全
-                        const items = [...getResponseItems(fallbackData)];
-
-                        // Fisher-Yates shuffle algorithm for true randomness
-                        for (let i = items.length - 1; i > 0; i--) {
-                            const j = Math.floor(Math.random() * (i + 1));
-
-                            [items[i], items[j]] = [items[j], items[i]];
-                        }
-                        setDeals(items.slice(0, limit));
-                        setLoading(false);
-
-                        return;
-                    }
-                    else if (fallbackResponse.data?.data?.items && fallbackResponse.data.data.items.length > 0) {
-                        // Randomize the items returned
-                        const items = [...fallbackResponse.data.data.items];
-
-                        // Fisher-Yates shuffle algorithm for true randomness
-                        for (let i = items.length - 1; i > 0; i--) {
-                            const j = Math.floor(Math.random() * (i + 1));
-
-                            [items[i], items[j]] = [items[j], items[i]];
-                        }
-                        setDeals(items.slice(0, limit));
-                        setLoading(false);
-
-                        return;
-                    }
-                    else {
-                        // If still no results, just get any products
-                        const anyProductsResponse = await productsApi.getProducts({
-                            limit: limit * 4,
-                            product_type: 'all',
-                            sort_by: randomSort,
-                            sort_order: Math.random() > 0.5 ? 'asc' : 'desc',
-                            page: Math.floor(Math.random() * 5) + 1 // 随机页码1-5
-                        });
-
-                        const anyProductsData = anyProductsResponse.data as ProductResponse || {};
-
-                        if (hasValidItems(anyProductsData)) {
-                            // 使用辅助函数获取items，确保类型安全
-                            const items = [...getResponseItems(anyProductsData)];
-
-                            // Fisher-Yates shuffle algorithm for true randomness
-                            for (let i = items.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-
-                                [items[i], items[j]] = [items[j], items[i]];
-                            }
-                            setDeals(items.slice(0, limit));
-                        }
-                        else if (anyProductsResponse.data?.data?.items) {
-                            // Randomize the items returned
-                            const items = [...anyProductsResponse.data.data.items];
-
-                            // Fisher-Yates shuffle algorithm for true randomness
-                            for (let i = items.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-
-                                [items[i], items[j]] = [items[j], items[i]];
-                            }
-                            setDeals(items.slice(0, limit));
-                        }
-                        else {
-                            setDeals([]);
-                        }
+                if (result.success && Array.isArray(result.data)) {
+                    setDeals(result.data);
+                } else {
+                    setDeals([]);
+                    if (result.error) {
+                        setError(result.error);
+                    } else {
+                        setError('No deals available at the moment');
                     }
                 }
-            } catch (err) {
-                // eslint-disable-next-line no-console
-                console.error('Failed to fetch today\'s best deals:', err);
+            } catch {
                 setError('Unable to load deals. Please try again later.');
             } finally {
                 setLoading(false);
@@ -469,4 +318,4 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
             </div>
         </motion.div>
     );
-} 
+}
