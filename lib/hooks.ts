@@ -116,9 +116,31 @@ export function useCategoryStats(params?: {
         ...params
     };
 
+    // 创建用于 SWR 的 fetcher 函数，直接使用新的 API 路由
+    const fetcher = async (url: string, params: Record<string, unknown>) => {
+        // 构建查询参数
+        const queryParams = new URLSearchParams();
+
+        // 添加所有查询参数
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                queryParams.append(key, String(value));
+            }
+        });
+
+        // 发起请求，利用 Next.js 的自动缓存机制
+        const response = await fetch(`${url}?${queryParams.toString()}`);
+
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+
+        return response.json();
+    };
+
     const { data, error, isLoading } = useSWR(
         ['/api/categories/stats', defaultParams],
-        () => productsApi.getCategoryStats(defaultParams),
+        ([url, params]) => fetcher(url, params),
         {
             revalidateOnFocus: false,
             refreshInterval: 300000, // 每5分钟刷新一次
@@ -168,11 +190,13 @@ export function useCategoryStats(params?: {
         }
     };
 
-    const processedData = processData((data?.data as unknown) as Record<string, unknown> || {});
+    // 根据API响应结构访问数据
+    const apiData = data?.data || data;
+    const processedData = processData((apiData as unknown) as Record<string, unknown> || {});
 
     return {
         data: processedData,
-        rawData: (data?.data as unknown) as Record<string, unknown>,
+        rawData: (apiData as unknown) as Record<string, unknown>,
         isLoading,
         isError: error,
     };
