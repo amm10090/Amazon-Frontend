@@ -152,6 +152,82 @@ const responseTime = Date.now() - requestStartTime;
 const isCacheHit = responseTime < 100; // 如果响应时间小于100ms，很可能是缓存命中
 ```
 
+## Hero 组件 API 缓存
+
+路径：`/api/products/hero`
+
+### 缓存时间与策略
+
+Hero 组件 API 使用 1 分钟的短缓存时间，平衡数据新鲜度和随机性。
+
+```typescript
+// 配置路由段缓存，缓存整个路由处理程序1分钟
+export const revalidate = 60;
+```
+
+### 分钟级确定性随机
+
+与精选商品 API 不同，Hero API 使用分钟级别的时间种子，确保每分钟显示不同的商品：
+
+```typescript
+// 计算当前分钟作为随机种子，确保一分钟内结果一致
+const minuteSeed = now.getFullYear() * 10000000 + 
+                   (now.getMonth() + 1) * 100000 + 
+                   now.getDate() * 1000 + 
+                   now.getHours() * 100 + 
+                   now.getMinutes();
+```
+
+### 实现细节
+
+1. **随机页码的确定性生成**：基于分钟种子生成固定的随机页码
+   ```typescript
+   const seedBasedRandom = (seed: number) => {
+       const x = Math.sin(seed) * 10000;
+       return x - Math.floor(x);
+   };
+   
+   const randomPageBase = seedBasedRandom(minuteSeed) * 50;
+   const randomPage = Math.floor(randomPageBase) + 1;
+   ```
+
+2. **服务端数据准备**：API 端点直接返回处理好的 promoCards 数据，减少客户端处理逻辑
+   ```typescript
+   // 返回数据和缓存头信息
+   return NextResponse.json(
+       {
+           success: true,
+           products: limitedProducts,
+           promoCards: promoCards,
+           // ...其他元数据
+       }
+   );
+   ```
+
+3. **错误情况处理**：即使在错误情况下也返回备用数据和较短的缓存时间
+   ```typescript
+   'Cache-Control': `public, max-age=${Math.floor(revalidate/2)}, stale-while-revalidate=${revalidate}`
+   ```
+
+### 性能优化
+
+与其他 API 一样，Hero API 也包含详细的缓存监控头信息：
+
+```typescript
+const cacheHeaders = {
+    'X-Cache-Config': 'enabled',
+    'X-Cache-Revalidate': `${revalidate}`,
+    'X-Cache-Revalidate-Unit': 'seconds',
+    'X-Cache-Max-Age': `${revalidate}`,
+    'X-Cache-Expires': expiresAt.toISOString(),
+    'X-Cache-Generated': now.toISOString(),
+    'X-Cache-Source': isCacheHit ? 'cache-hit' : 'generated',
+    'X-Cache-Random-Seed': `${minuteSeed}`,
+    'X-Response-Time': `${responseTime}ms`,
+    'Cache-Control': `public, max-age=${revalidate}, stale-while-revalidate=${revalidate * 2}`
+};
+```
+
 ## 缓存响应头信息
 
 我们使用一系列自定义响应头信息，提高缓存机制的透明度：

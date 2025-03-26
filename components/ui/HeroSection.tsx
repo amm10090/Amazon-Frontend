@@ -91,70 +91,22 @@ export function HeroSection() {
             try {
                 setIsLoading(true);
 
-                // 随机生成页码 (1-50)
-                const randomPage = Math.floor(Math.random() * 50) + 1;
-
-                // 随机生成价格范围 (3-700)
-                const minPrice = 3;
-                const maxPrice = 700;
-
-                // 请求API
-                const response = await axios.get('/api/products/list', {
+                // 请求新的Hero API
+                const response = await axios.get('/api/products/hero', {
                     params: {
-                        page: randomPage,
-                        page_size: 3,
-                        min_price: minPrice,
-                        max_price: maxPrice,
-                        min_discount: 20,
-                        is_prime_only: true,
-                        product_type: 'all'
+                        limit: 3
                     }
                 });
 
-                if (response.data && response.data.items) {
-                    setProducts(response.data.items);
+                if (response.data && response.data.success) {
+                    // 直接使用API返回的处理好的数据
+                    if (response.data.products) {
+                        setProducts(response.data.products);
+                    }
 
-                    // 转换为促销卡片格式
-                    const cards = response.data.items.map((product: Product, index: number) => {
-                        const offer = product.offers[0] || {};
-                        const isCoupon = offer.coupon_type && offer.coupon_value;
-
-                        // 确定折扣文本
-                        let discountText = '';
-
-                        if (isCoupon) {
-                            // 如果是优惠券类型
-                            if (offer.coupon_type === 'fixed') {
-                                discountText = `$${offer.coupon_value} Coupon`;
-                            } else {
-                                discountText = `${offer.coupon_value}% Coupon`;
-                            }
-                        } else if (offer.savings_percentage) {
-                            // 如果是普通折扣
-                            discountText = `${offer.savings_percentage}% OFF`;
-                        }
-
-                        // 确定描述文本
-                        let description = product.brand || '';
-
-                        if (product.binding) {
-                            description += (description ? ' · ' : '') + product.binding;
-                        }
-
-                        return {
-                            id: index + 1,
-                            title: product.title,
-                            description: description,
-                            discount: discountText,
-                            ctaText: isCoupon ? "Get Coupon" : "Shop Now",
-                            link: product.url,
-                            image: product.main_image,
-                            brand: product.brand,
-                            productId: product.asin
-                        };
-                    });
-
-                    setPromoCards(cards);
+                    if (response.data.promoCards) {
+                        setPromoCards(response.data.promoCards);
+                    }
                 }
 
                 setIsLoading(false);
