@@ -1,7 +1,7 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Amazon Deals",
+  name: "OOHUNT",
   description: "Amazon Deals Display Platform",
   navItems: [
     {

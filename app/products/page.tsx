@@ -377,7 +377,7 @@ function ProductsContent() {
     const { data, isLoading, isError, mutate } = useProducts(urlParamsLoaded ? searchParams : undefined);
     const [isDirectLoading, setIsDirectLoading] = useState(false);
     const [directData, setDirectData] = useState<ProductsApiResponse | null>(null);
-    const { scrollYProgress } = useScroll();
+    const { scrollYProgress } = useScroll({ layoutEffect: false });
     const headerOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.97]);
     const headerY = useTransform(scrollYProgress, [0, 0.2], [0, -20]);
     const catalogRef = useRef<HTMLDivElement>(null);

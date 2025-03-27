@@ -47,21 +47,42 @@ export function useFavorites() {
  */
 export function useProductFavorite(productId: string) {
     const { isFavorite, addFavorite, removeFavorite } = useFavoritesContext();
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const isProductFavorite = isFavorite(productId);
 
     // 切换收藏状态
     const toggleFavorite = useCallback(async () => {
-        if (isProductFavorite) {
-            await removeFavorite(productId);
-        } else {
-            await addFavorite(productId);
+        setIsUpdating(true);
+        setError(null);
+
+        try {
+            const result = isProductFavorite
+                ? await removeFavorite(productId)
+                : await addFavorite(productId);
+
+            if (!result.success) {
+                setError(result.message);
+            }
+
+            return result;
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Operation failed';
+
+            setError(errorMessage);
+
+            return { success: false, message: errorMessage };
+        } finally {
+            setIsUpdating(false);
         }
     }, [isProductFavorite, addFavorite, removeFavorite, productId]);
 
     return {
         isFavorite: isProductFavorite,
-        toggleFavorite
+        toggleFavorite,
+        isUpdating,
+        error
     };
 }
 
@@ -130,7 +151,7 @@ export function useEnrichedFavorites() {
                             return {
                                 id,
                                 asin: id,
-                                title: `商品 ${id}`,
+                                title: `Product ${id}`,
                                 price: 0,
                                 image_url: '/placeholder-product.jpg'
                             } as Product;
@@ -138,7 +159,7 @@ export function useEnrichedFavorites() {
 
                         // 确保title字段存在，如果API返回的title是空的，则使用占位符
                         if (!productData.title || productData.title === '') {
-                            productData.title = productData.title || `商品 ${id}`;
+                            productData.title = productData.title || `Product ${id}`;
                         }
 
                         // 确保价格字段存在
@@ -165,7 +186,7 @@ export function useEnrichedFavorites() {
                         return {
                             id,
                             asin: id,
-                            title: `商品 ${id}`,
+                            title: `Product ${id}`,
                             price: 0,
                             image_url: '/placeholder-product.jpg'
                         } as Product;
@@ -177,7 +198,7 @@ export function useEnrichedFavorites() {
 
                 setEnrichedFavorites(validProducts);
             } catch (err) {
-                setError(err instanceof Error ? err : new Error('获取收藏商品详情失败'));
+                setError(err instanceof Error ? err : new Error('Failed to get favorite product details'));
             } finally {
                 setIsLoading(false);
             }

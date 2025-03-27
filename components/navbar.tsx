@@ -16,6 +16,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 
+import AuthStatus from "@/components/auth/AuthStatus";
 import { siteConfig } from "@/config/site";
 import { useProductSearch } from "@/lib/hooks";
 import { formatPrice } from "@/lib/utils";
@@ -296,6 +297,7 @@ export const Navbar = () => {
                 {item.label}
               </NextLink>
             ))}
+            <AuthStatus />
           </NavbarItem>
           <NavbarItem className="sm:hidden ml-2">
             <motion.div
@@ -338,6 +340,20 @@ export const Navbar = () => {
                     </NavbarMenuItem>
                   </motion.div>
                 ))}
+
+                {/* 在移动菜单底部添加认证状态 */}
+                <motion.div
+                  custom={siteConfig.navMenuItems.length}
+                  variants={menuItemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover="hover"
+                  className="mt-4 border-t border-gray-200 pt-4"
+                >
+                  <NavbarMenuItem className="justify-center flex">
+                    <AuthStatus />
+                  </NavbarMenuItem>
+                </motion.div>
               </motion.div>
             </NavbarMenu>
           )}

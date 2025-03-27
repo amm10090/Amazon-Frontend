@@ -1,29 +1,28 @@
 import "@/styles/globals.css";
-import clsx from "clsx";
-import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 
-import { Navbar } from "@/components/navbar";
-import { fontSans } from "@/config/fonts";
-import { siteConfig } from "@/config/site";
+import { ClientLayout } from "@/components/client-layout";
 
-import { Providers } from "./providers";
+const inter = Inter({
+  subsets: ["latin"],
+  adjustFontFallback: false,
+});
 
-export const metadata: Metadata = {
-  title: {
-    default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
+export const metadata = {
+  title: "OOHUNT - Your Ultimate Shopping Destination",
+  description: "Discover amazing products at great prices",
   icons: {
     icon: "/favicon.ico",
   },
 };
 
-export const viewport: Viewport = {
+export const viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
     { media: "(prefers-color-scheme: dark)", color: "black" },
   ],
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -32,32 +31,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="zh" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head />
-      <body
-        className={clsx(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable,
-        )}
-      >
-        <Providers>
-          <Navbar />
-          <main className="container mx-auto max-w-9xl pt-1 px-2 md:px-3 lg:px-4 grow">
-            {children}
-          </main>
-          <footer className="w-full flex items-center justify-center py-3">
-            <a
-              className="flex items-center gap-1 text-current"
-              href="https://heroui.com?utm_source=next-app-template"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="heroui.com homepage"
-            >
-              <span className="text-default-600">Powered by</span>
-              <p className="text-primary">OOHUNT</p>
-            </a>
-          </footer>
-        </Providers>
+      <body>
+        <ClientLayout inter={inter}>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   );

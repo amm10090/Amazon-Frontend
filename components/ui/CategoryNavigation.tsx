@@ -235,7 +235,8 @@ export function CategoryNavigation() {
 
     // 使用useScroll钩子来监听滚动容器的滚动位置
     const { scrollXProgress } = useScroll({
-        container: scrollContainerRef
+        container: scrollContainerRef,
+        layoutEffect: false
     });
 
     // 添加scrollXProgress的事件监听，用于实时更新方向和激活索引

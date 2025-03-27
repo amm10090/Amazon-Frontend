@@ -11,6 +11,8 @@
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix"
   },
   "dependencies": {
+    "@auth/core": "^0.38.0",
+    "@auth/mongodb-adapter": "^3.8.0",
     "@heroui/react": "2.7.6-beta.2",
     "@heroui/system": "2.4.12",
     "@heroui/theme": "2.4.12",
@@ -23,13 +25,18 @@
     "@types/three": "^0.174.0",
     "@typescript-eslint/utils": "^8.28.0",
     "axios": "^1.8.4",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
     "clsx": "2.1.1",
     "d3": "^7.9.0",
     "framer-motion": "12.5.0",
     "intl-messageformat": "^10.7.16",
     "lodash": "^4.17.21",
     "lucide-react": "^0.483.0",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.13.0",
     "next": "15.2.4",
+    "next-auth": "5.0.0-beta.25",
     "next-themes": "^0.4.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -42,6 +49,7 @@
     "@next/eslint-plugin-next": "15.2.4",
     "@react-types/shared": "3.28.0",
     "@tailwindcss/postcss": "^4.0.15",
+    "@types/bcrypt": "^5.0.2",
     "@types/lodash": "^4.17.16",
     "@types/node": "22.13.13",
     "@types/react": "19.0.12",
@@ -64,7 +72,7 @@
     "tailwindcss": "4.0.15",
     "typescript": "5.8.2"
   },
-  "packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af",
+  "packageManager": "pnpm@10.7.0+sha512.6b865ad4b62a1d9842b61d674a393903b871d9244954f652b8842c2b553c72176b278f64c463e52d40fff8aba385c235c8c9ecf5cc7de4fd78b8bb6d49633ab6",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@heroui/shared-utils",

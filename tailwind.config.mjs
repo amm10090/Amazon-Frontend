@@ -39,6 +39,51 @@ module.exports = {
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'bounce-slow': 'bounce 2s infinite',
+        'heartbeat': 'heartbeat 1s ease-in-out',
+        'favorite-success': 'favoriteSuccess 0.5s ease-in-out forwards, fadeOut 0.5s ease-in-out 2.5s forwards',
+        'fade-in': 'fadeIn 0.5s ease-in-out',
+        'fade-out': 'fadeOut 0.5s ease-in-out',
+        'slide-in-right': 'slideInRight 0.3s ease-out',
+        'slide-out-right': 'slideOutRight 0.3s ease-in',
+        'slide-in-up': 'slideInUp 0.3s ease-out',
+        'slide-in-down': 'slideInDown 0.3s ease-out',
+      },
+      keyframes: {
+        heartbeat: {
+          '0%': { transform: 'scale(1)' },
+          '14%': { transform: 'scale(1.3)' },
+          '28%': { transform: 'scale(1)' },
+          '42%': { transform: 'scale(1.3)' },
+          '70%': { transform: 'scale(1)' },
+        },
+        favoriteSuccess: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        fadeOut: {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
+        slideInRight: {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        slideOutRight: {
+          '0%': { transform: 'translateX(0)', opacity: '1' },
+          '100%': { transform: 'translateX(100%)', opacity: '0' },
+        },
+        slideInUp: {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        slideInDown: {
+          '0%': { transform: 'translateY(-20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
       },
       boxShadow: {
         'neon': '0 0 5px theme("colors.coral"), 0 0 20px theme("colors.coral")',
