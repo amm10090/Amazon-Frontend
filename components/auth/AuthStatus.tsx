@@ -76,13 +76,13 @@ export default function AuthStatus() {
                     href="/auth/signin"
                     className="bg-[#16A085] text-white font-medium hover:bg-[#138D75] transition-colors px-4 py-1.5 rounded-lg text-sm"
                 >
-                    登录
+                    Sign In
                 </Link>
                 <Link
                     href="/auth/signup"
                     className="bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition-colors px-4 py-1.5 rounded-lg text-sm"
                 >
-                    注册
+                    Sign Up
                 </Link>
             </div>
         );
