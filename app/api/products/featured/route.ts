@@ -2,11 +2,25 @@ import { NextResponse } from 'next/server';
 
 import type { Product } from '@/types/api';
 
-// 配置路由段缓存，缓存整个路由处理程序30分钟
-export const revalidate = 1800;
+// 扩展Product类型以包含discount字段
+interface ProductWithDiscount extends Product {
+    discount?: number;
+}
+
+// 配置路由段缓存，降低缓存时间以增加变化频率
+export const revalidate = 900; // 改为15分钟
 
 // API Base URL configuration
 const API_BASE_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
+// 商品权重配置
+const WEIGHT_CONFIG = {
+    DISCOUNT_THRESHOLD_HIGH: 30,    // 高折扣阈值
+    DISCOUNT_THRESHOLD_MEDIUM: 20,  // 中等折扣阈值
+    WEIGHT_HIGH_DISCOUNT: 3,        // 高折扣权重
+    WEIGHT_MEDIUM_DISCOUNT: 2,      // 中等折扣权重
+    WEIGHT_NORMAL: 1                // 普通商品权重
+};
 
 export async function GET(request: Request) {
     try {
@@ -14,19 +28,24 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
         const limit = parseInt(searchParams.get('limit') || '4');
 
-        // 计算当前小时作为随机种子，确保一小时内结果一致
+        // 使用更细粒度的时间种子（每15分钟更新一次）
         const now = new Date();
-        const hourSeed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate() + now.getHours();
+        const quarterHour = Math.floor(now.getMinutes() / 15);
+        const timeSeed = now.getFullYear() * 1000000 +
+            (now.getMonth() + 1) * 10000 +
+            now.getDate() * 100 +
+            now.getHours() * 4 +
+            quarterHour;
 
         // 记录请求开始时间，用于计算响应时间
         const requestStartTime = Date.now();
 
-        // 使用固定参数获取一个较大的商品集合 (50个商品)
+        // 增加商品池大小到200个
         const fixedParams = new URLSearchParams({
-            limit: '50',              // 获取足够多的商品以供随机选择
-            min_discount: '20',       // 设置较低的折扣阈值以获取更多的商品
+            limit: '200',            // 显著增加商品池大小
+            min_discount: '10',      // 降低初始折扣限制
             product_type: 'all',
-            sort_by: 'discount',      // 使用固定的排序方式
+            sort_by: 'random',       // 使用随机排序
             sort_order: 'desc'
         });
 
@@ -127,32 +146,48 @@ export async function GET(request: Request) {
             }
         }
 
-        // 自定义Fisher-Yates洗牌算法，使用基于时间的种子
-        const shuffleWithSeed = (array: Product[], seed: number) => {
+        // 增强的Fisher-Yates洗牌算法，包含权重
+        const shuffleWithWeightedSeed = (array: ProductWithDiscount[], seed: number) => {
             const shuffled = [...array];
-            let m = shuffled.length, t, i;
             let currentSeed = seed;
 
-            // 使用种子生成确定性随机数
+            // 确定性随机数生成器
             const random = () => {
                 const x = Math.sin(currentSeed++) * 10000;
 
                 return x - Math.floor(x);
             };
 
-            // 洗牌算法
-            while (m) {
-                i = Math.floor(random() * m--);
-                t = shuffled[m];
-                shuffled[m] = shuffled[i];
-                shuffled[i] = t;
+            // 计算商品权重
+            const getProductWeight = (product: ProductWithDiscount) => {
+                const discount = product.discount || 0;
+
+                if (discount >= WEIGHT_CONFIG.DISCOUNT_THRESHOLD_HIGH) {
+                    return WEIGHT_CONFIG.WEIGHT_HIGH_DISCOUNT;
+                } else if (discount >= WEIGHT_CONFIG.DISCOUNT_THRESHOLD_MEDIUM) {
+                    return WEIGHT_CONFIG.WEIGHT_MEDIUM_DISCOUNT;
+                }
+
+                return WEIGHT_CONFIG.WEIGHT_NORMAL;
+            };
+
+            // 带权重的洗牌
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const weight1 = getProductWeight(shuffled[i]);
+                const j = Math.floor(random() * (i + 1));
+                const weight2 = getProductWeight(shuffled[j]);
+
+                // 根据权重决定是否交换
+                if (random() * (weight1 + weight2) < weight2) {
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
             }
 
             return shuffled;
         };
 
-        // 使用时间种子进行确定性随机洗牌
-        const shuffledProducts = shuffleWithSeed(products, hourSeed);
+        // 使用增强的洗牌算法
+        const shuffledProducts = shuffleWithWeightedSeed(products, timeSeed);
 
         // 限制返回的商品数量
         const limitedProducts = shuffledProducts.slice(0, limit);
@@ -175,7 +210,7 @@ export async function GET(request: Request) {
             'X-Cache-Expires': expiresAt.toISOString(),
             'X-Cache-Generated': now.toISOString(),
             'X-Cache-Source': isCacheHit ? 'cache-hit' : 'generated',
-            'X-Cache-Random-Seed': `${hourSeed}`,
+            'X-Cache-Random-Seed': `${timeSeed}`,
             'X-Response-Time': `${responseTime}ms`,
             'Cache-Control': 'public, max-age=1800, stale-while-revalidate=3600'
         };
@@ -186,7 +221,7 @@ export async function GET(request: Request) {
                 success: true,
                 data: limitedProducts,
                 meta: {
-                    seed: hourSeed,
+                    seed: timeSeed,
                     cached: isCacheHit,
                     expires: expiresAt.toISOString(),
                     responseTime: responseTime
