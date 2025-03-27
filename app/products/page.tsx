@@ -631,12 +631,7 @@ function ProductsContent() {
                             </div>
                         )}
 
-                        {/* Coupon tag - 移动端更紧凑 */}
-                        {product.couponValue && product.couponValue > 0 && (
-                            <div className="absolute bottom-1 left-1 sm:bottom-1.5 sm:left-1.5 md:bottom-2 md:left-2 bg-green-500 text-white text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
-                                {product.couponType === 'percentage' ? `${product.couponValue}%` : `$${product.couponValue}`}
-                            </div>
-                        )}
+
                     </div>
 
                     {/* 内容区域使用flex-grow保证卡片高度一致 */}
