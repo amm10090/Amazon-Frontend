@@ -2,8 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useSession, signOut as nextAuthSignOut } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState, useRef } from 'react';
 
 interface User {
@@ -14,7 +13,6 @@ interface User {
 }
 
 export default function AuthStatus() {
-    const router = useRouter();
     const { data: session, status } = useSession();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -39,12 +37,16 @@ export default function AuthStatus() {
 
     const handleSignOut = async () => {
         try {
+            // 关闭下拉菜单
             setIsDropdownOpen(false);
-            await nextAuthSignOut({ redirect: false });
-            router.push('/');
-            router.refresh();
-        } catch (err) {
-            setError(`退出登录失败: ${err instanceof Error ? err.message : '未知错误'}`);
+
+            // 直接调用signOut并指定回调URL
+            await signOut({
+                redirect: true,
+                callbackUrl: '/'
+            });
+        } catch {
+            setError("退出失败，请重试");
         }
     };
 
@@ -121,24 +123,17 @@ export default function AuthStatus() {
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
                     <Link
-                        href="/dashboard"
+                        href="/favorites"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         onClick={() => setIsDropdownOpen(false)}
                     >
-                        个人中心
-                    </Link>
-                    <Link
-                        href="/dashboard/favorites"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsDropdownOpen(false)}
-                    >
-                        我的收藏
+                        My Favorites
                     </Link>
                     <button
                         onClick={handleSignOut}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
-                        退出登录
+                        Sign Out
                     </button>
                 </div>
             )}

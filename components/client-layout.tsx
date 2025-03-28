@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type { NextFont } from 'next/dist/compiled/@next/font';
+import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 
 import { Providers } from "@/app/providers";
@@ -12,11 +13,12 @@ import { FavoritesProvider } from '@/lib/favorites';
 interface ClientLayoutProps {
     children: React.ReactNode;
     inter: NextFont;
+    session: Session | null;
 }
 
-export function ClientLayout({ children, inter }: ClientLayoutProps) {
+export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
     return (
-        <SessionProvider basePath="/auth">
+        <SessionProvider session={session} basePath="/auth" refetchOnWindowFocus={false}>
             <ThemeProvider
                 attribute="class"
                 defaultTheme="system"

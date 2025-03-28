@@ -147,42 +147,65 @@ export const favoritesApi = {
      */
     syncFavorites: async (productIds: string[]): Promise<ApiResponseWrapper<undefined>> => {
         try {
-            // 获取当前收藏列表
-            const currentResponse = await fetch('/api/favorites');
-            const currentData = await currentResponse.json();
-
-            if (!currentResponse.ok) {
-                throw new Error(currentData.error || '获取当前收藏列表失败');
+            if (!productIds.length) {
+                return {
+                    data: {
+                        code: 200,
+                        message: '无需同步',
+                        data: undefined
+                    }
+                };
             }
 
-            // 获取当前收藏的商品ID
-            const currentIds = currentData.favorites.map((fav: FavoriteItem) => fav.productId);
+            // 批量处理，每批最多20个
+            const batchSize = 20;
+            const batches = [];
 
-            // 需要添加的商品
-            const idsToAdd = productIds.filter((id: string) => !currentIds.includes(id));
-            // 需要移除的商品
-            const idsToRemove = currentIds.filter((id: string) => !productIds.includes(id));
+            for (let i = 0; i < productIds.length; i += batchSize) {
+                const batch = productIds.slice(i, i + batchSize);
 
-            // 批量添加新商品
-            const addPromises = idsToAdd.map((id: string) =>
-                fetch('/api/favorites', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId: id }),
+                batches.push(batch);
+            }
+
+            // 使用Promise.allSettled处理每个批次
+            const results = await Promise.allSettled(
+                batches.map(async (batchIds) => {
+                    const retryLimit = 3;
+                    let attempt = 0;
+
+                    while (attempt < retryLimit) {
+                        try {
+                            const response = await fetch('/api/favorites/batch', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ productIds: batchIds }),
+                            });
+
+                            const data = await response.json();
+
+                            if (!response.ok) {
+                                throw new Error(data.error || '批量同步失败');
+                            }
+
+                            return data;
+                        } catch (error) {
+                            attempt++;
+                            if (attempt === retryLimit) {
+                                throw error;
+                            }
+                            // 指数退避重试
+                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+                        }
+                    }
                 })
             );
 
-            // 批量移除不需要的商品
-            const removePromises = idsToRemove.map((id: string) =>
-                fetch('/api/favorites', {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ productId: id }),
-                })
-            );
+            // 检查是否所有批次都成功
+            const failures = results.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
 
-            // 等待所有操作完成
-            await Promise.all([...addPromises, ...removePromises]);
+            if (failures.length > 0) {
+                throw new Error(`部分批次同步失败: ${failures.map(f => f.reason.message).join(', ')}`);
+            }
 
             return {
                 data: {

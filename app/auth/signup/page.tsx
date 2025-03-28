@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState, type FormEvent } from "react";
 
 export default function SignUpPage() {
@@ -18,7 +19,7 @@ export default function SignUpPage() {
         setError("");
         setIsLoading(true);
 
-        // Validate password match
+        // 验证密码匹配
         if (password !== confirmPassword) {
             setError("Passwords do not match");
             setIsLoading(false);
@@ -27,7 +28,7 @@ export default function SignUpPage() {
         }
 
         try {
-            // Call registration API
+            // 调用注册 API
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: {
@@ -46,12 +47,20 @@ export default function SignUpPage() {
                 throw new Error(data.error || "Registration failed");
             }
 
-            // Registration successful, redirect to login page
+            // 注册成功，重定向到登录页面
             router.push('/auth/signin?registered=true');
         } catch (error) {
             setError(error instanceof Error ? error.message : "An error occurred during registration");
         } finally {
             setIsLoading(false);
+        }
+    }
+
+    async function handleGithubSignIn() {
+        try {
+            await signIn("github", { callbackUrl: "/" });
+        } catch {
+            setError("Failed to sign in with GitHub, please try again later");
         }
     }
 
@@ -150,8 +159,7 @@ export default function SignUpPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className={`group relative flex w-full justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${isLoading ? "opacity-70 cursor-not-allowed" : ""
-                                }`}
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? "Creating account..." : "Create Account"}
                         </button>
@@ -169,8 +177,8 @@ export default function SignUpPage() {
                     </div>
 
                     <div className="mt-6 grid grid-cols-1 gap-3">
-                        <Link
-                            href="/auth/signin?provider=github"
+                        <button
+                            onClick={handleGithubSignIn}
                             className="flex w-full items-center justify-center gap-3 rounded-md bg-[#24292F] px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#24292F] focus:ring-offset-2"
                         >
                             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -181,7 +189,7 @@ export default function SignUpPage() {
                                 />
                             </svg>
                             <span className="text-sm font-semibold">Sign up with GitHub</span>
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>

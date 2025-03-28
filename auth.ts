@@ -46,7 +46,7 @@ export const config = {
                         const user = await db.collection("users").findOne({
                             $or: [
                                 { email: credentials.username },
-                                { username: credentials.username }
+                                { name: credentials.username }
                             ]
                         });
 
@@ -59,6 +59,7 @@ export const config = {
                                 return { id: "1", name: "Admin", email: "admin@example.com" };
                             }
 
+
                             return null;
                         }
 
@@ -66,6 +67,7 @@ export const config = {
                         const isValid = await bcryptCompare(credentials.password, user.password);
 
                         if (!isValid) {
+
                             return null;
                         }
 
@@ -95,7 +97,6 @@ export const config = {
     basePath: "/auth",
     pages: {
         signIn: "/auth/signin",
-        signOut: "/auth/signout",
         error: "/auth/error",
     },
     callbacks: {
@@ -128,21 +129,28 @@ export const config = {
     secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "YOUR_FALLBACK_SECRET_KEY",
     debug: process.env.NODE_ENV === "development",
     logger: {
+
     },
 } satisfies NextAuthConfig;
 
 // 仅在服务器端初始化 Auth.js 的 MongoDB 适配器
 if (typeof window === 'undefined') {
     const initializeAdapter = async () => {
-        const { MongoDBAdapter } = await import("@auth/mongodb-adapter");
-        const clientPromise = (await import('@/lib/mongodb')).default;
+        try {
+            const { MongoDBAdapter } = await import("@auth/mongodb-adapter");
+            const clientPromise = (await import('@/lib/mongodb')).default;
 
-        adapter = MongoDBAdapter(clientPromise) as Adapter;
+            adapter = MongoDBAdapter(clientPromise) as Adapter;
+        } catch {
+            return;
+        }
     };
 
     // Set up adapter during initialization
-    // eslint-disable-next-line no-console
-    initializeAdapter().catch(console.error);
+    initializeAdapter().catch((error: Error) => {
+        // eslint-disable-next-line no-console
+        console.error("MongoDB 适配器初始化失败:", error);
+    });
 }
 
 // Dynamically add adapter

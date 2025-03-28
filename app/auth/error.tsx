@@ -4,21 +4,32 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+// 定义错误消息映射
 const errorMessages: Record<string, string> = {
     Configuration: "Server configuration error",
     AccessDenied: "Access denied",
     Verification: "Login link has expired or has been used",
+    CredentialsSignin: "Invalid username or password",
     Default: "An error occurred during authentication"
 };
 
 export default function ErrorPage() {
     const searchParams = useSearchParams();
     const [error, setError] = useState<string | null>(null);
+    const [errorDesc, setErrorDesc] = useState<string>("");
 
     useEffect(() => {
+        // 从 URL 中获取错误信息
         const errorType = searchParams?.get("error") || "Default";
+        const errorDescParam = searchParams?.get("error_description");
 
         setError(errorType);
+
+        if (errorDescParam) {
+            setErrorDesc(decodeURIComponent(errorDescParam));
+        } else {
+            setErrorDesc(errorMessages[errorType] || errorMessages.Default);
+        }
     }, [searchParams]);
 
     return (
@@ -29,7 +40,7 @@ export default function ErrorPage() {
                         Authentication Error
                     </h2>
                     <p className="mt-2 text-center text-lg">
-                        {error ? errorMessages[error] || errorMessages.Default : "Loading..."}
+                        {error ? errorDesc : "Loading..."}
                     </p>
                 </div>
                 <div className="flex justify-center">

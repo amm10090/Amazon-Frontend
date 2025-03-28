@@ -3,7 +3,7 @@
  * 提供便捷的自定义hooks，简化组件中的使用
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 
 import { productsApi } from '@/lib/api';
 import type { Product } from '@/types/api';
@@ -50,7 +50,10 @@ export function useProductFavorite(productId: string) {
     const [isUpdating, setIsUpdating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const isProductFavorite = isFavorite(productId);
+    // 使用本地存储检查收藏状态
+    const isProductFavorite = useMemo(() => {
+        return isFavorite(productId);
+    }, [isFavorite, productId]);
 
     // 切换收藏状态
     const toggleFavorite = useCallback(async () => {

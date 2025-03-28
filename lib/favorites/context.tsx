@@ -73,6 +73,21 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
     // 是否已登录
     const isAuthenticated = !!session?.user;
 
+    // 在组件挂载时从本地存储初始化状态
+    useEffect(() => {
+        const localFavoriteIds = getLocalFavorites();
+
+        if (localFavoriteIds.length > 0) {
+            const simpleProducts = localFavoriteIds.map(id => ({
+                id,
+                asin: id,
+                title: `Product ${id}`
+            })) as Product[];
+
+            setFavorites(simpleProducts);
+        }
+    }, []);
+
     /**
      * 刷新收藏列表
      */
@@ -131,7 +146,16 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
             }
             // 无论是否登录，都添加到本地存储
             addLocalFavorite(productId);
-            await refreshFavorites();
+
+            // 直接更新本地状态，而不是重新获取完整列表
+            setFavorites(prev => [
+                ...prev,
+                {
+                    id: productId,
+                    asin: productId,
+                    title: `Product ${productId}`
+                } as Product
+            ]);
 
             return { success: true, message: 'Successfully added to favorites' };
         } catch (err) {
@@ -141,13 +165,16 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
 
             return { success: false, message: errorMessage };
         }
-    }, [favoriteIds, isAuthenticated, refreshFavorites]);
+    }, [favoriteIds, isAuthenticated]);
 
     /**
      * 移除收藏
      */
     const removeFavorite = useCallback(async (productId: string) => {
-        if (!productId || !favoriteIds.includes(productId)) {
+        // 同时检查状态和本地存储
+        const isInFavorites = favoriteIds.includes(productId) || isLocalFavorite(productId);
+
+        if (!productId || !isInFavorites) {
             return { success: true, message: 'Item not in favorites' };
         }
 
@@ -164,7 +191,11 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
             }
             // 无论是否登录，都从本地存储中移除
             removeLocalFavorite(productId);
-            await refreshFavorites();
+
+            // 直接更新本地状态，而不是重新获取完整列表
+            setFavorites(prev => prev.filter(product =>
+                (product.id !== productId) && (product.asin !== productId)
+            ));
 
             return { success: true, message: 'Successfully removed from favorites' };
         } catch (err) {
@@ -174,7 +205,7 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
 
             return { success: false, message: errorMessage };
         }
-    }, [favoriteIds, isAuthenticated, refreshFavorites]);
+    }, [favoriteIds, isAuthenticated]);
 
     /**
      * 判断商品是否已收藏
@@ -214,31 +245,45 @@ export const FavoritesProvider: React.FC<FavoritesProviderProps> = ({ children }
 
         try {
             setIsLoading(true);
-            const localIds = getLocalFavorites();
-            const response = await favoritesApi.syncFavorites(localIds);
+            setError(null);
 
-            if (response.data.code === 200) {
-                await refreshFavorites();
-            } else {
-                throw new Error(response.data.message);
+            // 获取本地收藏ID列表
+            const localIds = getLocalFavorites();
+
+            // 获取服务器端收藏列表
+            const serverResponse = await favoritesApi.getFavorites();
+            const serverIds = serverResponse.data.data.map(p => p.id || p.asin).filter((id): id is string => id !== undefined);
+
+            // 计算需要同步的ID（本地有但服务器没有的）
+            const idsToSync = localIds.filter(id => !serverIds.includes(id));
+
+            if (idsToSync.length > 0) {
+                // 只同步差异部分
+                const response = await favoritesApi.syncFavorites(idsToSync);
+
+                if (response.data.code !== 200) {
+                    throw new Error(response.data.message);
+                }
             }
+
+            // 合并本地和服务器数据
+            const allIds = Array.from(new Set([...localIds, ...serverIds]));
+            const mergedProducts = allIds.map(id => ({
+                id,
+                asin: id,
+                title: `Product ${id}`
+            })) as Product[];
+
+            setFavorites(mergedProducts);
+            // 更新本地存储
+            syncLocalFavorites(allIds);
+
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to sync favorites'));
         } finally {
             setIsLoading(false);
         }
-    }, [isAuthenticated, refreshFavorites]);
-
-    // 监听登录状态变化
-    useEffect(() => {
-        if (isAuthenticated) {
-            // 登录后，同步本地收藏到服务器
-            syncWithServer();
-        } else {
-            // 未登录时，从本地存储加载
-            refreshFavorites();
-        }
-    }, [isAuthenticated, syncWithServer, refreshFavorites]);
+    }, [isAuthenticated]);
 
     // 构建Context值
     const contextValue = useMemo(() => ({

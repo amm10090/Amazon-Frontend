@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AuthError } from "next-auth";
+import { signIn } from "next-auth/react";
 import { useState, type FormEvent, useEffect } from "react";
-
-import { signIn } from "@/auth";
 
 export default function SignInPage() {
     const router = useRouter();
@@ -15,16 +15,29 @@ export default function SignInPage() {
     const [successMessage, setSuccessMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    // Check if user just completed registration from query parameters
+    // 检查用户是否刚完成注册
     useEffect(() => {
         const registered = searchParams?.get("registered");
         const provider = searchParams?.get("provider");
+        const errorType = searchParams?.get("error");
 
         if (registered === "true") {
             setSuccessMessage("Registration successful! Please sign in with your new account.");
         }
 
-        // If provider parameter is specified, automatically trigger OAuth login
+        if (errorType) {
+            const errorMessages: Record<string, string> = {
+                Configuration: "Server configuration error",
+                AccessDenied: "Access denied",
+                Verification: "Login link has expired or has been used",
+                CredentialsSignin: "Invalid username or password",
+                Default: "An error occurred during sign in"
+            };
+
+            setError(errorMessages[errorType] || errorMessages.Default);
+        }
+
+        // 如果指定了提供商参数，自动触发 OAuth 登录
         if (provider) {
             handleProviderSignIn(provider);
         }
@@ -51,14 +64,24 @@ export default function SignInPage() {
                 redirect: false
             });
 
-            if (!result?.ok) {
-                setError("Incorrect username or password");
+            if (result?.error) {
+                setError(result.error === "CredentialsSignin" ? "Invalid username or password" : "An error occurred during sign in");
             } else {
                 router.push("/");
                 router.refresh();
             }
-        } catch {
-            setError("An error occurred during sign in");
+        } catch (error) {
+            if (error instanceof AuthError) {
+                switch (error.type) {
+                    case "CredentialsSignin":
+                        setError("Invalid username or password");
+                        break;
+                    default:
+                        setError("An error occurred during sign in");
+                }
+            } else {
+                setError("An error occurred during sign in");
+            }
         } finally {
             setIsLoading(false);
         }
@@ -125,8 +148,7 @@ export default function SignInPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className={`group relative flex w-full justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${isLoading ? "opacity-70 cursor-not-allowed" : ""
-                                }`}
+                            className={`group relative flex w-full justify-center rounded-md bg-indigo-600 py-2 px-3 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${isLoading ? "opacity-70 cursor-not-allowed" : ""}`}
                         >
                             {isLoading ? "Signing in..." : "Sign in"}
                         </button>
