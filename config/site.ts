@@ -39,20 +39,8 @@ export const siteConfig = {
       href: "/deals",
     },
     {
-      label: "Popular Categories",
-      href: "/categories",
-    },
-    {
       label: "My Favorites",
       href: "/favorites",
-    },
-    {
-      label: "User Guide",
-      href: "/guide",
-    },
-    {
-      label: "Contact Us",
-      href: "/contact",
     },
     {
       label: "About Us",
