@@ -127,65 +127,38 @@ export function useEnrichedFavorites() {
             setError(null);
 
             try {
-                // 对每个收藏的商品ID，获取完整信息
-                const productPromises = favoriteIds.map(async (id) => {
-                    try {
-                        const response = await productsApi.getProductById(id);
+                // 使用批量查询API获取商品信息
+                const response = await productsApi.queryProducts({
+                    asins: favoriteIds,
+                    include_metadata: false,
+                    include_browse_nodes: ["false"]
+                });
 
-                        // 处理不同的API响应格式
-                        let productData: Product | null = null;
+                let products: Product[] = [];
 
-                        if (response.data?.data) {
-                            // 标准格式: { code: 200, message: "...", data: {...} }
-                            productData = response.data.data;
-                        } else if (response.data && typeof response.data === 'object') {
-                            // 直接是产品对象
-                            productData = response.data as unknown as Product;
-                        }
+                // 检查不同的响应结构
+                if (response?.data?.data) {
+                    // 标准API响应结构
+                    products = response.data.data;
+                } else if (Array.isArray(response?.data)) {
+                    // 直接是数组的情况
+                    products = response.data;
+                } else if (response?.data) {
+                    // 其他可能的响应结构
+                    products = response.data as unknown as Product[];
+                }
 
-                        // 确保如果只有asin而没有id的情况下，也能正确处理
-                        if (productData && productData.asin && !productData.id) {
-                            productData.id = productData.asin;
-                        }
+                // 确保products是数组
+                if (!Array.isArray(products)) {
+                    products = [];
+                }
 
-                        // 判断数据是否有效 - 检查id或asin是否存在
-                        if (!productData || (!productData.id && !productData.asin)) {
-                            // 如果数据无效，返回基本信息对象
-                            return {
-                                id,
-                                asin: id,
-                                title: `Product ${id}`,
-                                price: 0,
-                                image_url: '/placeholder-product.jpg'
-                            } as Product;
-                        }
+                // 处理返回的商品数组，确保每个位置都有有效的商品数据
+                const matchedProducts = favoriteIds.map((id) => {
+                    const product = products.find(p => p.asin === id || p.id === id);
 
-                        // 确保title字段存在，如果API返回的title是空的，则使用占位符
-                        if (!productData.title || productData.title === '') {
-                            productData.title = productData.title || `Product ${id}`;
-                        }
-
-                        // 确保价格字段存在
-                        if (productData.price === undefined || productData.price === null) {
-                            // 如果offers中有价格，使用offers中的价格
-                            if (productData.offers && productData.offers.length > 0 && productData.offers[0].price) {
-                                productData.price = productData.offers[0].price;
-                            } else {
-                                // 默认价格
-                                productData.price = 0;
-                            }
-                        }
-
-                        // 确保图片URL字段存在，优先使用main_image
-                        if (!productData.image_url && productData.main_image) {
-                            productData.image_url = productData.main_image;
-                        } else if (!productData.image_url && !productData.main_image) {
-                            productData.image_url = '/placeholder-product.jpg';
-                        }
-
-                        return productData;
-                    } catch {
-                        // 如果单个商品获取失败，返回基本信息对象
+                    if (!product) {
+                        // 如果某个商品不存在，返回基本信息对象
                         return {
                             id,
                             asin: id,
@@ -194,14 +167,23 @@ export function useEnrichedFavorites() {
                             image_url: '/placeholder-product.jpg'
                         } as Product;
                     }
+
+                    return product;
                 });
 
-                const products = await Promise.all(productPromises);
-                const validProducts = products.filter(p => p && (p.id || p.asin));
-
-                setEnrichedFavorites(validProducts);
+                setEnrichedFavorites(matchedProducts);
             } catch (err) {
                 setError(err instanceof Error ? err : new Error('Failed to get favorite product details'));
+                // 在发生错误时，使用基本信息对象
+                const fallbackProducts = favoriteIds.map(id => ({
+                    id,
+                    asin: id,
+                    title: `Product ${id}`,
+                    price: 0,
+                    image_url: '/placeholder-product.jpg'
+                })) as Product[];
+
+                setEnrichedFavorites(fallbackProducts);
             } finally {
                 setIsLoading(false);
             }

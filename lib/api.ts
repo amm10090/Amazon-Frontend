@@ -70,6 +70,30 @@ export const productsApi = {
         return api.post<ApiResponse<Product>>('/products/query', params);
     },
 
+    /**
+     * 批量查询商品详情
+     * @param params - 查询参数
+     * @param params.asins - 商品ASIN数组，最多50个
+     * @param params.include_metadata - 是否包含原始元数据
+     * @param params.include_browse_nodes - 筛选特定的浏览节点ID数组
+     * @returns API响应对象，包含商品数据数组
+     */
+    queryProducts: (params: {
+        asins: string[];
+        include_metadata?: boolean;
+        include_browse_nodes?: string[] | null;
+    }) => {
+        if (!params.asins || params.asins.length === 0) {
+            throw new Error('ASINs array is required for products query');
+        }
+
+        if (params.asins.length > 50) {
+            throw new Error('Maximum 50 ASINs allowed per request');
+        }
+
+        return api.post<ApiResponse<Product[]>>('/products/query', params);
+    },
+
     // 商品相关
     getProducts: async (params?: {
         product_type?: 'discount' | 'coupon' | 'all';

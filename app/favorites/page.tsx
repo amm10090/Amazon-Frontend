@@ -7,7 +7,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import EmptyState from '@/components/common/EmptyState';
 import ErrorState from '@/components/common/ErrorState';
@@ -37,12 +37,7 @@ export default function FavoritesPage() {
         message: '',
     });
 
-    // 在组件挂载时获取收藏数据
-    useEffect(() => {
-        refreshFavorites();
-    }, [refreshFavorites]);
-
-    // 处理刷新操作
+    // 处理手动刷新
     const handleRefresh = async () => {
         setRefreshing(true);
         setFeedback({
