@@ -1,7 +1,7 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import type { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GithubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
 
 // Strategy: Execute database and authentication related code only on the server side
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -12,9 +12,9 @@ let bcryptCompare: any = null;
 // Use static configuration to avoid client-side imports of server-side dependencies
 export const config = {
     providers: [
-        GithubProvider({
-            clientId: process.env.GITHUB_ID || process.env.AUTH_GITHUB_ID || "",
-            clientSecret: process.env.GITHUB_SECRET || process.env.AUTH_GITHUB_SECRET || "",
+        GoogleProvider({
+            clientId: process.env.AUTH_GOOGLE_ID || "",
+            clientSecret: process.env.AUTH_GOOGLE_SECRET || "",
         }),
         CredentialsProvider({
             name: "Credentials",
@@ -59,7 +59,6 @@ export const config = {
                                 return { id: "1", name: "Admin", email: "admin@example.com" };
                             }
 
-
                             return null;
                         }
 
@@ -67,7 +66,6 @@ export const config = {
                         const isValid = await bcryptCompare(credentials.password, user.password);
 
                         if (!isValid) {
-
                             return null;
                         }
 
@@ -88,7 +86,6 @@ export const config = {
                         return null;
                     }
                 } catch {
-
                     return null;
                 }
             },
@@ -128,9 +125,7 @@ export const config = {
     session: { strategy: "jwt" },
     secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "YOUR_FALLBACK_SECRET_KEY",
     debug: process.env.NODE_ENV === "development",
-    logger: {
-
-    },
+    logger: {},
 } satisfies NextAuthConfig;
 
 // 仅在服务器端初始化 Auth.js 的 MongoDB 适配器
