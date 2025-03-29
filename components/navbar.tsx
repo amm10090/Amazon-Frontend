@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Menu } from "lucide-react";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 
 import AuthStatus from "@/components/auth/AuthStatus";
@@ -73,6 +73,7 @@ const searchInputStyles = `
 
 export const Navbar = () => {
   const router = useRouter();
+  const pathname = usePathname(); // 获取当前路径
   const [_isSearchFocused, _setIsSearchFocused] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -165,12 +166,29 @@ export const Navbar = () => {
     }, 100);
   };
 
+  // 检查导航项是否为当前页面
+  const isCurrentPage = (href: string) => {
+    // 主页特殊处理
+    if (href === "/" && pathname === "/") {
+      return true;
+    }
+
+    // 其他页面判断路径是否以href开头并且是完整的路径部分
+    // 例如：/products 应该只匹配 /products 和 /products/，而不匹配 /products/123
+    if (href !== "/") {
+      return pathname === href || pathname === `${href}/`;
+    }
+
+    return false;
+  };
+
   return (
     <motion.div
       initial="initial"
       animate={isScrolled ? "scrolled" : "initial"}
       variants={navbarVariants}
       transition={{ duration: 0.3 }}
+      className="w-full"
     >
       {/* 添加全局样式 */}
       <style jsx global>{searchInputStyles}</style>
@@ -178,369 +196,46 @@ export const Navbar = () => {
       <HeroUINavbar
         maxWidth="full"
         className={`bg-background/80 backdrop-blur-lg border-b border-divider/50 transition-all duration-300 ${isScrolled ? "shadow-md" : ""
-          } px-2 md:px-4 lg:px-6 max-w-[1920px] mx-auto`}
+          }`}
         position="sticky"
       >
-        {/* Logo and Search Bar Content - Left Side */}
-        <NavbarContent className="flex flex-1 items-center gap-1 md:gap-2 lg:gap-3" justify="start">
-          {/* Logo - Always visible */}
-          <NavbarBrand as="li" className="gap-1 md:gap-2 max-w-fit mr-0 md:mr-1 lg:mr-2 flex-shrink-0">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            >
-              <NextLink className="flex justify-start items-center gap-1" href="/">
-                <motion.span
-                  className="font-bold text-lg md:text-xl bg-linear-to-r from-[#81D8F7] via-[#62B6D9] to-[#81D8F7] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
-                  animate={{
-                    backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                >
-                  OOHUNT
-                </motion.span>
-              </NextLink>
-            </motion.div>
-          </NavbarBrand>
-
-          {/* Desktop Search Bar */}
-          <div className="hidden xl:block relative w-full xl:max-w-[600px] 2xl:max-w-[700px]" ref={searchContainerRef}>
-            <form onSubmit={handleSearchSubmit} className="w-full">
-              <Input
-                ref={searchInputRef}
-                aria-label="Search"
-                classNames={{
-                  base: "w-full",
-                  inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full xl:h-9 2xl:h-10 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
-                  input: "text-xs xl:text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 xl:pr-16 2xl:pr-20 search-input h-full"
-                }}
-                placeholder="Search deals..."
-                size="sm"
-                type="search"
-                value={searchKeyword}
-                onChange={handleSearchInputChange}
-                onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
-              />
-              <Button
-                className="absolute right-1.5 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full xl:h-7 2xl:h-8 xl:px-3 2xl:px-4 xl:text-xs 2xl:text-sm transition-colors duration-200 flex items-center justify-center"
-                size="sm"
-                type="submit"
-              >
-                Hunt
-              </Button>
-            </form>
-
-            {/* Desktop Search Preview */}
-            <AnimatePresence>
-              {showSearchPreview && searchKeyword.length > 0 && (
-                <motion.div
-                  variants={searchDropdownVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
-                >
-                  {isLoading ? (
-                    <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
-                      Searching...
-                    </div>
-                  ) : !searchResults?.items?.length ? (
-                    <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
-                      No matching products found
-                    </div>
-                  ) : (
-                    <>
-                      <div className="p-1 sm:p-2">
-                        {searchResults.items.slice(0, previewLimit).map((product) => (
-                          <div
-                            key={product.asin || `product-${Math.random()}`}
-                            className="flex items-center p-1.5 sm:p-2 hover:bg-gray-100 rounded-md cursor-pointer transition-colors"
-                            onClick={() => handlePreviewItemClick(product.asin)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                handlePreviewItemClick(product.asin);
-                              }
-                            }}
-                            tabIndex={0}
-                            role="button"
-                            aria-label={`View details for ${product.title}`}
-                          >
-                            {product.main_image && (
-                              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 mr-2 relative">
-                                <Image
-                                  src={product.main_image}
-                                  alt={product.title}
-                                  fill
-                                  sizes="(max-width: 640px) 32px, (max-width: 768px) 40px, 48px"
-                                  className="object-cover"
-                                />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                                {product.title}
-                              </p>
-                              <div className="flex items-center mt-0.5">
-                                {product.offers && product.offers[0] && (
-                                  <span className="text-xs sm:text-sm font-bold text-green-600">
-                                    {formatPrice(product.offers[0].price)}
-                                  </span>
-                                )}
-                                {product.offers && product.offers[0]?.savings_percentage && (
-                                  <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs bg-red-100 text-red-600 px-1 sm:px-1.5 py-0.5 rounded-full">
-                                    {product.offers[0].savings_percentage}% OFF
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div
-                        className="p-2 sm:p-3 bg-gray-50 text-center hover:bg-gray-100 cursor-pointer border-t"
-                        onClick={() => handleSearchSubmit()}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleSearchSubmit();
-                          }
-                        }}
-                        tabIndex={0}
-                        role="button"
-                        aria-label="View all search results"
-                      >
-                        <span className="text-xs sm:text-sm font-medium text-blue-600">
-                          View all {searchResults.total} results
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </NavbarContent>
-
-        {/* Navigation Menu Content - Right Side */}
-        <NavbarContent className="flex items-center gap-0.5 md:gap-1" justify="end">
-          {/* Desktop Navigation */}
-          <NavbarItem className="hidden xl:flex items-center xl:gap-2 2xl:gap-3 flex-shrink-0">
-            {siteConfig.navItems.map((item) => (
-              <NextLink
-                key={item.href}
-                href={item.href}
-                className="text-default-600 xl:text-sm font-medium hover:text-primary transition-colors whitespace-nowrap xl:px-0.5"
-              >
-                {item.label}
-              </NextLink>
-            ))}
-          </NavbarItem>
-
-          {/* Auth Status - Desktop */}
-          <div className="hidden xl:block flex-shrink-0 xl:ml-1 2xl:ml-2 xl:min-w-[140px] 2xl:min-w-[160px]">
-            <AuthStatus />
-          </div>
-
-          {/* 平板搜索框组件 - 重新放置在这里，位于右侧内容中 */}
-          <AnimatePresence>
-            {isTabletSearchOpen && (
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between w-full">
+          {/* Logo and Search Bar Content - Left Side */}
+          <NavbarContent className="flex flex-1 items-center gap-0 md:gap-1 lg:gap-2 px-0" justify="start">
+            {/* Logo - Always visible */}
+            <NavbarBrand as="li" className="gap-0 max-w-fit mr-1 md:mr-2 lg:mr-3 flex-shrink-0">
               <motion.div
-                className="hidden md:block xl:hidden relative mr-2"
-                variants={tabletSearchVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                style={{ maxWidth: "320px", minWidth: "280px" }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <form onSubmit={handleSearchSubmit} className="w-full">
-                  <Input
-                    ref={searchInputRef}
-                    aria-label="Search"
-                    classNames={{
-                      base: "w-full",
-                      inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
-                      input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-24 search-input h-full"
+                <NextLink className="flex justify-start items-center gap-1" href="/">
+                  <motion.span
+                    className="font-bold text-lg md:text-xl bg-linear-to-r from-[#81D8F7] via-[#62B6D9] to-[#81D8F7] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
+                    animate={{
+                      backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
                     }}
-                    placeholder="Search deals..."
-                    size="sm"
-                    type="search"
-                    value={searchKeyword}
-                    onChange={handleSearchInputChange}
-                    onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
-                  />
-                  <Button
-                    className="absolute right-1.5 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full h-9 px-5 text-sm transition-colors duration-200 flex items-center justify-center"
-                    size="sm"
-                    type="submit"
+                    transition={{
+                      duration: 8,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   >
-                    Search
-                  </Button>
-                </form>
-
-                {/* 平板搜索预览 */}
-                <AnimatePresence>
-                  {showSearchPreview && searchKeyword.length > 0 && (
-                    <motion.div
-                      variants={searchDropdownVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
-                    >
-                      {isLoading ? (
-                        <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
-                          Searching...
-                        </div>
-                      ) : !searchResults?.items?.length ? (
-                        <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
-                          No matching products found
-                        </div>
-                      ) : (
-                        <>
-                          <div className="p-1 sm:p-2">
-                            {searchResults.items.slice(0, previewLimit).map((product) => (
-                              <div
-                                key={product.asin || `product-${Math.random()}`}
-                                className="flex items-center p-1.5 sm:p-2 hover:bg-gray-100 rounded-md cursor-pointer transition-colors"
-                                onClick={() => handlePreviewItemClick(product.asin)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    handlePreviewItemClick(product.asin);
-                                  }
-                                }}
-                                tabIndex={0}
-                                role="button"
-                                aria-label={`View details for ${product.title}`}
-                              >
-                                {product.main_image && (
-                                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 mr-2 relative">
-                                    <Image
-                                      src={product.main_image}
-                                      alt={product.title}
-                                      fill
-                                      sizes="(max-width: 640px) 32px, (max-width: 768px) 40px, 48px"
-                                      className="object-cover"
-                                    />
-                                  </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                                    {product.title}
-                                  </p>
-                                  <div className="flex items-center mt-0.5">
-                                    {product.offers && product.offers[0] && (
-                                      <span className="text-xs sm:text-sm font-bold text-green-600">
-                                        {formatPrice(product.offers[0].price)}
-                                      </span>
-                                    )}
-                                    {product.offers && product.offers[0]?.savings_percentage && (
-                                      <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs bg-red-100 text-red-600 px-1 sm:px-1.5 py-0.5 rounded-full">
-                                        {product.offers[0].savings_percentage}% OFF
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          <div
-                            className="p-2 sm:p-3 bg-gray-50 text-center hover:bg-gray-100 cursor-pointer border-t"
-                            onClick={() => handleSearchSubmit()}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                handleSearchSubmit();
-                              }
-                            }}
-                            tabIndex={0}
-                            role="button"
-                            aria-label="View all search results"
-                          >
-                            <span className="text-xs sm:text-sm font-medium text-blue-600">
-                              View all {searchResults.total} results
-                            </span>
-                          </div>
-                        </>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    OOHUNT
+                  </motion.span>
+                </NextLink>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </NavbarBrand>
 
-          {/* 平板搜索按钮，改进位置和样式 */}
-          {!isTabletSearchOpen && (
-            <NavbarItem className="hidden md:flex xl:hidden">
-              <Button
-                className="min-w-unit-8 w-8 h-8 bg-transparent hover:bg-default-100 text-default-500"
-                isIconOnly
-                variant="light"
-                onPress={toggleSearch}
-              >
-                <Search size={20} />
-              </Button>
-            </NavbarItem>
-          )}
-
-          {/* 平板搜索关闭按钮 */}
-          {isTabletSearchOpen && (
-            <NavbarItem className="hidden md:flex xl:hidden">
-              <Button
-                className="min-w-unit-8 w-8 h-8 bg-transparent hover:bg-default-100 text-default-500"
-                isIconOnly
-                variant="light"
-                onPress={toggleSearch}
-              >
-                <span className="text-xl font-bold">&times;</span>
-              </Button>
-            </NavbarItem>
-          )}
-
-          {/* Mobile & Tablet Menu Button */}
-          <NavbarItem className="md:flex xl:hidden">
-            <NavbarMenuToggle
-              icon={<Menu size={20} />}
-              className="w-8 h-8 p-1.5 text-default-500 bg-default-100/50 hover:bg-default-200/70 rounded-lg"
-            />
-          </NavbarItem>
-
-          {/* Mobile Search Button */}
-          <NavbarItem className="md:hidden">
-            <Button
-              className="min-w-unit-8 w-8 h-8 bg-transparent hover:bg-default-100 text-default-500"
-              isIconOnly
-              variant="light"
-              onPress={toggleSearch}
-            >
-              <Search size={20} />
-            </Button>
-          </NavbarItem>
-        </NavbarContent>
-
-        {/* Mobile Search Overlay */}
-        <AnimatePresence>
-          {isSearchOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="absolute inset-x-0 top-full mt-2 px-4 pb-4 bg-white shadow-lg md:hidden z-50"
-            >
-              <form onSubmit={handleSearchSubmit} className="relative">
+            {/* Desktop Search Bar */}
+            <div className="hidden xl:block relative w-full xl:max-w-[350px] 2xl:max-w-[450px]" ref={searchContainerRef}>
+              <form onSubmit={handleSearchSubmit} className="w-full">
                 <Input
                   ref={searchInputRef}
                   aria-label="Search"
                   classNames={{
                     base: "w-full",
-                    inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
-                    input: "text-sm pr-12 focus:outline-none focus:ring-0 focus-visible:outline-none search-input h-full"
+                    inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full xl:h-9 2xl:h-10 px-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                    input: "text-xs xl:text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 xl:pr-16 2xl:pr-20 search-input h-full"
                   }}
                   placeholder="Search deals..."
                   size="sm"
@@ -549,19 +244,16 @@ export const Navbar = () => {
                   onChange={handleSearchInputChange}
                   onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
                 />
-                <div className="absolute right-1 top-1/2 transform -translate-y-1/2">
-                  <Button
-                    className="bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full w-8 h-8 min-w-unit-8 p-0 flex items-center justify-center"
-                    size="sm"
-                    type="submit"
-                    isIconOnly
-                  >
-                    <Search size={16} />
-                  </Button>
-                </div>
+                <Button
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full xl:h-7 2xl:h-8 xl:px-3 2xl:px-4 xl:text-xs 2xl:text-sm transition-colors duration-200 flex items-center justify-center"
+                  size="sm"
+                  type="submit"
+                >
+                  Hunt
+                </Button>
               </form>
 
-              {/* Mobile Search Preview */}
+              {/* Desktop Search Preview */}
               <AnimatePresence>
                 {showSearchPreview && searchKeyword.length > 0 && (
                   <motion.div
@@ -569,7 +261,7 @@ export const Navbar = () => {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-50 shadow-md"
+                    className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
                   >
                     {isLoading ? (
                       <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
@@ -642,7 +334,7 @@ export const Navbar = () => {
                           aria-label="View all search results"
                         >
                           <span className="text-xs sm:text-sm font-medium text-blue-600">
-                            View all {searchResults.total} results
+                            View all {searchResults?.total || 0} results
                           </span>
                         </div>
                       </>
@@ -650,49 +342,383 @@ export const Navbar = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </NavbarContent>
 
-        {/* Mobile Menu */}
-        <NavbarMenu className="pt-4 pb-4 gap-2 bg-background/95 backdrop-blur-lg">
-          <div className="mx-3 flex flex-col gap-2">
-            {siteConfig.navMenuItems.map((item, index) => (
+          {/* Navigation Menu Content - Right Side */}
+          <NavbarContent className="flex items-center gap-0 md:gap-0.5 px-0" justify="end">
+            {/* Desktop Navigation */}
+            <NavbarItem className="hidden xl:flex items-center xl:gap-1 2xl:gap-2 flex-shrink-0 ml-2 xl:ml-4">
+              {siteConfig.navItems
+                // 只显示不是当前页面的导航项
+                .filter(item => !isCurrentPage(item.href))
+                .map((item) => (
+                  <NextLink
+                    key={item.href}
+                    href={item.href}
+                    className="text-default-600 xl:text-sm font-medium hover:text-primary transition-colors whitespace-nowrap px-2"
+                  >
+                    {item.label}
+                  </NextLink>
+                ))}
+            </NavbarItem>
+
+            {/* Auth Status - Desktop */}
+            <div className="hidden xl:block flex-shrink-0 xl:ml-0 2xl:ml-1 xl:min-w-[100px] 2xl:min-w-[120px]">
+              <AuthStatus />
+            </div>
+
+            {/* 平板搜索框组件 - 重新放置在这里，位于右侧内容中 */}
+            <AnimatePresence>
+              {isTabletSearchOpen && (
+                <motion.div
+                  className="hidden md:block xl:hidden relative mr-2"
+                  variants={tabletSearchVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  style={{ maxWidth: "320px", minWidth: "280px" }}
+                >
+                  <form onSubmit={handleSearchSubmit} className="w-full">
+                    <Input
+                      ref={searchInputRef}
+                      aria-label="Search"
+                      classNames={{
+                        base: "w-full",
+                        inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                        input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-24 search-input h-full"
+                      }}
+                      placeholder="Search deals..."
+                      size="sm"
+                      type="search"
+                      value={searchKeyword}
+                      onChange={handleSearchInputChange}
+                      onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
+                    />
+                    <Button
+                      className="absolute right-1.5 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full h-9 px-5 text-sm transition-colors duration-200 flex items-center justify-center"
+                      size="sm"
+                      type="submit"
+                    >
+                      Search
+                    </Button>
+                  </form>
+
+                  {/* 平板搜索预览 */}
+                  <AnimatePresence>
+                    {showSearchPreview && searchKeyword.length > 0 && (
+                      <motion.div
+                        variants={searchDropdownVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
+                      >
+                        {isLoading ? (
+                          <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                            Searching...
+                          </div>
+                        ) : !searchResults?.items?.length ? (
+                          <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                            No matching products found
+                          </div>
+                        ) : (
+                          <>
+                            <div className="p-1 sm:p-2">
+                              {searchResults.items.slice(0, previewLimit).map((product) => (
+                                <div
+                                  key={product.asin || `product-${Math.random()}`}
+                                  className="flex items-center p-1.5 sm:p-2 hover:bg-gray-100 rounded-md cursor-pointer transition-colors"
+                                  onClick={() => handlePreviewItemClick(product.asin)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      handlePreviewItemClick(product.asin);
+                                    }
+                                  }}
+                                  tabIndex={0}
+                                  role="button"
+                                  aria-label={`View details for ${product.title}`}
+                                >
+                                  {product.main_image && (
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 mr-2 relative">
+                                      <Image
+                                        src={product.main_image}
+                                        alt={product.title}
+                                        fill
+                                        sizes="(max-width: 640px) 32px, (max-width: 768px) 40px, 48px"
+                                        className="object-cover"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                      {product.title}
+                                    </p>
+                                    <div className="flex items-center mt-0.5">
+                                      {product.offers && product.offers[0] && (
+                                        <span className="text-xs sm:text-sm font-bold text-green-600">
+                                          {formatPrice(product.offers[0].price)}
+                                        </span>
+                                      )}
+                                      {product.offers && product.offers[0]?.savings_percentage && (
+                                        <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs bg-red-100 text-red-600 px-1 sm:px-1.5 py-0.5 rounded-full">
+                                          {product.offers[0].savings_percentage}% OFF
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            <div
+                              className="p-2 sm:p-3 bg-gray-50 text-center hover:bg-gray-100 cursor-pointer border-t"
+                              onClick={() => handleSearchSubmit()}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  handleSearchSubmit();
+                                }
+                              }}
+                              tabIndex={0}
+                              role="button"
+                              aria-label="View all search results"
+                            >
+                              <span className="text-xs sm:text-sm font-medium text-blue-600">
+                                View all {searchResults?.total || 0} results
+                              </span>
+                            </div>
+                          </>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* 平板搜索按钮，改进位置和样式 */}
+            {!isTabletSearchOpen && (
+              <NavbarItem className="hidden md:flex xl:hidden">
+                <Button
+                  className="min-w-unit-8 w-8 h-8 bg-transparent hover:bg-default-100 text-default-500"
+                  isIconOnly
+                  variant="light"
+                  onPress={toggleSearch}
+                >
+                  <Search size={20} />
+                </Button>
+              </NavbarItem>
+            )}
+
+            {/* 平板搜索关闭按钮 */}
+            {isTabletSearchOpen && (
+              <NavbarItem className="hidden md:flex xl:hidden">
+                <Button
+                  className="min-w-unit-8 w-8 h-8 bg-transparent hover:bg-default-100 text-default-500"
+                  isIconOnly
+                  variant="light"
+                  onPress={toggleSearch}
+                >
+                  <span className="text-xl font-bold">&times;</span>
+                </Button>
+              </NavbarItem>
+            )}
+
+            {/* Mobile & Tablet Menu Button */}
+            <NavbarItem className="md:flex xl:hidden">
+              <NavbarMenuToggle
+                icon={<Menu size={20} />}
+                className="w-8 h-8 p-1.5 text-default-500 bg-default-100/50 hover:bg-default-200/70 rounded-lg"
+              />
+            </NavbarItem>
+
+            {/* Mobile Search Button */}
+            <NavbarItem className="md:hidden">
+              <Button
+                className="min-w-unit-8 w-8 h-8 bg-transparent hover:bg-default-100 text-default-500"
+                isIconOnly
+                variant="light"
+                onPress={toggleSearch}
+              >
+                <Search size={20} />
+              </Button>
+            </NavbarItem>
+          </NavbarContent>
+
+          {/* Mobile Search Overlay */}
+          <AnimatePresence>
+            {isSearchOpen && (
               <motion.div
-                key={item.label || `menu-item-${item.href}`}
-                custom={index}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="absolute inset-x-0 top-full mt-2 px-4 pb-4 bg-white shadow-lg md:hidden z-50"
+              >
+                <form onSubmit={handleSearchSubmit} className="relative">
+                  <Input
+                    ref={searchInputRef}
+                    aria-label="Search"
+                    classNames={{
+                      base: "w-full",
+                      inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                      input: "text-sm pr-12 focus:outline-none focus:ring-0 focus-visible:outline-none search-input h-full"
+                    }}
+                    placeholder="Search deals..."
+                    size="sm"
+                    type="search"
+                    value={searchKeyword}
+                    onChange={handleSearchInputChange}
+                    onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
+                  />
+                  <div className="absolute right-1 top-1/2 transform -translate-y-1/2">
+                    <Button
+                      className="bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full w-8 h-8 min-w-unit-8 p-0 flex items-center justify-center"
+                      size="sm"
+                      type="submit"
+                      isIconOnly
+                    >
+                      <Search size={16} />
+                    </Button>
+                  </div>
+                </form>
+
+                {/* Mobile Search Preview */}
+                <AnimatePresence>
+                  {showSearchPreview && searchKeyword.length > 0 && (
+                    <motion.div
+                      variants={searchDropdownVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-50 shadow-md"
+                    >
+                      {isLoading ? (
+                        <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                          Searching...
+                        </div>
+                      ) : !searchResults?.items?.length ? (
+                        <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                          No matching products found
+                        </div>
+                      ) : (
+                        <>
+                          <div className="p-1 sm:p-2">
+                            {searchResults.items.slice(0, previewLimit).map((product) => (
+                              <div
+                                key={product.asin || `product-${Math.random()}`}
+                                className="flex items-center p-1.5 sm:p-2 hover:bg-gray-100 rounded-md cursor-pointer transition-colors"
+                                onClick={() => handlePreviewItemClick(product.asin)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handlePreviewItemClick(product.asin);
+                                  }
+                                }}
+                                tabIndex={0}
+                                role="button"
+                                aria-label={`View details for ${product.title}`}
+                              >
+                                {product.main_image && (
+                                  <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 mr-2 relative">
+                                    <Image
+                                      src={product.main_image}
+                                      alt={product.title}
+                                      fill
+                                      sizes="(max-width: 640px) 32px, (max-width: 768px) 40px, 48px"
+                                      className="object-cover"
+                                    />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                    {product.title}
+                                  </p>
+                                  <div className="flex items-center mt-0.5">
+                                    {product.offers && product.offers[0] && (
+                                      <span className="text-xs sm:text-sm font-bold text-green-600">
+                                        {formatPrice(product.offers[0].price)}
+                                      </span>
+                                    )}
+                                    {product.offers && product.offers[0]?.savings_percentage && (
+                                      <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs bg-red-100 text-red-600 px-1 sm:px-1.5 py-0.5 rounded-full">
+                                        {product.offers[0].savings_percentage}% OFF
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <div
+                            className="p-2 sm:p-3 bg-gray-50 text-center hover:bg-gray-100 cursor-pointer border-t"
+                            onClick={() => handleSearchSubmit()}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                handleSearchSubmit();
+                              }
+                            }}
+                            tabIndex={0}
+                            role="button"
+                            aria-label="View all search results"
+                          >
+                            <span className="text-xs sm:text-sm font-medium text-blue-600">
+                              View all {searchResults?.total || 0} results
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Mobile Menu */}
+          <NavbarMenu className="pt-4 pb-4 gap-2 bg-background/95 backdrop-blur-lg">
+            <div className="mx-3 flex flex-col gap-2">
+              {siteConfig.navMenuItems
+                // 移动端导航菜单也过滤当前页面
+                .filter(item => !isCurrentPage(item.href))
+                .map((item, index) => (
+                  <motion.div
+                    key={item.label || `menu-item-${item.href}`}
+                    custom={index}
+                    variants={menuItemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    whileHover="hover"
+                  >
+                    <NavbarMenuItem>
+                      <Link
+                        className="w-full px-3 py-2 text-base hover:bg-default-100 rounded-lg transition-colors relative overflow-hidden"
+                        href={item.href}
+                        size="lg"
+                      >
+                        {item.label}
+                      </Link>
+                    </NavbarMenuItem>
+                  </motion.div>
+                ))}
+
+              {/* Mobile Auth Status */}
+              <motion.div
+                custom={siteConfig.navMenuItems.length}
                 variants={menuItemVariants}
                 initial="hidden"
                 animate="visible"
                 whileHover="hover"
+                className="mt-3 pt-3 border-t border-default-200"
               >
-                <NavbarMenuItem>
-                  <Link
-                    className="w-full px-3 py-2 text-base hover:bg-default-100 rounded-lg transition-colors relative overflow-hidden"
-                    href={item.href}
-                    size="lg"
-                  >
-                    {item.label}
-                  </Link>
+                <NavbarMenuItem className="flex">
+                  <AuthStatus isMobileMenu={true} />
                 </NavbarMenuItem>
               </motion.div>
-            ))}
-
-            {/* Mobile Auth Status */}
-            <motion.div
-              custom={siteConfig.navMenuItems.length}
-              variants={menuItemVariants}
-              initial="hidden"
-              animate="visible"
-              whileHover="hover"
-              className="mt-3 pt-3 border-t border-default-200"
-            >
-              <NavbarMenuItem className="flex">
-                <AuthStatus isMobileMenu={true} />
-              </NavbarMenuItem>
-            </motion.div>
-          </div>
-        </NavbarMenu>
+            </div>
+          </NavbarMenu>
+        </div>
       </HeroUINavbar>
 
       {/* 在页面顶部，导航栏下方添加全屏搜索框 */}
@@ -806,7 +832,7 @@ export const Navbar = () => {
                     aria-label="View all search results"
                   >
                     <span className="text-xs sm:text-sm font-medium text-blue-600">
-                      View all {searchResults.total} results
+                      View all {searchResults?.total || 0} results
                     </span>
                   </div>
                 </>

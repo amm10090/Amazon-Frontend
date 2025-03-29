@@ -193,12 +193,14 @@ export const productsApi = {
         active?: boolean;
         page?: number;
         limit?: number;
+        min_discount?: number;
+        is_prime_only?: boolean;
     }) => api.get<ApiResponse<ListResponse<Product>>>('/products/list', {
         params: {
             ...params,
-            min_discount: 50,
-            sort: 'discount',
-            order: 'desc'
+            min_discount: params?.min_discount || 50,
+            sort_by: 'discount',
+            sort_order: 'desc'
         }
     }),
 
