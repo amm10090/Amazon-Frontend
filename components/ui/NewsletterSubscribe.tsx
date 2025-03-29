@@ -9,7 +9,7 @@ interface NewsletterSubscribeProps {
 
 export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProps) {
     const [email, setEmail] = useState('');
-    const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
 
     const validateEmail = (email: string) => {
@@ -41,19 +41,30 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
         }
 
         try {
-            // Here you can add the actual API call to handle subscription
-            // For example: await fetch('/api/subscribe', { method: 'POST', body: JSON.stringify({ email }) })
+            setStatus('loading');
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // 发送到我们的API端点
+            const response = await fetch('/api/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
 
-            // Success handling
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Subscription failed');
+            }
+
+            // 成功处理
             setStatus('success');
-            setEmail(''); // Clear input
-        } catch {
-            // Error handling
+            setEmail(''); // 清空输入
+        } catch (error) {
+            // 错误处理
             setStatus('error');
-            setErrorMessage('Subscription failed, please try again later');
+            setErrorMessage(error instanceof Error ? error.message : 'Subscription failed, please try again later');
         }
     };
 
@@ -79,15 +90,17 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                                         : 'focus:ring-[#1A5276] focus:border-[#1A5276]/30'
                                     } transition-all duration-200`}
                                 aria-label="Email address"
+                                disabled={status === 'loading'}
                             />
                         </div>
                         <button
                             type="submit"
-                            className="py-3 px-5 bg-[#16A085] hover:bg-[#117A65] text-white font-medium
-                            rounded-lg transition-all duration-200 flex items-center justify-center whitespace-nowrap"
+                            className={`py-3 px-5 ${status === 'loading' ? 'bg-gray-400' : 'bg-[#16A085] hover:bg-[#117A65]'} text-white font-medium
+                            rounded-lg transition-all duration-200 flex items-center justify-center whitespace-nowrap`}
+                            disabled={status === 'loading'}
                         >
-                            Subscribe
-                            <ArrowRight className="w-4 h-4 ml-2" />
+                            {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
+                            {status !== 'loading' && <ArrowRight className="w-4 h-4 ml-2" />}
                         </button>
                     </div>
 
@@ -154,6 +167,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                                             : 'focus:ring-[#F39C12] focus:border-[#F39C12]/30'
                                         } transition-all duration-200 shadow-sm`}
                                     aria-label="Email address"
+                                    disabled={status === 'loading'}
                                 />
                                 {status === 'error' && (
                                     <div className="absolute text-xs bg-red-500/10 border border-red-400/20 text-red-400 px-3 py-1 rounded-md mt-1.5 left-0">
@@ -163,12 +177,13 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                             </div>
                             <button
                                 type="submit"
-                                className="py-3.5 px-8 bg-[#16A085] hover:bg-[#117A65] text-white font-medium
+                                className={`py-3.5 px-8 ${status === 'loading' ? 'bg-gray-400' : 'bg-[#16A085] hover:bg-[#117A65]'} text-white font-medium
                                 rounded-lg transition-all duration-200 shadow-sm hover:shadow
-                                flex items-center justify-center whitespace-nowrap"
+                                flex items-center justify-center whitespace-nowrap`}
+                                disabled={status === 'loading'}
                             >
-                                Subscribe
-                                <ArrowRight className="w-4 h-4 ml-2" />
+                                {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
+                                {status !== 'loading' && <ArrowRight className="w-4 h-4 ml-2" />}
                             </button>
                         </div>
                     </form>
