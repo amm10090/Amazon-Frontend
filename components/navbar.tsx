@@ -54,9 +54,9 @@ const searchDropdownVariants = {
 
 // 平板搜索框动画
 const tabletSearchVariants = {
-  hidden: { opacity: 0, width: 0, x: 50 },
-  visible: { opacity: 1, width: "100%", x: 0, transition: { duration: 0.3 } },
-  exit: { opacity: 0, width: 0, x: 50, transition: { duration: 0.2 } }
+  hidden: { opacity: 0, width: 0, x: 20 },
+  visible: { opacity: 1, width: "100%", x: 0, transition: { duration: 0.25 } },
+  exit: { opacity: 0, width: 0, x: 20, transition: { duration: 0.2 } }
 };
 
 // 添加自定义样式来隐藏搜索框的清除按钮
@@ -151,7 +151,7 @@ export const Navbar = () => {
   // 优化触发搜索框显示/隐藏的函数
   const toggleSearch = () => {
     // 判断是移动端还是平板端
-    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1280;
 
     if (isTablet) {
       setIsTabletSearchOpen(!isTabletSearchOpen);
@@ -176,15 +176,15 @@ export const Navbar = () => {
       <style jsx global>{searchInputStyles}</style>
 
       <HeroUINavbar
-        maxWidth="xl"
-        position="sticky"
+        maxWidth="full"
         className={`bg-background/80 backdrop-blur-lg border-b border-divider/50 transition-all duration-300 ${isScrolled ? "shadow-md" : ""
-          }`}
+          } px-2 md:px-4 lg:px-6 max-w-[1920px] mx-auto`}
+        position="sticky"
       >
         {/* Logo and Search Bar Content - Left Side */}
-        <NavbarContent className="flex flex-1 items-center gap-2 md:gap-4" justify="start">
+        <NavbarContent className="flex flex-1 items-center gap-1 md:gap-2 lg:gap-3" justify="start">
           {/* Logo - Always visible */}
-          <NavbarBrand as="li" className="gap-2 md:gap-3 max-w-fit mr-2 md:mr-4 flex-shrink-0">
+          <NavbarBrand as="li" className="gap-1 md:gap-2 max-w-fit mr-0 md:mr-1 lg:mr-2 flex-shrink-0">
             <motion.div
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -208,15 +208,15 @@ export const Navbar = () => {
           </NavbarBrand>
 
           {/* Desktop Search Bar */}
-          <div className="hidden lg:block relative w-full max-w-[960px]" ref={searchContainerRef}>
+          <div className="hidden xl:block relative w-full xl:max-w-[600px] 2xl:max-w-[700px]" ref={searchContainerRef}>
             <form onSubmit={handleSearchSubmit} className="w-full">
               <Input
                 ref={searchInputRef}
                 aria-label="Search"
                 classNames={{
                   base: "w-full",
-                  inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
-                  input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-24 search-input h-full"
+                  inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full xl:h-9 2xl:h-10 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                  input: "text-xs xl:text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 xl:pr-16 2xl:pr-20 search-input h-full"
                 }}
                 placeholder="Search deals..."
                 size="sm"
@@ -226,7 +226,7 @@ export const Navbar = () => {
                 onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
               />
               <Button
-                className="absolute right-1.5 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full h-9 px-5 text-sm transition-colors duration-200 flex items-center justify-center"
+                className="absolute right-1.5 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full xl:h-7 2xl:h-8 xl:px-3 2xl:px-4 xl:text-xs 2xl:text-sm transition-colors duration-200 flex items-center justify-center"
                 size="sm"
                 type="submit"
               >
@@ -327,14 +327,14 @@ export const Navbar = () => {
         </NavbarContent>
 
         {/* Navigation Menu Content - Right Side */}
-        <NavbarContent className="flex items-center gap-2" justify="end">
+        <NavbarContent className="flex items-center gap-0.5 md:gap-1" justify="end">
           {/* Desktop Navigation */}
-          <NavbarItem className="hidden lg:flex items-center gap-4 flex-shrink-0">
+          <NavbarItem className="hidden xl:flex items-center xl:gap-2 2xl:gap-3 flex-shrink-0">
             {siteConfig.navItems.map((item) => (
               <NextLink
                 key={item.href}
                 href={item.href}
-                className="text-default-600 text-sm font-medium hover:text-primary transition-colors whitespace-nowrap px-1"
+                className="text-default-600 xl:text-sm font-medium hover:text-primary transition-colors whitespace-nowrap xl:px-0.5"
               >
                 {item.label}
               </NextLink>
@@ -342,7 +342,7 @@ export const Navbar = () => {
           </NavbarItem>
 
           {/* Auth Status - Desktop */}
-          <div className="hidden lg:block flex-shrink-0 ml-4 min-w-[120px]">
+          <div className="hidden xl:block flex-shrink-0 xl:ml-1 2xl:ml-2 xl:min-w-[140px] 2xl:min-w-[160px]">
             <AuthStatus />
           </div>
 
@@ -350,12 +350,12 @@ export const Navbar = () => {
           <AnimatePresence>
             {isTabletSearchOpen && (
               <motion.div
-                className="hidden md:block lg:hidden relative mr-2"
+                className="hidden md:block xl:hidden relative mr-2"
                 variants={tabletSearchVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                style={{ maxWidth: "500px", minWidth: "380px" }}
+                style={{ maxWidth: "320px", minWidth: "280px" }}
               >
                 <form onSubmit={handleSearchSubmit} className="w-full">
                   <Input
@@ -477,7 +477,7 @@ export const Navbar = () => {
 
           {/* 平板搜索按钮，改进位置和样式 */}
           {!isTabletSearchOpen && (
-            <NavbarItem className="hidden md:flex lg:hidden">
+            <NavbarItem className="hidden md:flex xl:hidden">
               <Button
                 className="min-w-unit-8 w-8 h-8 bg-transparent hover:bg-default-100 text-default-500"
                 isIconOnly
@@ -491,7 +491,7 @@ export const Navbar = () => {
 
           {/* 平板搜索关闭按钮 */}
           {isTabletSearchOpen && (
-            <NavbarItem className="hidden md:flex lg:hidden">
+            <NavbarItem className="hidden md:flex xl:hidden">
               <Button
                 className="min-w-unit-8 w-8 h-8 bg-transparent hover:bg-default-100 text-default-500"
                 isIconOnly
@@ -504,7 +504,7 @@ export const Navbar = () => {
           )}
 
           {/* Mobile & Tablet Menu Button */}
-          <NavbarItem className="md:flex lg:hidden">
+          <NavbarItem className="md:flex xl:hidden">
             <NavbarMenuToggle
               icon={<Menu size={20} />}
               className="w-8 h-8 p-1.5 text-default-500 bg-default-100/50 hover:bg-default-200/70 rounded-lg"
@@ -696,7 +696,7 @@ export const Navbar = () => {
       </HeroUINavbar>
 
       {/* 在页面顶部，导航栏下方添加全屏搜索框 */}
-      <div className="w-full px-4 py-3 bg-white shadow-sm md:hidden" style={{ display: isSearchOpen ? 'block' : 'none' }}>
+      <div className="w-full px-4 py-3 bg-white shadow-sm xl:hidden md:hidden" style={{ display: isSearchOpen ? 'block' : 'none' }}>
         <form onSubmit={handleSearchSubmit} className="relative w-full">
           <Input
             ref={searchInputRef}
