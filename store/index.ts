@@ -56,7 +56,7 @@ export const useUserStore = create(
 // 筛选状态
 export const useFilterStore = create<FilterState>((set) => ({
     category: null,
-    priceRange: [0, 1000],
+    priceRange: [0, 10000],
     sortBy: 'newest',
     setCategory: (category) => set({ category }),
     setPriceRange: (range) => set({ priceRange: range }),

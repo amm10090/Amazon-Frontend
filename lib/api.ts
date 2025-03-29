@@ -53,21 +53,21 @@ export const productsApi = {
      * 通过ASIN查询商品详情
      * 使用POST请求，支持更丰富的查询选项
      * @param params - 查询参数
-     * @param params.asin - 商品ASIN码
+     * @param params.asins - 商品ASIN码数组
      * @param params.include_metadata - 是否包含原始元数据
      * @param params.include_browse_nodes - 筛选特定的浏览节点ID数组
      * @returns API响应对象，包含商品数据
      */
     queryProduct: (params: {
-        asin: string;
+        asins: string[];
         include_metadata?: boolean;
         include_browse_nodes?: string[] | null;
     }) => {
-        if (!params.asin) {
-            throw new Error('ASIN is required for product query');
+        if (!params.asins || params.asins.length === 0) {
+            throw new Error('ASINs array is required for product query');
         }
 
-        return api.post<ApiResponse<Product>>('/products/query', params);
+        return api.post<ApiResponse<Product[]>>('/products/query', params);
     },
 
     /**

@@ -21,10 +21,9 @@ export type FilterState = {
 const discountOptions = [80, 60, 40, 20, 10];
 
 // Custom slider component with improved UI and animations
-function PriceRangeSlider({ min, max, step, value, onChange }: {
+function PriceRangeSlider({ min, max, value, onChange }: {
     min: number;
     max: number;
-    step: number;
     value: [number, number];
     onChange: (value: [number, number]) => void;
 }) {
@@ -38,6 +37,37 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
             currency: 'USD',
             maximumFractionDigits: 0
         }).format(price);
+    };
+
+    // 计算适当的步长：价格越高，步长越大，提高用户体验
+    const calculateStep = (val: number): number => {
+        if (val < 100) return 5;
+        if (val < 500) return 10;
+        if (val < 1000) return 50;
+        if (val < 5000) return 100;
+
+        return 500;
+    };
+
+    // 确保滑块值在合理范围内
+    const handleMinChange = (newVal: number) => {
+        const dynamicStep = calculateStep(newVal);
+        // 确保值按步长对齐
+        const alignedVal = Math.round(newVal / dynamicStep) * dynamicStep;
+
+        if (alignedVal < value[1] - dynamicStep) {
+            onChange([alignedVal, value[1]]);
+        }
+    };
+
+    const handleMaxChange = (newVal: number) => {
+        const dynamicStep = calculateStep(newVal);
+        // 确保值按步长对齐
+        const alignedVal = Math.round(newVal / dynamicStep) * dynamicStep;
+
+        if (alignedVal > value[0] + dynamicStep) {
+            onChange([value[0], alignedVal]);
+        }
     };
 
     return (
@@ -118,14 +148,10 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                     aria-label="Minimum price"
                     min={min}
                     max={max}
-                    step={step}
+                    step={calculateStep(value[0])}
                     value={value[0]}
                     onChange={(e) => {
-                        const newVal = Number(e.target.value);
-
-                        if (newVal < value[1]) {
-                            onChange([newVal, value[1]]);
-                        }
+                        handleMinChange(Number(e.target.value));
                     }}
                     className="absolute w-full h-8 opacity-0 cursor-pointer z-10"
                     onFocus={() => setActiveThumb('min')}
@@ -136,14 +162,10 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                     aria-label="Maximum price"
                     min={min}
                     max={max}
-                    step={step}
+                    step={calculateStep(value[1])}
                     value={value[1]}
                     onChange={(e) => {
-                        const newVal = Number(e.target.value);
-
-                        if (newVal > value[0]) {
-                            onChange([value[0], newVal]);
-                        }
+                        handleMaxChange(Number(e.target.value));
                     }}
                     className="absolute w-full h-8 opacity-0 cursor-pointer z-10"
                     onFocus={() => setActiveThumb('max')}
@@ -160,7 +182,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                     <input
                         type="number"
                         min={min}
-                        max={value[1]}
+                        max={value[1] - calculateStep(value[0])}
                         value={value[0]}
                         onChange={(e) => {
                             const newVal = Number(e.target.value);
@@ -180,7 +202,7 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
                     </div>
                     <input
                         type="number"
-                        min={value[0]}
+                        min={value[0] + calculateStep(value[1])}
                         max={max}
                         value={value[1]}
                         onChange={(e) => {
@@ -199,10 +221,11 @@ function PriceRangeSlider({ min, max, step, value, onChange }: {
             {/* Quick price range selectors */}
             <div className="flex flex-wrap gap-2 mt-4">
                 {[
-                    { label: "Under $25", values: [0, 25] },
-                    { label: "$25-$50", values: [25, 50] },
-                    { label: "$50-$100", values: [50, 100] },
-                    { label: "$100+", values: [100, max] }
+                    { label: "Low ¥200", values: [0, 200] },
+                    { label: "¥200-¥500", values: [200, 500] },
+                    { label: "¥500-¥1000", values: [500, 1000] },
+                    { label: "¥1000-¥5000", values: [1000, 5000] },
+                    { label: "¥5000+", values: [5000, max] }
                 ].map((range, _) => (
                     <button
                         key={`price-range-${range.label}`}
@@ -271,9 +294,12 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     const pathname = usePathname();
     const isInitialMount = useRef(true);
 
+    // 价格上限提升到10000美元
+    const MAX_PRICE = 10000;
+
     // Get initial filter state from URL parameters - 使用正确的API参数名称
     const initialMinPrice = Number(searchParams.get('min_price')) || 0;
-    const initialMaxPrice = Number(searchParams.get('max_price')) || 1000;
+    const initialMaxPrice = Number(searchParams.get('max_price')) || MAX_PRICE;
     const initialDiscount = Number(searchParams.get('min_discount')) || 0;
     const initialBrands = searchParams.get('brands') || '';
     const initialIsPrime = searchParams.get('is_prime_only') === 'true';
@@ -297,7 +323,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     useEffect(() => {
         // 获取当前URL参数
         const minPrice = Number(searchParams.get('min_price')) || 0;
-        const maxPrice = Number(searchParams.get('max_price')) || 1000;
+        const maxPrice = Number(searchParams.get('max_price')) || MAX_PRICE;
         const discount = Number(searchParams.get('min_discount')) || 0;
         const brands = searchParams.get('brands') || '';
         const isPrime = searchParams.get('is_prime_only') === 'true';
@@ -377,7 +403,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         if (currentFilter.price[0] > 0) params.set('min_price', currentFilter.price[0].toString());
         else params.delete('min_price');
 
-        if (currentFilter.price[1] < 1000) params.set('max_price', currentFilter.price[1].toString());
+        if (currentFilter.price[1] < MAX_PRICE) params.set('max_price', currentFilter.price[1].toString());
         else params.delete('max_price');
 
         if (currentFilter.discount > 0) params.set('min_discount', currentFilter.discount.toString());
@@ -521,7 +547,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
 
         // 再更新本地状态
         setFilter({
-            price: [0, 1000],
+            price: [0, MAX_PRICE],
             discount: 0,
             brands: '',
             isPrime: false
@@ -587,8 +613,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                     >
                         <PriceRangeSlider
                             min={0}
-                            max={1000}
-                            step={5}
+                            max={MAX_PRICE}
                             value={filter.price}
                             onChange={handlePriceChange}
                         />

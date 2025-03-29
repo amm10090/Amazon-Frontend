@@ -28,12 +28,18 @@ async function getProduct(id: string): Promise<Product | null> {
         if (isAsin) {
             // Use query API to get product by ASIN
             const response = await productsApi.queryProduct({
-                asin: upperCaseId,
-                include_metadata: false
+                asins: [upperCaseId],
+                include_metadata: false,
+                include_browse_nodes: ["false"]
             });
 
             if (response && response.data) {
-                return response.data as unknown as Product;
+                // 处理返回的可能是数组的情况
+                const productData = Array.isArray(response.data)
+                    ? response.data[0]
+                    : response.data;
+
+                return productData as unknown as Product;
             }
         } else {
             // Get product by ID

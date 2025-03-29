@@ -45,29 +45,32 @@ export default function ProductClient({ product }: { product: ComponentProduct }
     }, [product]);
 
     return (
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             {/* Breadcrumb navigation with all items clickable */}
-            <Breadcrumb items={breadcrumbItems} allItemsClickable={true} />
+            <div className="mb-6">
+                <Breadcrumb items={breadcrumbItems} allItemsClickable={true} />
+            </div>
 
             {/* Product detail card */}
             <div className="product-container bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md mb-8 relative">
-                {/* Prime badge - moved to the top right of the entire product card */}
+                {/* Prime badge - 移至外部容器并设置为绝对定位 */}
                 {product.isPrime && (
-                    <div className="absolute top-2 right-2 z-10">
-                        <div className="bg-[#0574F7] text-white text-sm font-bold px-3 py-1 rounded-md">
+                    <div className="absolute top-4 right-4 z-20">
+                        <div className="bg-[#0574F7] text-white text-sm font-bold px-3 py-1.5 rounded-md shadow-sm">
                             Prime
                         </div>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-                    {/* Product image gallery */}
-                    <div className="product-gallery p-6 md:p-8 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700">
+                {/* 调整为平板和移动设备使用上下布局 */}
+                <div className="flex flex-col lg:flex-row">
+                    {/* Product image gallery - 调整宽度比例 */}
+                    <div className="w-full lg:w-1/2 p-4 sm:p-6 md:p-8 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700">
                         <ProductImageGallery product={cleanedProduct} />
                     </div>
 
-                    {/* Product information */}
-                    <div className="product-info p-6 md:p-8">
+                    {/* Product information - 调整宽度比例 */}
+                    <div className="w-full lg:w-1/2 p-4 sm:p-6 md:p-8">
                         <ProductInfo product={cleanedProduct} />
                     </div>
                 </div>

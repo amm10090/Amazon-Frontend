@@ -6,42 +6,41 @@ import { NewsletterSubscribe } from "@/components/ui/NewsletterSubscribe";
 
 export default function Home() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-      {/* 左侧分类导航 - 在大屏上占2列 */}
-      <div className="lg:col-span-2 lg:sticky lg:top-24 lg:self-start lg:h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pr-2 lg:border-r lg:border-r-gray-200/50 dark:lg:border-r-gray-700/50">
-        <div className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm lg:rounded-lg lg:p-3">
-          <div className="mb-3 lg:border-b lg:border-gray-200 dark:lg:border-gray-700 pb-2">
-            <h2 className="text-xl font-bold text-center lg:text-left bg-clip-text text-transparent bg-gradient-to-r from-[#2c3e50] to-[#95a5a6]">
-              Categories
-            </h2>
-          </div>
-          <CategoryNavigation />
-        </div>
-      </div>
-
-      {/* 右侧主内容区域 - 在大屏上占8列 */}
-      <div className="lg:col-span-8 flex flex-col gap-8">
-        {/* 顶部英雄区域 */}
-        <HeroSection />
-
-        {/* 限时特惠区域 */}
-        <FeaturedDeals />
-
-        {/* 分隔线 */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-background px-4 text-sm text-text-light">Recommended for you</span>
+    <div className="max-w-[1400px] mx-auto overflow-hidden">
+      <div className="relative flex">
+        {/* 左侧分类导航 */}
+        <div className="hidden lg:block w-[240px] fixed top-[110px] h-auto max-h-[calc(100vh-110px)] overflow-auto bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800">
+          <div className="p-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Categories</h2>
+            <CategoryNavigation />
           </div>
         </div>
 
+        {/* 右侧主内容区域 */}
+        <main className="flex-1 lg:ml-[240px] min-h-screen w-full overflow-hidden">
+          <div className="px-4 lg:px-6 py-6 space-y-8 overflow-hidden">
+            {/* 顶部英雄区域 */}
+            <HeroSection />
 
+            {/* 限时特惠区域 */}
+            <FeaturedDeals />
 
+            {/* 分隔线 */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-4 text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900">
+                  Recommended for you
+                </span>
+              </div>
+            </div>
 
-        {/* 邮箱订阅组件 */}
-        <NewsletterSubscribe />
+            {/* 邮箱订阅组件 */}
+            <NewsletterSubscribe />
+          </div>
+        </main>
       </div>
     </div>
   );

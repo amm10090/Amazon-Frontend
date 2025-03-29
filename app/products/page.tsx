@@ -560,6 +560,49 @@ function ProductsContent() {
 
     // 渲染单个商品
     const renderProduct = (product: ComponentProduct) => {
+        // 处理折扣和优惠券逻辑
+        const hasCoupon = product.couponType && product.couponValue;
+        const hasDiscount = product.discount > 0;
+        const discountLabel = hasDiscount ? `-${Math.round(product.discount)}%` : '';
+        let couponLabel = '';
+        let calculatedOriginalPrice = product.originalPrice || product.price;
+
+        // 处理优惠券标签
+        if (hasCoupon) {
+            if (product.couponType === 'percentage') {
+                couponLabel = `-${product.couponValue}%`;
+                // 如果是百分比优惠券且没有折扣，计算原价
+                if (!hasDiscount) {
+                    calculatedOriginalPrice = product.price / (1 - Number(product.couponValue) / 100);
+                }
+            } else if (product.couponType === 'fixed') {
+                couponLabel = `$${product.couponValue}`;
+                // 如果是固定金额优惠券且没有折扣，计算原价
+                if (!hasDiscount) {
+                    calculatedOriginalPrice = product.price + Number(product.couponValue);
+                }
+            }
+
+            // 确保优惠券情况下显示原价
+            if (calculatedOriginalPrice <= product.price) {
+                calculatedOriginalPrice = product.price * 1.1; // 如果计算失败，至少显示10%的原价差异
+            }
+        }
+
+        // 判断是否有任何形式的折扣
+        const hasAnyDiscount = hasDiscount || hasCoupon;
+
+        // 计算折扣百分比用于标签颜色样式
+        let discountBadgeClass = 'bg-secondary';
+
+        if (hasDiscount) {
+            if (product.discount > 30) {
+                discountBadgeClass = 'bg-primary-badge';
+            } else if (product.discount > 10) {
+                discountBadgeClass = 'bg-accent';
+            }
+        }
+
         return (
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -583,7 +626,7 @@ function ProductsContent() {
                 <div className="relative h-full flex flex-col overflow-hidden rounded-lg shadow-lg bg-white dark:bg-gray-800 hover:shadow-xl transition-all duration-300">
                     {/* 收藏按钮 */}
                     <div
-                        className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 md:top-2 md:right-2 z-30"
+                        className="absolute top-2 right-2 z-30"
                         onClick={(e) => e.stopPropagation()}
                         onKeyDown={(e) => e.stopPropagation()}
                         role="button"
@@ -617,49 +660,58 @@ function ProductsContent() {
                             />
                         </div>
 
-                        {/* Prime badge - 移动端更紧凑 */}
+                        {/* Prime badge */}
                         {product.isPrime && (
-                            <div className="absolute top-1 left-1 sm:top-1.5 sm:left-1.5 md:top-2 md:left-2 bg-[#0574F7] text-white text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
-                                Prime
+                            <div className="absolute top-2 left-2 z-10">
+                                <div className="bg-[#0574F7] text-white px-2 py-0.5 rounded-full text-xs font-medium shadow-sm flex items-center">
+                                    Prime
+                                </div>
                             </div>
                         )}
-
-                        {/* Discount tag - 移动端更紧凑 - 修改位置避免与收藏按钮重叠 */}
-                        {product.discount > 0 && (
-                            <div className="absolute top-1 right-8 sm:top-1.5 sm:right-9 md:top-2 md:right-10 bg-red-500 text-white text-[8px] sm:text-[10px] md:text-xs font-bold px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 rounded">
-                                -{Math.round(product.discount)}%
-                            </div>
-                        )}
-
-
                     </div>
 
                     {/* 内容区域使用flex-grow保证卡片高度一致 */}
-                    <div className="p-2 sm:p-3 md:p-4 flex-grow flex flex-col">
+                    <div className="p-3 sm:p-4 flex-grow flex flex-col">
+                        {/* 品牌信息和优惠券 - 放在同一行 */}
+                        <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+                            {product.brand && (
+                                <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded inline-block">
+                                    {product.brand.toUpperCase()}
+                                </span>
+                            )}
+
+                            {/* 优惠券标签 - 使用绿色 */}
+                            {hasCoupon && couponLabel && (
+                                <span className="text-xs font-bold text-white px-2 py-0.5 rounded bg-green-500">
+                                    {couponLabel} Coupon
+                                </span>
+                            )}
+                        </div>
+
                         {/* 标题固定高度，确保一致性 */}
-                        <h3 className="text-xs sm:text-sm md:text-lg font-semibold text-gray-800 dark:text-white line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem]">
+                        <h3 className="text-sm md:text-base font-medium line-clamp-2 mb-2 flex-grow text-gray-800 dark:text-white">
                             {product.title}
                         </h3>
 
                         {/* 使用mt-auto将价格信息推到底部，确保所有卡片布局一致 */}
-                        <div className="mt-auto pt-1 sm:pt-2 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-0.5 sm:gap-1">
-                            {/* 价格区域 */}
-                            <div className="flex flex-col">
-                                <p className="text-sm sm:text-lg md:text-xl font-bold text-primary">
+                        <div className="mt-auto flex items-center justify-between mb-2 flex-wrap gap-2">
+                            {/* 价格区域 - 使用baseline对齐 */}
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-lg font-semibold text-primary dark:text-primary-light">
                                     ${product.price.toFixed(2)}
-                                </p>
-                                {product.discount > 0 && (
-                                    <p className="text-[10px] sm:text-xs md:text-sm text-gray-500 line-through">
-                                        ${product.originalPrice.toFixed(2)}
-                                    </p>
+                                </span>
+                                {hasAnyDiscount && calculatedOriginalPrice > product.price && (
+                                    <span className="text-xs text-secondary dark:text-gray-400 line-through">
+                                        ${calculatedOriginalPrice.toFixed(2)}
+                                    </span>
                                 )}
                             </div>
 
-                            {/* 品牌展示 - 移动端优化 */}
-                            {product.brand && (
-                                <p className="text-[10px] sm:text-xs md:text-sm text-gray-600 dark:text-gray-400 truncate max-w-[60px] sm:max-w-[120px]">
-                                    {product.brand}
-                                </p>
+                            {/* 仅折扣标签 */}
+                            {hasDiscount && discountLabel && (
+                                <span className={`text-xs font-bold text-white px-2 py-0.5 rounded ${discountBadgeClass}`}>
+                                    {discountLabel}
+                                </span>
                             )}
                         </div>
                     </div>

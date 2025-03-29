@@ -156,22 +156,22 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
             <div className="w-full flex flex-col space-y-2 py-3">
                 <div className="flex items-center px-4 py-3 bg-blue-50/70 rounded-xl mb-2">
                     {user.image ? (
-                        <div className="relative">
+                        <div className="relative flex items-center justify-center w-8 h-8">
                             <Image
                                 src={user.image}
                                 alt={`${user.name || '用户'}'s avatar`}
-                                className="h-10 w-10 rounded-full object-cover border-2 border-white shadow-sm"
-                                width={40}
-                                height={40}
+                                className="rounded-full object-cover border border-gray-200 group-hover:border-primary transition-colors"
+                                width={32}
+                                height={32}
                             />
-                            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-400 rounded-full border-2 border-white" />
+                            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-green-400 rounded-full border border-white" />
                         </div>
                     ) : (
-                        <div className="relative">
-                            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white font-semibold text-lg shadow-sm">
+                        <div className="relative flex items-center justify-center w-8 h-8">
+                            <div className="w-full h-full rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-sm font-semibold group-hover:shadow-md transition-shadow flex items-center justify-center">
                                 {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
                             </div>
-                            <div className="absolute -bottom-1 -right-1 h-4 w-4 bg-green-400 rounded-full border-2 border-white" />
+                            <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-green-400 rounded-full border border-white" />
                         </div>
                     )}
                     <div className="ml-4 flex-1">
@@ -225,22 +225,22 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                 aria-haspopup="true"
             >
                 {user.image ? (
-                    <div className="relative">
+                    <div className="relative flex items-center justify-center w-8 h-8">
                         <Image
                             src={user.image}
                             alt={`${user.name || '用户'}'s avatar`}
-                            className="h-8 w-8 rounded-full object-cover border border-gray-200 group-hover:border-primary transition-colors"
+                            className="rounded-full object-cover border border-gray-200 group-hover:border-primary transition-colors"
                             width={32}
                             height={32}
                         />
-                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-400 rounded-full border border-white" />
+                        <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-green-400 rounded-full border border-white" />
                     </div>
                 ) : (
-                    <div className="relative">
-                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white font-semibold group-hover:shadow-md transition-shadow">
+                    <div className="relative flex items-center justify-center w-8 h-8">
+                        <div className="w-full h-full rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white text-sm font-semibold group-hover:shadow-md transition-shadow flex items-center justify-center">
                             {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
                         </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-400 rounded-full border border-white" />
+                        <div className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 bg-green-400 rounded-full border border-white" />
                     </div>
                 )}
                 <span className="text-sm font-medium hidden sm:inline-block group-hover:text-primary transition-colors">{user.name || user.email || '用户'}</span>

@@ -184,7 +184,7 @@ export const Navbar = () => {
         {/* Logo and Search Bar Content - Left Side */}
         <NavbarContent className="flex flex-1 items-center gap-2 md:gap-4" justify="start">
           {/* Logo - Always visible */}
-          <NavbarBrand as="li" className="gap-2 md:gap-3 max-w-fit mr-2 md:mr-4">
+          <NavbarBrand as="li" className="gap-2 md:gap-3 max-w-fit mr-2 md:mr-4 flex-shrink-0">
             <motion.div
               whileHover={{ scale: 1.05 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -208,15 +208,15 @@ export const Navbar = () => {
           </NavbarBrand>
 
           {/* Desktop Search Bar */}
-          <div className="hidden lg:block relative w-full max-w-xl" ref={searchContainerRef}>
+          <div className="hidden lg:block relative w-full max-w-[960px]" ref={searchContainerRef}>
             <form onSubmit={handleSearchSubmit} className="w-full">
               <Input
                 ref={searchInputRef}
                 aria-label="Search"
                 classNames={{
                   base: "w-full",
-                  inputWrapper: "bg-white shadow-md border-none rounded-full px-3 md:px-4 py-1.5 md:py-2 focus:outline-none focus:border-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none",
-                  input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-16 md:pr-20 search-input"
+                  inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                  input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-24 search-input h-full"
                 }}
                 placeholder="Search deals..."
                 size="sm"
@@ -226,11 +226,11 @@ export const Navbar = () => {
                 onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
               />
               <Button
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full px-3 md:px-4 py-1.5 text-sm opacity-100 hover:opacity-100"
+                className="absolute right-1.5 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full h-9 px-5 text-sm transition-colors duration-200 flex items-center justify-center"
                 size="sm"
                 type="submit"
               >
-                Search
+                Hunt
               </Button>
             </form>
 
@@ -329,18 +329,22 @@ export const Navbar = () => {
         {/* Navigation Menu Content - Right Side */}
         <NavbarContent className="flex items-center gap-2" justify="end">
           {/* Desktop Navigation */}
-          <NavbarItem className="hidden lg:flex gap-4">
+          <NavbarItem className="hidden lg:flex items-center gap-4 flex-shrink-0">
             {siteConfig.navItems.map((item) => (
               <NextLink
                 key={item.href}
                 href={item.href}
-                className="text-default-600 text-sm lg:text-base font-medium hover:text-primary transition-colors whitespace-nowrap"
+                className="text-default-600 text-sm font-medium hover:text-primary transition-colors whitespace-nowrap px-1"
               >
                 {item.label}
               </NextLink>
             ))}
-            <AuthStatus />
           </NavbarItem>
+
+          {/* Auth Status - Desktop */}
+          <div className="hidden lg:block flex-shrink-0 ml-4 min-w-[120px]">
+            <AuthStatus />
+          </div>
 
           {/* 平板搜索框组件 - 重新放置在这里，位于右侧内容中 */}
           <AnimatePresence>
@@ -359,8 +363,8 @@ export const Navbar = () => {
                     aria-label="Search"
                     classNames={{
                       base: "w-full",
-                      inputWrapper: "bg-white shadow-md border-none rounded-full px-3 py-1.5 focus:outline-none focus:border-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none",
-                      input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-16 search-input"
+                      inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                      input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-24 search-input h-full"
                     }}
                     placeholder="Search deals..."
                     size="sm"
@@ -370,7 +374,7 @@ export const Navbar = () => {
                     onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
                   />
                   <Button
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full px-3 py-1 text-sm opacity-100 hover:opacity-100"
+                    className="absolute right-1.5 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full h-9 px-5 text-sm transition-colors duration-200 flex items-center justify-center"
                     size="sm"
                     type="submit"
                   >
@@ -535,8 +539,8 @@ export const Navbar = () => {
                   aria-label="Search"
                   classNames={{
                     base: "w-full",
-                    inputWrapper: "bg-white shadow-sm border border-default-200 rounded-full px-3 py-1.5 focus:outline-none focus:border-none focus:ring-transparent focus-visible:ring-0 focus-visible:outline-none",
-                    input: "text-sm pr-12 focus:outline-none focus:ring-0 focus-visible:outline-none search-input"
+                    inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                    input: "text-sm pr-12 focus:outline-none focus:ring-0 focus-visible:outline-none search-input h-full"
                   }}
                   placeholder="Search deals..."
                   size="sm"
@@ -699,8 +703,8 @@ export const Navbar = () => {
             aria-label="Search"
             classNames={{
               base: "w-full",
-              inputWrapper: "bg-white shadow-sm border border-default-200 rounded-full px-3 py-1.5 focus:outline-none focus:border-none focus:ring-transparent focus-visible:ring-0 focus-visible:outline-none",
-              input: "text-sm pr-12 focus:outline-none focus:ring-0 focus-visible:outline-none search-input"
+              inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+              input: "text-sm pr-12 focus:outline-none focus:ring-0 focus-visible:outline-none search-input h-full"
             }}
             placeholder="Search deals..."
             size="sm"

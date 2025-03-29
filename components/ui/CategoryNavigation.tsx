@@ -753,11 +753,11 @@ export function CategoryNavigation() {
                         >
                             <motion.div
                                 className={`
-                                    relative overflow-hidden rounded-xl lg:rounded-lg
-                                    ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-3' : 'h-40 sm:h-44 md:h-48'}
+                                    relative overflow-hidden rounded-xl lg:rounded-md
+                                    ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2.5' : 'h-40 sm:h-44 md:h-48'}
                                     bg-gray-100 dark:bg-gray-800/60
                                     border border-gray-200 dark:border-gray-700
-                                    p-3 sm:p-4 lg:py-3 lg:px-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start
+                                    p-3 sm:p-4 lg:py-2.5 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full
                                 `}
                                 whileHover={{
                                     boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
@@ -766,13 +766,13 @@ export function CategoryNavigation() {
                             >
                                 {/* Icon */}
                                 <motion.div
-                                    className="relative w-14 h-14 sm:w-16 sm:h-16 lg:w-10 lg:h-10 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center bg-white dark:bg-gray-700 text-primary dark:text-primary-light shadow-sm group-hover:shadow-md transition-all duration-300"
+                                    className="relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center bg-white dark:bg-gray-700 text-primary dark:text-primary-light shadow-sm group-hover:shadow-md transition-all duration-300"
                                     whileHover={{
                                         scale: isMobile ? 1.1 : 1.05,
                                         transition: { duration: 0.2 }
                                     }}
                                 >
-                                    <span className="text-2xl lg:text-xl">🔍</span>
+                                    <span className="text-xl lg:text-lg">🔍</span>
                                 </motion.div>
 
                                 {/* Text */}
@@ -810,13 +810,13 @@ export function CategoryNavigation() {
                             >
                                 <motion.div
                                     className={`
-                                        relative overflow-hidden rounded-xl lg:rounded-lg
+                                        relative overflow-hidden rounded-xl lg:rounded-md
                                         ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2' : 'h-40 sm:h-44 md:h-48'}
                                         ${isActiveCategory(category.slug)
-                                            ? 'bg-primary/20 dark:bg-primary/40 ring-2 ring-primary dark:ring-primary'
+                                            ? 'bg-primary/10 dark:bg-primary/20 border-l-4 border-primary dark:border-primary'
                                             : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
                                         }
-                                        p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start
+                                        p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full mb-1.5
                                     `}
                                     whileHover={{
                                         boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
@@ -826,7 +826,7 @@ export function CategoryNavigation() {
                                     {/* Category icon */}
                                     <motion.div
                                         className={`
-                                            relative w-14 h-14 sm:w-16 sm:h-16 lg:w-10 lg:h-10 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
+                                            relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
                                             ${isActiveCategory(category.slug)
                                                 ? `bg-primary text-white`
                                                 : `bg-gray-100 dark:bg-gray-700 text-primary-dark dark:text-white`
@@ -839,15 +839,15 @@ export function CategoryNavigation() {
                                         }}
                                     >
                                         {/* 显示emoji图标 */}
-                                        <span className="text-2xl lg:text-xl">
+                                        <span className="text-xl lg:text-lg">
                                             {category.emoji || categoryIcons[category.slug.toLowerCase()]?.emoji || '🛒'}
                                         </span>
                                     </motion.div>
 
                                     {/* Category name and count */}
-                                    <div className="lg:flex-1 text-center lg:text-left">
+                                    <div className="lg:flex-1 text-center lg:text-left w-full">
                                         <motion.h3
-                                            className="text-xs sm:text-sm md:text-base lg:text-sm font-medium text-primary-dark dark:text-white mb-1 sm:mb-2 lg:mb-0 transition-colors"
+                                            className="text-xs sm:text-sm md:text-base lg:text-sm font-medium text-primary-dark dark:text-white mb-1 sm:mb-2 lg:mb-0 transition-colors truncate"
                                             initial={{ opacity: 0, y: 5 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.3, delay: 0.1 }}
@@ -856,7 +856,7 @@ export function CategoryNavigation() {
                                         </motion.h3>
                                         {category.count > 0 && (
                                             <motion.p
-                                                className="text-xs text-secondary dark:text-gray-400 transition-colors"
+                                                className="text-xs text-gray-500 dark:text-gray-400 transition-colors"
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 transition={{ duration: 0.3, delay: 0.2 }}
