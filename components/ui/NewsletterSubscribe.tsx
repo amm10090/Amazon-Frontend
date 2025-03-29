@@ -3,7 +3,11 @@
 import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 
-export function NewsletterSubscribe() {
+interface NewsletterSubscribeProps {
+    compact?: boolean;
+}
+
+export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProps) {
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
@@ -53,6 +57,60 @@ export function NewsletterSubscribe() {
         }
     };
 
+    // 紧凑版本的组件，用于产品页面
+    if (compact) {
+        return (
+            <div className="bg-transparent">
+                <form onSubmit={handleSubmit}>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="flex-grow relative">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <Mail className="w-4 h-4 text-gray-500" />
+                            </div>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your email address"
+                                className={`w-full pl-9 pr-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white
+                                focus:outline-none focus:ring-2 border border-gray-200 dark:border-gray-600
+                                ${status === 'error'
+                                        ? 'focus:ring-red-400 border-red-400/50'
+                                        : 'focus:ring-[#1A5276] focus:border-[#1A5276]/30'
+                                    } transition-all duration-200`}
+                                aria-label="Email address"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="py-3 px-5 bg-[#16A085] hover:bg-[#117A65] text-white font-medium
+                            rounded-lg transition-all duration-200 flex items-center justify-center whitespace-nowrap"
+                        >
+                            Subscribe
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                        </button>
+                    </div>
+
+                    {/* Error message */}
+                    {status === 'error' && (
+                        <div className="mt-2 text-sm text-red-500">
+                            {errorMessage}
+                        </div>
+                    )}
+
+                    {/* Success message */}
+                    {status === 'success' && (
+                        <div className="mt-2 text-sm text-green-500 flex items-center">
+                            <CheckCircle2 className="w-4 h-4 mr-2 flex-shrink-0" />
+                            <span>Subscription successful! Thank you for subscribing.</span>
+                        </div>
+                    )}
+                </form>
+            </div>
+        );
+    }
+
+    // 原始完整版，用于其他页面
     return (
         <div className="bg-gradient-to-br from-[#1A5276] to-[#154360] rounded-xl shadow-lg overflow-hidden">
             {/* Inner content container with semi-transparent overlay */}
@@ -105,7 +163,7 @@ export function NewsletterSubscribe() {
                             </div>
                             <button
                                 type="submit"
-                                className="py-3.5 px-8 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium
+                                className="py-3.5 px-8 bg-[#16A085] hover:bg-[#117A65] text-white font-medium
                                 rounded-lg transition-all duration-200 shadow-sm hover:shadow
                                 flex items-center justify-center whitespace-nowrap"
                             >
