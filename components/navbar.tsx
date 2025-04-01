@@ -355,7 +355,7 @@ export const Navbar = () => {
                   <NextLink
                     key={item.href}
                     href={item.href}
-                    className="text-default-600 xl:text-sm font-medium hover:text-primary transition-colors whitespace-nowrap px-2 xl:px-3"
+                    className="text-black xl:text-sm font-medium hover:text-primary transition-colors whitespace-nowrap px-2 xl:px-3"
                   >
                     {item.label}
                   </NextLink>
