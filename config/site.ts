@@ -17,10 +17,6 @@ export const siteConfig = {
       href: "/deals",
     },
     {
-      label: "My Favorites",
-      href: "/favorites",
-    },
-    {
       label: "About Us",
       href: "/about",
     },
@@ -37,10 +33,6 @@ export const siteConfig = {
     {
       label: "Limited Time Deals",
       href: "/deals",
-    },
-    {
-      label: "My Favorites",
-      href: "/favorites",
     },
     {
       label: "About Us",

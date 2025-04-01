@@ -7,7 +7,6 @@ import {
   NavbarMenuToggle,
   NavbarBrand,
   NavbarItem,
-  NavbarMenuItem,
 } from "@heroui/navbar";
 import { Input, Link, Button } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,7 +32,7 @@ const _searchIconVariants = {
   animate: { rotate: 360 }
 };
 
-const menuItemVariants = {
+const _menuItemVariants = {
   hidden: { opacity: 0, x: -20 },
   visible: (i: number) => ({
     opacity: 1,
@@ -199,9 +198,9 @@ export const Navbar = () => {
           }`}
         position="sticky"
       >
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between w-full">
+        <div className="max-w-[1400px] mx-auto px-0 flex items-center justify-between w-full">
           {/* Logo and Search Bar Content - Left Side */}
-          <NavbarContent className="flex flex-1 items-center gap-0 md:gap-1 lg:gap-2 px-0" justify="start">
+          <NavbarContent className="flex flex-1 items-center gap-0 md:gap-1 lg:gap-2 px-0 pl-4" justify="start">
             {/* Logo - Always visible */}
             <NavbarBrand as="li" className="gap-0 max-w-fit mr-1 md:mr-2 lg:mr-3 flex-shrink-0">
               <motion.div
@@ -264,11 +263,11 @@ export const Navbar = () => {
                     className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
                   >
                     {isLoading ? (
-                      <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                      <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
                         Searching...
                       </div>
                     ) : !searchResults?.items?.length ? (
-                      <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                      <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
                         No matching products found
                       </div>
                     ) : (
@@ -321,7 +320,7 @@ export const Navbar = () => {
                           ))}
                         </div>
                         <div
-                          className="p-2 sm:p-3 bg-gray-50 text-center hover:bg-gray-100 cursor-pointer border-t"
+                          className="p-2 sm:p-3 bg-gray-50 text-left hover:bg-gray-100 cursor-pointer border-t"
                           onClick={() => handleSearchSubmit()}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
@@ -333,7 +332,7 @@ export const Navbar = () => {
                           role="button"
                           aria-label="View all search results"
                         >
-                          <span className="text-xs sm:text-sm font-medium text-blue-600">
+                          <span className="text-xs sm:text-sm font-medium text-blue-600 text-left">
                             View all {searchResults?.total || 0} results
                           </span>
                         </div>
@@ -346,7 +345,7 @@ export const Navbar = () => {
           </NavbarContent>
 
           {/* Navigation Menu Content - Right Side */}
-          <NavbarContent className="flex items-center gap-0 md:gap-0.5 px-0" justify="end">
+          <NavbarContent className="flex items-center gap-0 md:gap-0.5 px-0 " justify="end">
             {/* Desktop Navigation */}
             <NavbarItem className="hidden xl:flex items-center xl:gap-1 2xl:gap-2 flex-shrink-0 ml-2 xl:ml-4">
               {siteConfig.navItems
@@ -356,7 +355,7 @@ export const Navbar = () => {
                   <NextLink
                     key={item.href}
                     href={item.href}
-                    className="text-default-600 xl:text-sm font-medium hover:text-primary transition-colors whitespace-nowrap px-2"
+                    className="text-default-600 xl:text-sm font-medium hover:text-primary transition-colors whitespace-nowrap px-2 xl:px-3"
                   >
                     {item.label}
                   </NextLink>
@@ -364,7 +363,7 @@ export const Navbar = () => {
             </NavbarItem>
 
             {/* Auth Status - Desktop */}
-            <div className="hidden xl:block flex-shrink-0 xl:ml-0 2xl:ml-1 xl:min-w-[100px] 2xl:min-w-[120px]">
+            <div className="hidden xl:block flex-shrink-0 xl:ml-0 2xl:ml-1 xl:min-w-[80px] 2xl:min-w-[100px]">
               <AuthStatus />
             </div>
 
@@ -379,7 +378,7 @@ export const Navbar = () => {
                   exit="exit"
                   style={{ maxWidth: "320px", minWidth: "280px" }}
                 >
-                  <form onSubmit={handleSearchSubmit} className="w-full">
+                  <form onSubmit={handleSearchSubmit} className="w-full max-w-[1400px]">
                     <Input
                       ref={searchInputRef}
                       aria-label="Search"
@@ -415,11 +414,11 @@ export const Navbar = () => {
                         className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
                       >
                         {isLoading ? (
-                          <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                          <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
                             Searching...
                           </div>
                         ) : !searchResults?.items?.length ? (
-                          <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                          <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
                             No matching products found
                           </div>
                         ) : (
@@ -472,7 +471,7 @@ export const Navbar = () => {
                               ))}
                             </div>
                             <div
-                              className="p-2 sm:p-3 bg-gray-50 text-center hover:bg-gray-100 cursor-pointer border-t"
+                              className="p-2 sm:p-3 bg-gray-50 text-left hover:bg-gray-100 cursor-pointer border-t"
                               onClick={() => handleSearchSubmit()}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === ' ') {
@@ -484,7 +483,7 @@ export const Navbar = () => {
                               role="button"
                               aria-label="View all search results"
                             >
-                              <span className="text-xs sm:text-sm font-medium text-blue-600">
+                              <span className="text-xs sm:text-sm font-medium text-blue-600 text-left">
                                 View all {searchResults?.total || 0} results
                               </span>
                             </div>
@@ -553,9 +552,9 @@ export const Navbar = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="absolute inset-x-0 top-full mt-2 px-4 pb-4 bg-white shadow-lg md:hidden z-50"
+                className="absolute inset-x-0 top-full mt-2 px-0 pb-4 bg-white shadow-lg md:hidden z-50"
               >
-                <form onSubmit={handleSearchSubmit} className="relative">
+                <form onSubmit={handleSearchSubmit} className="relative w-full max-w-[1400px] mx-auto px-4">
                   <Input
                     ref={searchInputRef}
                     aria-label="Search"
@@ -594,11 +593,11 @@ export const Navbar = () => {
                       className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-50 shadow-md"
                     >
                       {isLoading ? (
-                        <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                        <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
                           Searching...
                         </div>
                       ) : !searchResults?.items?.length ? (
-                        <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                        <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
                           No matching products found
                         </div>
                       ) : (
@@ -651,7 +650,7 @@ export const Navbar = () => {
                             ))}
                           </div>
                           <div
-                            className="p-2 sm:p-3 bg-gray-50 text-center hover:bg-gray-100 cursor-pointer border-t"
+                            className="p-2 sm:p-3 bg-gray-50 text-left hover:bg-gray-100 cursor-pointer border-t"
                             onClick={() => handleSearchSubmit()}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter' || e.key === ' ') {
@@ -663,7 +662,7 @@ export const Navbar = () => {
                             role="button"
                             aria-label="View all search results"
                           >
-                            <span className="text-xs sm:text-sm font-medium text-blue-600">
+                            <span className="text-xs sm:text-sm font-medium text-blue-600 text-left">
                               View all {searchResults?.total || 0} results
                             </span>
                           </div>
@@ -677,53 +676,39 @@ export const Navbar = () => {
           </AnimatePresence>
 
           {/* Mobile Menu */}
-          <NavbarMenu className="pt-4 pb-4 gap-2 bg-background/95 backdrop-blur-lg">
-            <div className="mx-3 flex flex-col gap-2">
-              {siteConfig.navMenuItems
-                // 移动端导航菜单也过滤当前页面
-                .filter(item => !isCurrentPage(item.href))
-                .map((item, index) => (
-                  <motion.div
-                    key={item.label || `menu-item-${item.href}`}
-                    custom={index}
-                    variants={menuItemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    whileHover="hover"
-                  >
-                    <NavbarMenuItem>
-                      <Link
-                        className="w-full px-3 py-2 text-base hover:bg-default-100 rounded-lg transition-colors relative overflow-hidden"
-                        href={item.href}
-                        size="lg"
-                      >
-                        {item.label}
-                      </Link>
-                    </NavbarMenuItem>
-                  </motion.div>
-                ))}
+          <NavbarMenu className="pt-4 pb-4 bg-background/95 backdrop-blur-lg text-left">
+            <div className="px-4 flex flex-col max-w-[1400px] ml-0">
+              <h3 className="text-gray-500 text-sm font-medium mb-2 mt-1 text-left">Menu</h3>
+
+              <div className="flex flex-col space-y-1 mb-4">
+                {siteConfig.navMenuItems
+                  .filter(item => !isCurrentPage(item.href))
+                  .map((item, _index) => (
+                    <Link
+                      key={item.label || `menu-item-${item.href}`}
+                      className="w-full px-3 py-2.5 text-base text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-left"
+                      href={item.href}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+              </div>
 
               {/* Mobile Auth Status */}
-              <motion.div
-                custom={siteConfig.navMenuItems.length}
-                variants={menuItemVariants}
-                initial="hidden"
-                animate="visible"
-                whileHover="hover"
-                className="mt-3 pt-3 border-t border-default-200"
-              >
-                <NavbarMenuItem className="flex">
+              <div className="pt-2 border-t border-gray-200">
+                <h3 className="text-gray-500 text-sm font-medium mb-2 mt-1 text-left">Account</h3>
+                <div className="flex w-full">
                   <AuthStatus isMobileMenu={true} />
-                </NavbarMenuItem>
-              </motion.div>
+                </div>
+              </div>
             </div>
           </NavbarMenu>
         </div>
       </HeroUINavbar>
 
       {/* 在页面顶部，导航栏下方添加全屏搜索框 */}
-      <div className="w-full px-4 py-3 bg-white shadow-sm xl:hidden md:hidden" style={{ display: isSearchOpen ? 'block' : 'none' }}>
-        <form onSubmit={handleSearchSubmit} className="relative w-full">
+      <div className="w-full px-0 py-3 bg-white shadow-sm xl:hidden md:hidden" style={{ display: isSearchOpen ? 'block' : 'none' }}>
+        <form onSubmit={handleSearchSubmit} className="relative w-full max-w-[1400px] mx-auto px-4">
           <Input
             ref={searchInputRef}
             aria-label="Search"
@@ -762,11 +747,11 @@ export const Navbar = () => {
               className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-50 shadow-md"
             >
               {isLoading ? (
-                <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
                   Searching...
                 </div>
               ) : !searchResults?.items?.length ? (
-                <div className="p-2 sm:p-3 text-center text-gray-500 text-xs sm:text-sm">
+                <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
                   No matching products found
                 </div>
               ) : (
@@ -819,7 +804,7 @@ export const Navbar = () => {
                     ))}
                   </div>
                   <div
-                    className="p-2 sm:p-3 bg-gray-50 text-center hover:bg-gray-100 cursor-pointer border-t"
+                    className="p-2 sm:p-3 bg-gray-50 text-left hover:bg-gray-100 cursor-pointer border-t"
                     onClick={() => handleSearchSubmit()}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -831,7 +816,7 @@ export const Navbar = () => {
                     role="button"
                     aria-label="View all search results"
                   >
-                    <span className="text-xs sm:text-sm font-medium text-blue-600">
+                    <span className="text-xs sm:text-sm font-medium text-blue-600 text-left">
                       View all {searchResults?.total || 0} results
                     </span>
                   </div>
