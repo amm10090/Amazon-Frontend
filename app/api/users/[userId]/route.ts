@@ -10,7 +10,6 @@ export const dynamic = 'force-dynamic';
 
 // 调试用的全局路由处理器
 export async function OPTIONS(_request: NextRequest) {
-
     return new NextResponse(null, {
         status: 200,
         headers: {
@@ -22,13 +21,10 @@ export async function OPTIONS(_request: NextRequest) {
 // 获取用户详情
 export async function GET(
     request: NextRequest,
-    context: { params: { userId: string } }
+    context: { params: Promise<{ userId: string }> }
 ) {
-
-
     try {
-        const { userId } = context.params;
-
+        const { userId } = await context.params;
 
         // 验证权限
         const session = await auth();
@@ -79,7 +75,6 @@ export async function GET(
 
         return NextResponse.json(userData);
     } catch {
-
         return NextResponse.json(
             { error: '服务器错误' },
             { status: 500 }
@@ -90,11 +85,10 @@ export async function GET(
 // 删除用户
 export async function DELETE(
     request: NextRequest,
-    context: { params: { userId: string } }
+    context: { params: Promise<{ userId: string }> }
 ) {
     try {
-        const { userId } = context.params;
-
+        const { userId } = await context.params;
 
         // 验证权限
         const session = await auth();
@@ -165,7 +159,6 @@ export async function DELETE(
             id: userId
         });
     } catch {
-
         return NextResponse.json(
             { error: '服务器错误' },
             { status: 500 }
@@ -176,11 +169,10 @@ export async function DELETE(
 // 更新用户基本信息
 export async function PATCH(
     request: NextRequest,
-    context: { params: { userId: string } }
+    context: { params: Promise<{ userId: string }> }
 ) {
     try {
-        const { userId } = context.params;
-
+        const { userId } = await context.params;
 
         // 验证权限
         const session = await auth();
@@ -201,21 +193,22 @@ export async function PATCH(
             );
         }
 
-        // 获取更新数据
-        const updateData = await request.json();
+        // 获取请求数据
+        const updates = await request.json();
 
-        if (!updateData || Object.keys(updateData).length === 0) {
+        // 验证更新数据
+        if (!updates || typeof updates !== 'object') {
             return NextResponse.json(
-                { error: '未提供更新数据' },
+                { error: '无效的更新数据' },
                 { status: 400 }
             );
         }
 
-        // 移除不允许更新的字段
-        delete updateData.password;
-        delete updateData.role;
-        delete updateData._id;
-        delete updateData.id;
+        // 移除敏感字段
+        delete updates.password;
+        delete updates.role;
+        delete updates._id;
+        delete updates.email;
 
         // 数据库操作
         const client = await clientPromise;
@@ -226,7 +219,7 @@ export async function PATCH(
             { _id: objectId },
             {
                 $set: {
-                    ...updateData,
+                    ...updates,
                     updatedAt: new Date()
                 }
             }
@@ -244,7 +237,6 @@ export async function PATCH(
             id: userId
         });
     } catch {
-
         return NextResponse.json(
             { error: '服务器错误' },
             { status: 500 }
