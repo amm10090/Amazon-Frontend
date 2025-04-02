@@ -191,7 +191,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                             */}
 
                             {/* Product image */}
-                            <div className="relative w-full aspect-[16/12] bg-gray-100 dark:bg-gray-800">
+                            <div className="relative w-full aspect-[1/1] bg-gray-100 dark:bg-gray-800 pt-0.5">
                                 <motion.div
                                     whileHover={{ scale: 1.05 }}
                                     className="h-full w-full relative"
@@ -202,10 +202,10 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                                             alt={title}
                                             fill
                                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                                            className="object-contain p-2"
+                                            className="object-cover p-2"
                                             priority={index < 2}
                                             loading={index < 2 ? "eager" : "lazy"}
-                                            quality={80}
+                                            quality={90}
                                             unoptimized={productImage.startsWith('data:')}
                                         />
                                     ) : (
@@ -441,13 +441,17 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                         }
                         .swiper-slide-active .max-w-[320px] {
                             box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-                            aspect-ratio: 1.1/1;
+                            aspect-ratio: 1/1;
                             overflow: hidden;
                             width: 100%;
                         }
-                        .swiper-slide-active .relative.w-full.aspect-\[16\/12\] {
-                            aspect-ratio: 1.1/1 !important;
+                        .swiper-slide-active .relative.w-full.aspect-\[1\/1\] {
+                            aspect-ratio: 1/1 !important;
                             flex: 0 0 60%;
+                        }
+                        .swiper-slide-active img {
+                            object-fit: cover !important;
+                            padding: 0 !important;
                         }
                         .swiper-slide-active .p-3 {
                             padding: 10px !important;
