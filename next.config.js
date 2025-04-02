@@ -39,6 +39,10 @@ const nextConfig = {
                 source: '/api/health/:path*',
                 destination: 'http://89.116.212.208:5001/api/health/:path*',
             },
+            {
+                source: '/api/search/products/:path*',
+                destination: 'http://89.116.212.208:5001/api/search/products/:path*',
+            },
             // 其他 API 路由保持在本地
             {
                 source: '/api/users/:path*',

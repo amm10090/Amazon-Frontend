@@ -1,12 +1,13 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import debounce from 'lodash/debounce';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
-import { useState, useEffect, useRef } from 'react';
-import { FaTrash, FaSearch, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { FaTrash, FaSearch, FaSort, FaSortUp, FaSortDown, FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
-import { useProducts } from '@/lib/hooks';
+import { useProducts, useProductSearch } from '@/lib/hooks';
 import { UserRole } from '@/lib/models/UserRole';
 
 const SKELETON_KEYS = ['sk1', 'sk2', 'sk3', 'sk4', 'sk5'];
@@ -23,15 +24,70 @@ const ProductsPageContent = () => {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
     const tableRef = useRef<HTMLDivElement>(null);
 
-    // Use hooks to fetch product list
-    const { data: productsData, isLoading: loading, mutate } = useProducts({
+    // 新增状态变量
+    const [searchMode, setSearchMode] = useState<'browse' | 'search'>('browse');
+    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+    const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
+    const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
+    const [minDiscount, setMinDiscount] = useState<number | undefined>(undefined);
+    const [isPrimeOnly, setIsPrimeOnly] = useState<boolean | undefined>(undefined);
+    const [searchParams, setSearchParams] = useState({
+        keyword: '',
+        page: 1,
+        page_size: itemsPerPage,
+        sort_by: sortField as 'relevance' | 'price' | 'discount' | 'created' | undefined,
+        sort_order: sortDirection,
+        min_price: undefined as number | undefined,
+        max_price: undefined as number | undefined,
+        min_discount: undefined as number | undefined,
+        is_prime_only: undefined as boolean | undefined,
+        product_groups: undefined as string | undefined,
+        brands: undefined as string | undefined,
+        api_provider: undefined as string | undefined,
+    });
+
+    // 创建一个防抖搜索函数
+    const debouncedSearchRef = useRef(
+        debounce((term: string, currentKeyword: string, setParams: React.Dispatch<React.SetStateAction<typeof searchParams>>, setPage: React.Dispatch<React.SetStateAction<number>>, setMode: React.Dispatch<React.SetStateAction<'browse' | 'search'>>) => {
+            if (term.trim() && term.trim() !== currentKeyword) {
+                setParams(prev => ({ ...prev, keyword: term.trim(), page: 1 }));
+                setPage(1); // 重置页码
+                setMode('search');
+            } else if (!term.trim()) {
+                setMode('browse');
+            }
+        }, 500)
+    );
+
+    // 包装函数以正确传递当前参数
+    const handleSearch = useCallback((term: string) => {
+        debouncedSearchRef.current(term, searchParams.keyword, setSearchParams, setCurrentPage, setSearchMode);
+    }, [searchParams.keyword]);
+
+    // 使用hooks加载数据
+    // 浏览模式 - 使用原有的useProducts hook
+    const { data: productsData, isLoading: browseLoading, mutate: mutateBrowseData } = useProducts({
         page: currentPage,
         limit: itemsPerPage
     });
 
-    const products = productsData?.items || [];
-    const totalPages = Math.ceil((productsData?.total || 0) / itemsPerPage);
-    const totalProducts = productsData?.total || 0;
+    // 搜索模式 - 使用新的useProductSearch hook
+    const { data: searchData, isLoading: searchLoading, mutate: mutateSearchData } = useProductSearch(
+        searchMode === 'search' ? searchParams : { keyword: '' }
+    );
+
+    // 确定使用哪种数据源
+    const loading = searchMode === 'search' ? searchLoading : browseLoading;
+    const products = searchMode === 'search'
+        ? (searchData?.items || [])
+        : (productsData?.items || []);
+    const totalPages = Math.ceil((searchMode === 'search'
+        ? (searchData?.total || 0)
+        : (productsData?.total || 0)) / itemsPerPage);
+    const totalProducts = searchMode === 'search'
+        ? (searchData?.total || 0)
+        : (productsData?.total || 0);
+    const mutate = searchMode === 'search' ? mutateSearchData : mutateBrowseData;
 
     // Handle screen size detection for responsive design
     useEffect(() => {
@@ -93,12 +149,49 @@ const ProductsPageContent = () => {
         }
     };
 
+    // 应用高级搜索
+    const applyAdvancedSearch = () => {
+        if (searchTerm.trim()) {
+            setSearchParams(prev => ({
+                ...prev,
+                min_price: minPrice,
+                max_price: maxPrice,
+                min_discount: minDiscount,
+                is_prime_only: isPrimeOnly
+            }));
+        }
+    };
+
+    // 修改页码处理函数
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+
+        // 在搜索模式下，更新搜索参数以触发API请求
+        if (searchMode === 'search') {
+            setSearchParams(prev => ({
+                ...prev,
+                page: newPage
+            }));
+        }
+
+        // 滚动到顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // 修改排序处理函数
     const handleSort = (field: string) => {
-        if (sortField === field) {
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortField(field);
-            setSortDirection('asc');
+        const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+
+        setSortField(field);
+        setSortDirection(newDirection);
+
+        // 在搜索模式下，更新搜索参数以触发API请求
+        if (searchMode === 'search') {
+            setSearchParams(prev => ({
+                ...prev,
+                sort_by: field as 'relevance' | 'price' | 'discount' | 'created',
+                sort_order: newDirection
+            }));
         }
 
         // Scroll to top of table when sorting changes
@@ -107,38 +200,67 @@ const ProductsPageContent = () => {
         }
     };
 
-    // Sort products based on sort field and direction
-    const sortedProducts = [...products].sort((a, b) => {
-        if (!sortField) return 0;
+    // 清除搜索，返回浏览模式
+    const clearSearch = () => {
+        setSearchTerm('');
+        setSearchMode('browse');
+        setMinPrice(undefined);
+        setMaxPrice(undefined);
+        setMinDiscount(undefined);
+        setIsPrimeOnly(undefined);
+    };
 
-        let valueA, valueB;
+    // 处理搜索输入变化
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const term = e.target.value;
 
-        switch (sortField) {
-            case 'title':
-                valueA = a.title || '';
-                valueB = b.title || '';
-                break;
-            case 'asin':
-                valueA = a.asin || '';
-                valueB = b.asin || '';
-                break;
-            case 'price':
-                valueA = a.offers?.[0]?.price || 0;
-                valueB = b.offers?.[0]?.price || 0;
-                break;
-            case 'discount':
-                valueA = a.offers?.[0]?.savings_percentage || 0;
-                valueB = b.offers?.[0]?.savings_percentage || 0;
-                break;
-            default:
-                return 0;
-        }
+        setSearchTerm(term);
+        handleSearch(term);
+    };
 
-        if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
-        if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+    // 更新产品过滤逻辑，仅在浏览模式下使用
+    const filteredProducts = searchMode === 'search'
+        ? products
+        : products.filter(product =>
+            product.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.asin?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
 
-        return 0;
-    });
+    // 更新排序逻辑，仅在浏览模式下使用本地排序
+    const sortedProducts = searchMode === 'search'
+        ? products // 搜索模式下直接使用API返回的排序结果
+        : [...filteredProducts].sort((a, b) => {
+            if (!sortField) return 0;
+
+            let valueA, valueB;
+
+            switch (sortField) {
+                case 'title':
+                    valueA = a.title || '';
+                    valueB = b.title || '';
+                    break;
+                case 'asin':
+                    valueA = a.asin || '';
+                    valueB = b.asin || '';
+                    break;
+                case 'price':
+                    valueA = a.offers?.[0]?.price || 0;
+                    valueB = b.offers?.[0]?.price || 0;
+                    break;
+                case 'discount':
+                    valueA = a.offers?.[0]?.savings_percentage || 0;
+                    valueB = b.offers?.[0]?.savings_percentage || 0;
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+            if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+
+            return 0;
+        });
 
     // Get sort icon based on field and current sort state
     const getSortIcon = (field: string) => {
@@ -203,17 +325,6 @@ const ProductsPageContent = () => {
         }
     };
 
-    const filteredProducts = products.filter(product =>
-        product.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.asin?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    // Check user permissions
-    if (!session?.user?.role || (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.SUPER_ADMIN)) {
-        return <div className="p-4 bg-red-50 text-red-600 rounded-lg">You don&apos;t have permission to access this page</div>;
-    }
-
     // Render a responsive pagination display based on screen size
     const renderPagination = () => {
         // For extra small screens (xs), show minimal pagination
@@ -221,7 +332,7 @@ const ProductsPageContent = () => {
             return (
                 <div className="flex justify-between w-full">
                     <button
-                        onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                        onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                         disabled={currentPage === 1}
                         className={`px-2 py-1 text-xs border rounded ${currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-700'}`}
                     >
@@ -229,7 +340,7 @@ const ProductsPageContent = () => {
                     </button>
                     <span className="px-2 py-1 text-xs">{currentPage} / {totalPages}</span>
                     <button
-                        onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                        onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                         disabled={currentPage === totalPages}
                         className={`px-2 py-1 text-xs border rounded ${currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-700'}`}
                     >
@@ -248,14 +359,14 @@ const ProductsPageContent = () => {
                     </div>
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                             disabled={currentPage === 1}
                             className={`px-2 py-1 text-xs border rounded ${currentPage === 1 ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-700'}`}
                         >
                             Prev
                         </button>
                         <button
-                            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                            onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                             disabled={currentPage === totalPages}
                             className={`px-2 py-1 text-xs border rounded ${currentPage === totalPages ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-700'}`}
                         >
@@ -290,7 +401,7 @@ const ProductsPageContent = () => {
                 </div>
                 <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                     <button
-                        onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                        onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                         disabled={currentPage === 1}
                         className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${currentPage === 1 ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-50'
                             }`}
@@ -300,7 +411,7 @@ const ProductsPageContent = () => {
                     {pageNumbers.map(pageNumber => (
                         <button
                             key={`page-${pageNumber}`}
-                            onClick={() => setCurrentPage(pageNumber)}
+                            onClick={() => handlePageChange(pageNumber)}
                             className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium ${currentPage === pageNumber
                                 ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                                 : 'bg-white text-gray-500 hover:bg-gray-50'
@@ -310,7 +421,7 @@ const ProductsPageContent = () => {
                         </button>
                     ))}
                     <button
-                        onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                        onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                         disabled={currentPage === totalPages}
                         className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${currentPage === totalPages ? 'text-gray-300' : 'text-gray-500 hover:bg-gray-50'
                             }`}
@@ -371,6 +482,131 @@ const ProductsPageContent = () => {
         );
     };
 
+    // Check user permissions
+    if (!session?.user?.role || (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.SUPER_ADMIN)) {
+        return <div className="p-4 bg-red-50 text-red-600 rounded-lg">You don&apos;t have permission to access this page</div>;
+    }
+
+    // 渲染搜索状态信息
+    const renderSearchStatus = () => {
+        if (searchMode !== 'search' || !searchParams.keyword) return null;
+
+        return (
+            <div className="bg-blue-50 border border-blue-100 text-blue-800 rounded-lg p-2 mb-4 flex justify-between items-center">
+                <div>
+                    Search results for <span className="font-medium">&quot;{searchParams.keyword}&quot;</span>:
+                    {totalProducts} products
+                </div>
+                <button
+                    onClick={clearSearch}
+                    className="text-sm bg-white border border-blue-200 rounded px-2 py-1 hover:bg-blue-100"
+                >
+                    View All Products
+                </button>
+            </div>
+        );
+    };
+
+    // 渲染高级搜索面板
+    const renderAdvancedSearch = () => (
+        <div className="mb-4">
+            <button
+                className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+            >
+                {showAdvancedSearch ? <FaChevronUp className="mr-1" /> : <FaChevronDown className="mr-1" />}
+                Advanced Search Options
+            </button>
+
+            {showAdvancedSearch && (
+                <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+                >
+                    {/* 价格范围 */}
+                    <div>
+                        <label className="block text-xs text-gray-600 mb-1">Price Range</label>
+                        <div className="flex space-x-2">
+                            <input
+                                type="number"
+                                placeholder="Min"
+                                className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                value={minPrice || ''}
+                                onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : undefined)}
+                            />
+                            <span className="text-gray-500 flex items-center">-</span>
+                            <input
+                                type="number"
+                                placeholder="Max"
+                                className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                value={maxPrice || ''}
+                                onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : undefined)}
+                            />
+                        </div>
+                    </div>
+
+                    {/* 最低折扣率 */}
+                    <div>
+                        <label className="block text-xs text-gray-600 mb-1">Minimum Discount (%)</label>
+                        <input
+                            type="number"
+                            placeholder="e.g. 20"
+                            className="w-full border border-gray-300 rounded-md px-2 py-1 text-sm"
+                            value={minDiscount || ''}
+                            onChange={(e) => setMinDiscount(e.target.value ? Number(e.target.value) : undefined)}
+                        />
+                    </div>
+
+                    {/* 是否只显示Prime商品 */}
+                    <div className="flex items-center">
+                        <input
+                            id="prime-only"
+                            type="checkbox"
+                            className="h-4 w-4 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
+                            checked={isPrimeOnly || false}
+                            onChange={(e) => setIsPrimeOnly(e.target.checked)}
+                        />
+                        <label htmlFor="prime-only" className="ml-2 block text-sm text-gray-600">
+                            Prime Products Only
+                        </label>
+                    </div>
+
+                    {/* 应用按钮 */}
+                    <div className="col-span-full flex justify-end mt-2">
+                        <button
+                            onClick={applyAdvancedSearch}
+                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-md px-3 py-1 text-sm"
+                        >
+                            Apply Filters
+                        </button>
+                    </div>
+                </motion.div>
+            )}
+        </div>
+    );
+
+    // 渲染空状态
+    const renderEmptyState = () => (
+        <div className="p-6 text-center text-gray-500">
+            {searchMode === 'search' ? (
+                <>
+                    <div className="text-lg mb-2">No matching products found</div>
+                    <p>Try using different search terms or filters</p>
+                    <button
+                        onClick={clearSearch}
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md px-4 py-2 text-sm"
+                    >
+                        View All Products
+                    </button>
+                </>
+            ) : (
+                'No product data available'
+            )}
+        </div>
+    );
+
     // Handle different view layouts based on screen size
     const renderProductsList = () => {
         if (loading) {
@@ -384,11 +620,7 @@ const ProductsPageContent = () => {
         }
 
         if (filteredProducts.length === 0) {
-            return (
-                <div className="p-6 text-center text-gray-500">
-                    {searchTerm ? 'No matching products found' : 'No product data available'}
-                </div>
-            );
+            return renderEmptyState();
         }
 
         // Card view for XS and SM screens with animations
@@ -403,9 +635,9 @@ const ProductsPageContent = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="p-6 text-center text-gray-500"
+                            className="p-6"
                         >
-                            {searchTerm ? 'No matching products found' : 'No product data available'}
+                            {renderEmptyState()}
                         </motion.div>
                     ) : (
                         <motion.div
@@ -485,9 +717,9 @@ const ProductsPageContent = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="p-6 text-center text-gray-500"
+                            className="p-6"
                         >
-                            {searchTerm ? 'No matching products found' : 'No product data available'}
+                            {renderEmptyState()}
                         </motion.div>
                     ) : (
                         <motion.div
@@ -683,9 +915,9 @@ const ProductsPageContent = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="p-6 text-center text-gray-500"
+                        className="p-6"
                     >
-                        {searchTerm ? 'No matching products found' : 'No product data available'}
+                        {renderEmptyState()}
                     </motion.div>
                 ) : (
                     <motion.div
@@ -840,7 +1072,7 @@ const ProductsPageContent = () => {
                 )}
             </AnimatePresence>
 
-            {/* Search bar */}
+            {/* 搜索栏 */}
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -848,18 +1080,43 @@ const ProductsPageContent = () => {
                 className="relative"
             >
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                    <FaSearch className="text-gray-400" />
+                    <FaSearch className={searchMode === 'search' ? "text-blue-500" : "text-gray-400"} />
                 </div>
                 <input
                     type="text"
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 transition-shadow duration-200 hover:shadow-sm"
+                    className={`bg-gray-50 border ${searchMode === 'search' ? 'border-blue-300 ring-1 ring-blue-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 transition-shadow duration-200 hover:shadow-sm`}
                     placeholder="Search products..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                 />
+                {searchTerm && (
+                    <button
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                        onClick={clearSearch}
+                    >
+                        <span className="sr-only">Clear search</span>
+                        <FaTimes />
+                    </button>
+                )}
             </motion.div>
 
-            {/* Stats summary */}
+            {/* 高级搜索选项 */}
+            {renderAdvancedSearch()}
+
+            {/* 搜索结果状态 */}
+            <AnimatePresence>
+                {searchMode === 'search' && searchParams.keyword && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                    >
+                        {renderSearchStatus()}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* 统计卡片 */}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -868,7 +1125,7 @@ const ProductsPageContent = () => {
                 {renderStatsCards()}
             </motion.div>
 
-            {/* Products list */}
+            {/* 产品列表 */}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -879,7 +1136,7 @@ const ProductsPageContent = () => {
                     {renderProductsList()}
                 </div>
 
-                {/* Pagination controls */}
+                {/* 分页控件 */}
                 {!loading && products.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -892,7 +1149,7 @@ const ProductsPageContent = () => {
                 )}
             </motion.div>
 
-            {/* Delete confirmation modal with animation */}
+            {/* 删除确认弹窗 */}
             <AnimatePresence>
                 {showDeleteConfirm && (
                     <motion.div
