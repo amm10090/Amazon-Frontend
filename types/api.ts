@@ -153,15 +153,40 @@ export interface BrandStats {
     };
 }
 
-// 用户项接口
+import type { UserRole } from '@/lib/models/UserRole';
+
+/**
+ * 用户项的接口定义
+ */
 export interface UserItem {
     id: string;
     name: string;
     email: string;
-    role: string;
-    createdAt: string;
-    lastLogin?: string;
+    role: UserRole;
     image?: string;
-    status?: 'active' | 'inactive' | 'banned';
-    provider?: 'google' | 'credentials' | string;
+    createdAt: string | Date;
+    updatedAt?: string | Date;
+    lastLogin?: string | Date;
+    provider?: string;
+    status?: 'active' | 'inactive' | 'disabled';
+}
+
+/**
+ * 产品项的接口定义
+ */
+export interface ProductItem {
+    id: string;
+    name: string;
+    description?: string;
+    sku?: string;
+    price?: number;
+    stockQuantity?: number;
+    image?: string;
+    status?: 'active' | 'draft' | 'inactive';
+    categories?: string[];
+    createdAt: string | Date;
+    updatedAt?: string | Date;
+    createdBy?: string;
+    featured?: boolean;
+    discount?: number;
 } 

@@ -2,7 +2,7 @@ import type { AxiosResponse } from 'axios';
 import { useEffect } from 'react';
 import useSWR from 'swr';
 
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem, ListResponse } from '@/types/api';
 
 import { productsApi, userApi, systemApi } from './api';
 
@@ -34,7 +34,6 @@ export function useProducts(params?: {
 }): SWRHookResponse<{ items: Product[], total: number, page: number, page_size: number }> {
     // 创建一个唯一的key，确保参数变化时会重新获取
     const cacheKey = JSON.stringify(['/products/list', params]);
-    const paramsString = JSON.stringify(params);
 
     const { data, error, isLoading, mutate } = useSWR(
         cacheKey,
@@ -50,15 +49,8 @@ export function useProducts(params?: {
         }
     );
 
-    // 当参数变化时，主动触发重新获取数据
-    useEffect(() => {
-        if (params) {
-            mutate();
-        }
-    }, [params, paramsString, mutate]);
-
     return {
-        data: data?.data?.data,
+        data: data?.data,
         isLoading,
         isError: error,
         mutate,
@@ -209,19 +201,44 @@ export function useDeals(params?: {
     active?: boolean;
     page?: number;
     limit?: number;
-}): SWRHookResponse<Product[]> {
-    const { data, error, isLoading } = useSWR(
-        ['/products/list', { ...params, min_discount: 50, sort: 'discount', order: 'desc' }],
+    min_discount?: number;
+    is_prime_only?: boolean;
+}): SWRHookResponse<{ items: Product[], total: number, page: number, page_size: number }> {
+    const { data, error, isLoading, mutate } = useSWR(
+        ['/products/list', { ...params, min_discount: params?.min_discount || 50, sort_by: 'discount', sort_order: 'desc' }],
         () => productsApi.getDeals(params),
         {
             refreshInterval: 60000, // 每分钟刷新一次
         }
     );
 
+    // 构建默认返回值
+    const defaultResult = { items: [], total: 0, page: 1, page_size: 10 };
+
+    // 处理嵌套响应 (使用类型安全的访问方式)
+    let responseData;
+
+    if (data?.data?.data) {
+        // 深层嵌套，符合 ApiResponse<ListResponse<Product>> 结构
+        responseData = data.data.data as ListResponse<Product>;
+    } else if (data?.data) {
+        // 中层嵌套，直接包含数据
+        responseData = data.data as unknown as ListResponse<Product>;
+    } else {
+        // 默认情况
+        responseData = defaultResult;
+    }
+
     return {
-        data: data?.data?.data?.items || [],
+        data: {
+            items: responseData.items || [],
+            total: responseData.total || 0,
+            page: responseData.page || 1,
+            page_size: responseData.page_size || 10
+        },
         isLoading,
         isError: error,
+        mutate,
     };
 }
 

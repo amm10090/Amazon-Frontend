@@ -55,20 +55,40 @@ const DealsPage = () => {
                 is_prime_only: filters.isPrimeOnly,
             });
 
-            // 根据实际API响应结构获取数据
-            const responseData = response.data?.data;
+            // 适配不同层级的响应结构
+            let itemsData: Product[] = [];
+            let totalItems = 0;
 
-            if (responseData?.items && responseData.items.length > 0) {
-                setDeals(responseData.items);
+            // 处理不同层级的嵌套响应
+            if (response.data?.data) {
+                // ApiResponse<ListResponse<Product>> 结构
+                const listData = response.data.data as unknown as {
+                    items: Product[];
+                    total: number
+                };
 
-                // 更新分页信息
-                setPagination(prev => ({
-                    ...prev,
-                    total: responseData.total
-                }));
-            } else {
-                setDeals([]);
+                if (listData.items && Array.isArray(listData.items)) {
+                    itemsData = listData.items;
+                    totalItems = listData.total || 0;
+                }
+            } else if (response.data) {
+                // 直接包含数据
+                const directData = response.data as unknown as {
+                    items: Product[];
+                    total: number
+                };
+
+                if (directData.items && Array.isArray(directData.items)) {
+                    itemsData = directData.items;
+                    totalItems = directData.total || 0;
+                }
             }
+
+            setDeals(itemsData);
+            setPagination(prev => ({
+                ...prev,
+                total: totalItems
+            }));
         } catch {
             setError("获取特价商品失败，请稍后再试。");
         } finally {
