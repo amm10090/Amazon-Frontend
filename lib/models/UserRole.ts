@@ -76,9 +76,7 @@ export function isSuperAdmin(role: UserRole): boolean {
  */
 export const ADMIN_ACCOUNTS = [
     't2715481617@gmail.com',
-    'admin@amazon-frontend.com',
-    'root@example.com',
-    'admin@example.com'
+    'a.aadil26@gmail.com'
 ] as const;
 
 /**

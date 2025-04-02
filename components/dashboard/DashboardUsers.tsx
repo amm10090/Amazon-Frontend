@@ -196,7 +196,7 @@ const DashboardUsers: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="space-y-6">
+            <div className="space-y-6 max-w-full">
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
                 </div>
@@ -212,7 +212,7 @@ const DashboardUsers: React.FC = () => {
 
     if (isError) {
         return (
-            <div className="space-y-6">
+            <div className="space-y-6 max-w-full">
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
                 </div>
@@ -224,7 +224,7 @@ const DashboardUsers: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-full">
             <div className="flex flex-col sm:flex-row gap-2 sm:items-center justify-between mb-6">
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-800">User Management</h1>
                 <div className="text-sm text-gray-500">
@@ -243,7 +243,7 @@ const DashboardUsers: React.FC = () => {
             {/* 用户列表 - 大屏幕表格版本 */}
             <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th scope="col" className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>

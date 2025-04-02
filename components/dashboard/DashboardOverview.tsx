@@ -171,10 +171,10 @@ const DashboardOverview: React.FC = () => {
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
+        <div className="space-y-6 max-w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-gray-500 mt-2 sm:mt-0">
                     Last Updated: {stats.last_update ? formatDate(new Date(stats.last_update)) : 'Loading...'}
                 </div>
             </div>
@@ -182,7 +182,7 @@ const DashboardOverview: React.FC = () => {
             {/* 商品统计卡片 */}
             <div>
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Product Statistics</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
                     {productCards.map((card) => (
                         <StatsCard
                             key={`product-card-${card.title.toLowerCase().replace(/\s+/g, '-')}`}
@@ -200,7 +200,7 @@ const DashboardOverview: React.FC = () => {
             {/* 用户与收藏统计 */}
             <div>
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">Users & Favorites</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-2 gap-4">
                     <StatsCard
                         title="Total Users"
                         value={stats.total_users}

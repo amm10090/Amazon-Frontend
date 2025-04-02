@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type { NextFont } from 'next/dist/compiled/@next/font';
+import { usePathname } from 'next/navigation';
 import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 
@@ -17,6 +18,9 @@ interface ClientLayoutProps {
 }
 
 export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
+    const pathname = usePathname();
+    const isDashboard = pathname?.startsWith('/dashboard');
+
     return (
         <SessionProvider session={session} basePath="/auth" refetchOnWindowFocus={false}>
             <ThemeProvider
@@ -32,7 +36,10 @@ export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
                             inter.className
                         )}>
                             <Navbar />
-                            <main className="container mx-auto max-w-9xl pt-1 px-2 md:px-3 lg:px-4 grow">
+                            <main className={clsx(
+                                "grow pt-1",
+                                !isDashboard && "container mx-auto max-w-9xl px-2 md:px-3 lg:px-4"
+                            )}>
                                 {children}
                             </main>
                             <footer className="w-full flex items-center justify-center py-3">
