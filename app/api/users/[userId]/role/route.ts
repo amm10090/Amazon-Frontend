@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 // 更新用户角色
 export async function PUT(
     request: NextRequest,
-    context: { params: { userId: string } }
+    { params }: { params: { [key: string]: string | string[] } }
 ) {
     try {
         // 验证权限
@@ -25,7 +25,7 @@ export async function PUT(
         }
 
         // 验证参数
-        const userId = context.params.userId;
+        const userId = params.userId as string;
 
         if (!userId || !ObjectId.isValid(userId)) {
             return NextResponse.json(
@@ -80,7 +80,6 @@ export async function PUT(
             role
         });
     } catch {
-
         return NextResponse.json(
             { error: '服务器错误' },
             { status: 500 }
