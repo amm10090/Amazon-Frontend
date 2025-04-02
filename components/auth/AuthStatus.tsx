@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState, useRef } from 'react';
 
+import { UserRole, isAdminRole } from '@/lib/models/UserRole';
+
 interface User {
     id: string;
     name?: string | null;
@@ -136,6 +138,12 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                     <div className="ml-3 flex-1">
                         <p className="font-medium text-gray-800">{user.name || 'User'}</p>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                        {session?.user?.role && (
+                            <span className="inline-flex items-center px-2 py-0.5 mt-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                {session.user.role === UserRole.SUPER_ADMIN ? 'Super Admin' :
+                                    session.user.role === UserRole.ADMIN ? 'Admin' : 'User'}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -159,6 +167,18 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                         </svg>
                         Sign Out
                     </button>
+
+                    {session?.user?.role && isAdminRole(session.user.role) && (
+                        <Link
+                            href="/dashboard"
+                            className="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            仪表盘
+                        </Link>
+                    )}
                 </div>
             </div>
         );
@@ -282,6 +302,12 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                             <div className="px-4 py-2 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-100">
                                 <p className="font-medium text-gray-800">{user.name || '用户'}</p>
                                 <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>
+                                {session?.user?.role && (
+                                    <span className="inline-flex items-center px-2 py-0.5 mt-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                        {session.user.role === UserRole.SUPER_ADMIN ? 'Super Admin' :
+                                            session.user.role === UserRole.ADMIN ? 'Admin' : 'User'}
+                                    </span>
+                                )}
                             </div>
                             <div className="px-2 py-1">
                                 <Link
@@ -307,6 +333,20 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                                     </div>
                                     Sign Out
                                 </button>
+                                {session?.user?.role && isAdminRole(session.user.role) && (
+                                    <Link
+                                        href="/dashboard"
+                                        className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        <div className="w-7 h-7 mr-2 flex items-center justify-center rounded-full bg-indigo-50 text-indigo-500">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                            </svg>
+                                        </div>
+                                        Dashboard
+                                    </Link>
+                                )}
                             </div>
                         </motion.div>
                     )}

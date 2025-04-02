@@ -22,10 +22,28 @@ const nextConfig = {
     },
     async rewrites() {
         return [
+            // 转发非用户管理的 API 到远程服务器
             {
-                source: '/api/:path*',
-                destination: 'http://89.116.212.208:5001/api/:path*',
+                source: '/api/brands/:path*',
+                destination: 'http://89.116.212.208:5001/api/brands/:path*',
             },
+            {
+                source: '/api/products/:path*',
+                destination: 'http://89.116.212.208:5001/api/products/:path*',
+            },
+            {
+                source: '/api/categories/:path*',
+                destination: 'http://89.116.212.208:5001/api/categories/:path*',
+            },
+            {
+                source: '/api/health/:path*',
+                destination: 'http://89.116.212.208:5001/api/health/:path*',
+            },
+            // 其他 API 路由保持在本地
+            {
+                source: '/api/users/:path*',
+                destination: '/api/users/:path*', // 本地路由
+            }
         ];
     },
     async headers() {

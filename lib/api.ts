@@ -275,4 +275,42 @@ export const userApi = {
     updatePreferences: (preferences: Record<string, unknown>) => api.put<ApiResponse<void>>('/user/preferences', preferences),
 };
 
+export const systemApi = {
+    /**
+     * 获取系统健康状态和统计数据
+     */
+    getHealthStatus: () => api.get<ApiResponse<{
+        status: string;
+        service: string;
+        timestamp: string;
+        database: {
+            total_products: number;
+            discount_products: number;
+            coupon_products: number;
+            prime_products: number;
+            last_update: string;
+        }
+    }>>('/health'),
+
+    /**
+     * 获取用户统计数据
+     */
+    getUserStats: () => api.get<ApiResponse<{
+        total_users: number;
+        active_users: number;
+        new_users_last_month: number;
+        last_update: string;
+    }>>('/stats/users'),
+
+    /**
+     * 获取收藏统计数据
+     */
+    getFavoriteStats: () => api.get<ApiResponse<{
+        total_favorites: number;
+        unique_users: number;
+        last_month_favorites: number;
+        last_update: string;
+    }>>('/stats/favorites'),
+};
+
 export default api; 

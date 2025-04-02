@@ -151,4 +151,16 @@ export interface BrandStats {
         total_count: number;
         total_pages: number;
     };
+}
+
+// 用户项接口
+export interface UserItem {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    createdAt: string;
+    lastLogin?: string;
+    image?: string;
+    status?: 'active' | 'inactive' | 'banned';
 } 

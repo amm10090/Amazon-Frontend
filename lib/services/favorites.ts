@@ -1,4 +1,4 @@
-import type { Collection} from "mongodb";
+import type { Collection } from "mongodb";
 
 import type { UserFavorite, UserFavoritesResponse } from "@/lib/models/UserFavorite";
 import clientPromise from "@/lib/mongodb";
@@ -8,7 +8,7 @@ import clientPromise from "@/lib/mongodb";
  */
 async function getFavoritesCollection(): Promise<Collection<UserFavorite>> {
     const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB || "amazon-frontend");
+    const db = client.db(process.env.MONGODB_DB || "test");
 
     return db.collection<UserFavorite>("favorites");
 }

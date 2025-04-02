@@ -7,23 +7,28 @@ export async function GET() {
     try {
         const session = await auth();
 
-        if (!session?.user?.id) {
+        if (!session?.user) {
             return NextResponse.json(
-                { error: 'Unauthorized' },
+                { error: 'Unauthorized - No user in session' },
+                { status: 401 }
+            );
+        }
+
+        if (!session.user.id) {
+            return NextResponse.json(
+                { error: 'Unauthorized - No user ID in session' },
                 { status: 401 }
             );
         }
 
         const client = await clientPromise;
-        const db = client.db();
+        const db = client.db(process.env.MONGODB_DB || "test");
         const favorites = await db.collection('favorites')
             .find({ userId: session.user.id })
             .toArray();
 
         return NextResponse.json({ favorites });
-    } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error in GET /api/favorites:', error);
+    } catch {
 
         return NextResponse.json(
             { error: 'Internal Server Error' },
@@ -36,9 +41,16 @@ export async function POST(request: Request) {
     try {
         const session = await auth();
 
-        if (!session?.user?.id) {
+        if (!session?.user) {
             return NextResponse.json(
-                { error: 'Unauthorized' },
+                { error: 'Unauthorized - No user in session' },
+                { status: 401 }
+            );
+        }
+
+        if (!session.user.id) {
+            return NextResponse.json(
+                { error: 'Unauthorized - No user ID in session' },
                 { status: 401 }
             );
         }
@@ -53,7 +65,7 @@ export async function POST(request: Request) {
         }
 
         const client = await clientPromise;
-        const db = client.db();
+        const db = client.db(process.env.MONGODB_DB || "test");
 
         await db.collection('favorites').updateOne(
             { userId: session.user.id, productId },
@@ -62,9 +74,7 @@ export async function POST(request: Request) {
         );
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error in POST /api/favorites:', error);
+    } catch {
 
         return NextResponse.json(
             { error: 'Internal Server Error' },
@@ -77,9 +87,16 @@ export async function DELETE(request: Request) {
     try {
         const session = await auth();
 
-        if (!session?.user?.id) {
+        if (!session?.user) {
             return NextResponse.json(
-                { error: 'Unauthorized' },
+                { error: 'Unauthorized - No user in session' },
+                { status: 401 }
+            );
+        }
+
+        if (!session.user.id) {
+            return NextResponse.json(
+                { error: 'Unauthorized - No user ID in session' },
                 { status: 401 }
             );
         }
@@ -94,7 +111,7 @@ export async function DELETE(request: Request) {
         }
 
         const client = await clientPromise;
-        const db = client.db();
+        const db = client.db(process.env.MONGODB_DB || "test");
 
         await db.collection('favorites').deleteOne({
             userId: session.user.id,
@@ -102,9 +119,7 @@ export async function DELETE(request: Request) {
         });
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error in DELETE /api/favorites:', error);
+    } catch {
 
         return NextResponse.json(
             { error: 'Internal Server Error' },

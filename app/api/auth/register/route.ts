@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 
 // 使用纯JavaScript实现的bcryptjs代替bcrypt，避免原生模块加载问题
 
+import type { User } from '@/lib/models/User';
+import { UserRole, isAdminAccount } from '@/lib/models/UserRole';
 import clientPromise from '@/lib/mongodb';
 
 export async function POST(request: Request) {
@@ -61,18 +63,32 @@ export async function POST(request: Request) {
         const saltRounds = 10;
         const hashedPassword = await bcryptjs.hash(password, saltRounds);
 
+        // 确定用户角色
+        let role = UserRole.USER;
+
+        // 检查是否为预设管理员账户
+        if (isAdminAccount(email)) {
+            // 确定是普通管理员还是超级管理员
+            role = email.toLowerCase().startsWith('root@') ? UserRole.SUPER_ADMIN : UserRole.ADMIN;
+        }
+
         // 创建用户
-        const result = await db.collection('users').insertOne({
+        const newUser: Omit<User, '_id'> = {
             name,
             email,
             password: hashedPassword,
+            role,
             createdAt: new Date(),
-        });
+            updatedAt: new Date()
+        };
+
+        const result = await db.collection('users').insertOne(newUser);
 
         return NextResponse.json({
             success: true,
             message: 'User registered successfully',
-            userId: result.insertedId
+            userId: result.insertedId,
+            role
         });
     } catch (error) {
         // eslint-disable-next-line no-console

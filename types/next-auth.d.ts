@@ -1,15 +1,23 @@
-import 'next-auth';
+import type { DefaultSession } from "next-auth";
 
-declare module 'next-auth' {
-    /**
-     * 扩展 Session 类型
-     */
-    interface Session {
+import type { UserRole } from "@/lib/models/UserRole";
+
+declare module "next-auth" {
+    interface User {
+        role?: UserRole;
+    }
+
+    interface Session extends DefaultSession {
         user: {
             id: string;
-            name?: string | null;
-            email?: string | null;
-            image?: string | null;
-        };
+            role: UserRole;
+        } & DefaultSession["user"]
+    }
+}
+
+declare module "next-auth/jwt" {
+    interface JWT {
+        id?: string;
+        role?: UserRole;
     }
 } 

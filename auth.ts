@@ -3,6 +3,8 @@ import type { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
+import { UserRole, isAdminAccount } from "@/lib/models/UserRole";
+
 // Strategy: Execute database and authentication related code only on the server side
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let adapter: any = null;
@@ -40,11 +42,21 @@ export const config = {
                     if (typeof window === 'undefined') {
                         // Dynamic import to avoid client-side import errors
                         const clientPromise = (await import('@/lib/mongodb')).default;
-
-                        // Use bcryptjs instead of bcrypt
                         const bcryptjs = await import('bcryptjs');
 
                         bcryptCompare = bcryptjs.compare;
+
+                        // 开发环境默认管理员账户
+                        if (process.env.NODE_ENV === "development" &&
+                            ((credentials.username === "root@amazon-frontend.com" && credentials.password === "admin123") ||
+                                (credentials.username === "admin@amazon-frontend.com" && credentials.password === "admin123"))) {
+                            return {
+                                id: credentials.username === "root@amazon-frontend.com" ? "root" : "admin",
+                                name: credentials.username === "root@amazon-frontend.com" ? "Root Admin" : "Admin",
+                                email: credentials.username,
+                                role: credentials.username === "root@amazon-frontend.com" ? UserRole.SUPER_ADMIN : UserRole.ADMIN
+                            };
+                        }
 
                         const client = await clientPromise;
                         const db = client.db();
@@ -63,7 +75,12 @@ export const config = {
                             if (process.env.NODE_ENV === "development" &&
                                 credentials.username === "admin" &&
                                 credentials.password === "password") {
-                                return { id: "1", name: "Admin", email: "admin@example.com" };
+                                return {
+                                    id: "1",
+                                    name: "Admin",
+                                    email: "admin@example.com",
+                                    role: UserRole.ADMIN
+                                };
                             }
 
                             return null;
@@ -80,14 +97,20 @@ export const config = {
                             id: user._id.toString(),
                             name: user.name || user.username,
                             email: user.email,
-                            image: user.image
+                            image: user.image,
+                            role: user.role || UserRole.USER
                         };
                     } else {
                         // On client-side, only check development default account
                         if (process.env.NODE_ENV === "development" &&
                             credentials.username === "admin" &&
                             credentials.password === "password") {
-                            return { id: "1", name: "Admin", email: "admin@example.com" };
+                            return {
+                                id: "1",
+                                name: "Admin",
+                                email: "admin@example.com",
+                                role: UserRole.ADMIN
+                            };
                         }
 
                         return null;
@@ -109,22 +132,38 @@ export const config = {
             const isOnDashboard = request.nextUrl.pathname.startsWith("/dashboard");
 
             if (isOnDashboard) {
-                if (isLoggedIn) return true;
+                if (isLoggedIn && auth.user.role && (auth.user.role === UserRole.ADMIN || auth.user.role === UserRole.SUPER_ADMIN)) {
+                    return true;
+                }
 
-                return false; // Redirect to login page
-            } else if (isLoggedIn) {
-                return true;
+                return false;
             }
 
             return true;
         },
-        jwt({ token, user }) {
-            if (user) token.id = user.id;
+        jwt({ token, user, account }) {
+            // 初次登录时，将用户信息添加到token中
+            if (user) {
+                token.id = user.id;
+                token.role = user.role || UserRole.USER;
+            }
+
+            // 对于Google登录，检查是否为预定义的管理员账户
+            if (account && account.provider === "google" && user?.email && isAdminAccount(user.email)) {
+                // 根据邮箱区分超级管理员和普通管理员
+                token.role = user.email.toLowerCase().startsWith('root@') ? UserRole.SUPER_ADMIN : UserRole.ADMIN;
+            }
 
             return token;
         },
         session({ session, token }) {
-            if (token.id) session.user.id = token.id as string;
+            if (token.id) {
+                session.user.id = token.id as string;
+            }
+
+            if (token.role) {
+                session.user.role = token.role as UserRole;
+            }
 
             return session;
         },

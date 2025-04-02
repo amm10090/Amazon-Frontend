@@ -2,9 +2,9 @@ import type { AxiosResponse } from 'axios';
 import { useEffect } from 'react';
 import useSWR from 'swr';
 
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem } from '@/types/api';
 
-import { productsApi, userApi } from './api';
+import { productsApi, userApi, systemApi } from './api';
 
 // 通用fetcher类型
 type _Fetcher<T> = (...args: unknown[]) => Promise<AxiosResponse<ApiResponse<T>>>;
@@ -416,6 +416,139 @@ export function useProductSearch(params: {
 
     return {
         data: data?.data?.data,
+        isLoading,
+        isError: error,
+        mutate,
+    };
+}
+
+// 系统健康状态
+export function useHealthStatus(): SWRHookResponse<{
+    status: string;
+    service: string;
+    timestamp: string;
+    database: {
+        total_products: number;
+        discount_products: number;
+        coupon_products: number;
+        prime_products: number;
+        last_update: string;
+    }
+}> {
+    const { data: response, error, isLoading } = useSWR(
+        '/health',
+        () => systemApi.getHealthStatus(),
+        {
+            refreshInterval: 60000, // 每分钟刷新一次
+            revalidateOnFocus: false,
+        }
+    );
+
+    // 使用类型断言处理响应数据
+    const healthData = response?.data?.data ||
+        (response?.data && typeof response.data === 'object' && ('status' in response.data || 'database' in response.data)
+            ? (response.data as unknown) as {
+                status: string;
+                service: string;
+                timestamp: string;
+                database: {
+                    total_products: number;
+                    discount_products: number;
+                    coupon_products: number;
+                    prime_products: number;
+                    last_update: string;
+                }
+            }
+            : undefined);
+
+    return {
+        data: healthData,
+        isLoading,
+        isError: error,
+    };
+}
+
+// 用户统计
+export function useUserStats(): SWRHookResponse<{
+    total_users: number;
+    active_users: number;
+    new_users_last_month: number;
+    last_update: string;
+}> {
+    const { data: response, error, isLoading } = useSWR(
+        '/stats/users',
+        () => systemApi.getUserStats(),
+        {
+            refreshInterval: 60000, // 每分钟刷新一次
+            revalidateOnFocus: false,
+        }
+    );
+
+    // 使用类型断言处理响应数据
+    const userData = response?.data?.data ||
+        (response?.data && typeof response.data === 'object' && 'total_users' in response.data
+            ? (response.data as unknown) as {
+                total_users: number;
+                active_users: number;
+                new_users_last_month: number;
+                last_update: string;
+            }
+            : undefined);
+
+    return {
+        data: userData,
+        isLoading,
+        isError: error,
+    };
+}
+
+// 收藏统计
+export function useFavoriteStats(): SWRHookResponse<{
+    total_favorites: number;
+    unique_users: number;
+    last_month_favorites: number;
+    last_update: string;
+}> {
+    const { data: response, error, isLoading } = useSWR(
+        '/stats/favorites',
+        () => systemApi.getFavoriteStats(),
+        {
+            refreshInterval: 60000, // 每分钟刷新一次
+            revalidateOnFocus: false,
+        }
+    );
+
+    // 使用类型断言处理响应数据
+    const favoritesData = response?.data?.data ||
+        (response?.data && typeof response.data === 'object' && 'total_favorites' in response.data
+            ? (response.data as unknown) as {
+                total_favorites: number;
+                unique_users: number;
+                last_month_favorites: number;
+                last_update: string;
+            }
+            : undefined);
+
+    return {
+        data: favoritesData,
+        isLoading,
+        isError: error,
+    };
+}
+
+// 用户列表
+export function useUserList(): SWRHookResponse<UserItem[]> {
+    const { data: response, error, isLoading, mutate } = useSWR(
+        '/users/list',
+        () => fetch('/api/users').then(res => res.json()),
+        {
+            revalidateOnFocus: false,
+            refreshInterval: 30000, // 每30秒刷新一次
+        }
+    );
+
+    return {
+        data: response?.data || [],
         isLoading,
         isError: error,
         mutate,

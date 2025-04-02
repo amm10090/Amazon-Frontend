@@ -14,6 +14,7 @@ if (typeof window !== 'undefined') {
 }
 
 const uri = process.env.MONGODB_URI;
+// 简化连接选项，使用最新推荐的配置
 const options = {
     maxPoolSize: 10,
     serverSelectionTimeoutMS: 5000,
