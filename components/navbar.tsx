@@ -23,7 +23,7 @@ import { formatPrice } from "@/lib/utils";
 
 // Animation variants
 const navbarVariants = {
-  initial: { height: 80 },
+  initial: { height: "auto" },
   scrolled: { height: 64 }
 };
 
@@ -72,15 +72,16 @@ const searchInputStyles = `
 
 export const Navbar = () => {
   const router = useRouter();
-  const pathname = usePathname(); // 获取当前路径
+  const pathname = usePathname();
   const [_isSearchFocused, _setIsSearchFocused] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [showSearchPreview, setShowSearchPreview] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isTabletSearchOpen, setIsTabletSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   // 限制预览搜索结果的数量
   const previewLimit = 5;
@@ -92,6 +93,23 @@ export const Navbar = () => {
     page_size: previewLimit,
     sort_by: "relevance"
   });
+
+  // 使用useEffect确保组件已挂载
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // 监听滚动事件
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // 初始检查
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // 监听点击事件，当点击搜索框外部时关闭预览
   useEffect(() => {
@@ -137,17 +155,6 @@ export const Navbar = () => {
     router.push(`/product/${productId}`);
   };
 
-  // Listen for scroll events
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   // 优化触发搜索框显示/隐藏的函数
   const toggleSearch = () => {
     // 判断是移动端还是平板端
@@ -183,11 +190,11 @@ export const Navbar = () => {
 
   return (
     <motion.div
-      initial="initial"
-      animate={isScrolled ? "scrolled" : "initial"}
+      initial={false}
+      animate={isMounted && isScrolled ? "scrolled" : "initial"}
       variants={navbarVariants}
       transition={{ duration: 0.3 }}
-      className="w-full"
+      className="w-full relative z-[100]"
     >
       {/* 添加全局样式 */}
       <style jsx global>{searchInputStyles}</style>
@@ -198,7 +205,7 @@ export const Navbar = () => {
           }`}
         position="sticky"
       >
-        <div className="max-w-[1400px] mx-auto px-0 flex items-center justify-between w-full">
+        <div className="max-w-[1400px] mx-auto px-0 flex items-center justify-between w-full relative z-[110]">
           {/* Logo and Search Bar Content - Left Side */}
           <NavbarContent className="flex flex-1 items-center gap-0 md:gap-1 lg:gap-2 px-0 pl-4" justify="start">
             {/* Logo - Always visible */}
@@ -260,7 +267,7 @@ export const Navbar = () => {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
+                    className="absolute z-[9999] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
                   >
                     {isLoading ? (
                       <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
@@ -411,7 +418,7 @@ export const Navbar = () => {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="absolute z-50 w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
+                        className="absolute z-[9999] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
                       >
                         {isLoading ? (
                           <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
@@ -590,7 +597,7 @@ export const Navbar = () => {
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                      className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-50 shadow-md"
+                      className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-[9999] shadow-md"
                     >
                       {isLoading ? (
                         <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
@@ -676,7 +683,7 @@ export const Navbar = () => {
           </AnimatePresence>
 
           {/* Mobile Menu */}
-          <NavbarMenu className="pt-4 pb-4 bg-background/95 backdrop-blur-lg text-left">
+          <NavbarMenu className="pt-4 pb-4 bg-background/95 backdrop-blur-lg text-left z-[120]">
             <div className="px-4 flex flex-col max-w-[1400px] ml-0">
               <h3 className="text-gray-500 text-sm font-medium mb-2 mt-1 text-left">Menu</h3>
 
@@ -744,7 +751,7 @@ export const Navbar = () => {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-50 shadow-md"
+              className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-[130] shadow-md"
             >
               {isLoading ? (
                 <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
