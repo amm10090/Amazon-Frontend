@@ -163,4 +163,5 @@ export interface UserItem {
     lastLogin?: string;
     image?: string;
     status?: 'active' | 'inactive' | 'banned';
+    provider?: 'google' | 'credentials' | string;
 } 

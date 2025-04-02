@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import { FaGoogle } from 'react-icons/fa';
 
 import { UserRole, isSuperAdmin } from '@/lib/models/UserRole';
 import type { UserItem } from '@/types/api';
@@ -28,7 +29,8 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
 
                 const data = await response.json();
 
-                setUser(data.data);
+                // 直接使用返回的数据，因为API直接返回用户对象
+                setUser(data);
             } catch (err) {
                 setError(err instanceof Error ? err.message : '获取用户数据出错');
             } finally {
@@ -109,9 +111,9 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
     if (error || !user) {
         return (
             <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
-                <p>{error || '未找到用户'}</p>
+                <p>{error || 'User not found'}</p>
                 <Link href="/dashboard/users" className="text-blue-600 underline mt-2 inline-block">
-                    返回用户列表
+                    Back to Users List
                 </Link>
             </div>
         );
@@ -120,12 +122,12 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold text-gray-800">用户详情</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Users Detail</h1>
                 <Link
                     href="/dashboard/users"
                     className="text-blue-600 hover:text-blue-800"
                 >
-                    返回用户列表
+                    Back to Users List
                 </Link>
             </div>
 
@@ -136,15 +138,20 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
                         {user.name.charAt(0)}
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold">{user.name}</h2>
+                        <div className="flex items-center">
+                            <h2 className="text-xl font-bold">{user.name}</h2>
+                            {user.provider === 'google' && (
+                                <FaGoogle className="ml-2 text-red-500" title="Google account" />
+                            )}
+                        </div>
                         <p className="text-gray-600">{user.email}</p>
                         <div className="mt-1">
                             <span className={`px-2 py-1 text-xs font-semibold rounded-full 
                                 ${user.role === UserRole.SUPER_ADMIN ? 'bg-purple-100 text-purple-800' :
                                     user.role === UserRole.ADMIN ? 'bg-blue-100 text-blue-800' :
                                         'bg-green-100 text-green-800'}`}>
-                                {user.role === UserRole.SUPER_ADMIN ? '超级管理员' :
-                                    user.role === UserRole.ADMIN ? '管理员' : '普通用户'}
+                                {user.role === UserRole.SUPER_ADMIN ? 'Super Admin' :
+                                    user.role === UserRole.ADMIN ? 'Admin' : 'User'}
                             </span>
                         </div>
                     </div>
@@ -152,21 +159,47 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-500">注册时间</p>
-                        <p className="font-medium">{new Date(user.createdAt).toLocaleString('zh-CN')}</p>
+                        <p className="text-sm text-gray-500">Registration Time</p>
+                        <p className="font-medium">{new Date(user.createdAt).toLocaleString('en-US')}</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-500">最后登录</p>
-                        <p className="font-medium">{user.lastLogin ? new Date(user.lastLogin).toLocaleString('zh-CN') : '未记录'}</p>
+                        <p className="text-sm text-gray-500">Last Login</p>
+                        <p className="font-medium">
+                            {user.lastLogin
+                                ? new Date(user.lastLogin).toLocaleString('en-US', {
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    second: '2-digit',
+                                    hour12: false
+                                })
+                                : 'Never logged in'
+                            }
+                        </p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-500">用户角色</p>
+                        <p className="text-sm text-gray-500">User Role</p>
                         <p className="font-medium">{user.role}</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg">
-                        <p className="text-sm text-gray-500">账户状态</p>
-                        <p className="font-medium">{user.status === 'active' ? '活跃' : user.status === 'inactive' ? '非活跃' : '已禁用'}</p>
+                        <p className="text-sm text-gray-500">Account Status</p>
+                        <p className="font-medium">{user.status === 'active' ? 'Active' : user.status === 'inactive' ? 'Inactive' : 'Disabled'}</p>
                     </div>
+                    {user.provider && (
+                        <div className="p-4 bg-gray-50 rounded-lg">
+                            <p className="text-sm text-gray-500">Authentication Provider</p>
+                            <p className="font-medium flex items-center">
+                                {user.provider === 'google' ? (
+                                    <>
+                                        <FaGoogle className="mr-1 text-red-500" />
+                                        Google
+                                    </>
+                                ) : user.provider === 'credentials' ? 'Password' : user.provider}
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* 用户操作区 */}
@@ -174,7 +207,7 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
                     {canModifyRole && !isSelf && (
                         <div className="flex items-center space-x-2">
                             <label htmlFor="role-select" className="text-sm font-medium text-gray-700">
-                                更改角色:
+                                Change Role:
                             </label>
                             <select
                                 id="role-select"
@@ -182,9 +215,9 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
                                 value={user.role}
                                 onChange={(e) => handleRoleChange(e.target.value as UserRole)}
                             >
-                                <option value={UserRole.USER}>普通用户</option>
-                                <option value={UserRole.ADMIN}>管理员</option>
-                                <option value={UserRole.SUPER_ADMIN}>超级管理员</option>
+                                <option value={UserRole.USER}>User</option>
+                                <option value={UserRole.ADMIN}>Admin</option>
+                                <option value={UserRole.SUPER_ADMIN}>Super Admin</option>
                             </select>
                         </div>
                     )}
@@ -194,7 +227,7 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
                             onClick={() => setShowDeleteConfirm(true)}
                             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors ml-auto md:ml-0"
                         >
-                            删除用户
+                            Delete User
                         </button>
                     )}
                 </div>
@@ -204,22 +237,22 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
             {showDeleteConfirm && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-xl p-6 w-96">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">确认删除用户</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Delete User</h3>
                         <p className="text-gray-600 mb-6">
-                            确定要删除用户 <span className="font-semibold">{user.name}</span> 吗？该操作不可恢复。
+                            Are you sure you want to delete user <span className="font-semibold">{user.name}</span>? This action cannot be undone.
                         </p>
                         <div className="flex justify-end space-x-3">
                             <button
                                 className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
                                 onClick={() => setShowDeleteConfirm(false)}
                             >
-                                取消
+                                Cancel
                             </button>
                             <button
                                 className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
                                 onClick={handleDeleteUser}
                             >
-                                确认删除
+                                Confirm Delete
                             </button>
                         </div>
                     </div>

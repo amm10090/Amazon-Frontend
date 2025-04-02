@@ -70,7 +70,8 @@ export async function GET(
             createdAt: user.createdAt ? user.createdAt.toISOString() : new Date().toISOString(),
             lastLogin: user.lastLogin ? user.lastLogin.toISOString() : undefined,
             image: user.image || undefined,
-            status: user.status || 'active'
+            status: user.status || 'active',
+            provider: user.provider || 'credentials'
         };
 
         return NextResponse.json(userData);

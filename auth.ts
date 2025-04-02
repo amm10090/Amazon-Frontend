@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import type { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -93,12 +94,21 @@ export const config = {
                             return null;
                         }
 
+                        // 更新provider字段，如果尚未设置
+                        if (!user.provider) {
+                            await db.collection("users").updateOne(
+                                { _id: user._id },
+                                { $set: { provider: 'credentials' } }
+                            );
+                        }
+
                         return {
                             id: user._id.toString(),
                             name: user.name || user.username,
                             email: user.email,
                             image: user.image,
-                            role: user.role || UserRole.USER
+                            role: user.role || UserRole.USER,
+                            provider: user.provider || 'credentials'
                         };
                     } else {
                         // On client-side, only check development default account
@@ -140,6 +150,66 @@ export const config = {
             }
 
             return true;
+        },
+        async signIn({ user, account }) {
+            try {
+                // 只在服务器端处理
+                if (typeof window === 'undefined' && user?.email) {
+                    const clientPromise = (await import('@/lib/mongodb')).default;
+                    const client = await clientPromise;
+                    const db = client.db();
+
+                    // 检查用户是否已存在
+                    const dbUser = await db.collection('users').findOne({ email: user.email });
+
+                    if (!dbUser && account?.provider === 'google') {
+                        // 如果是新的 Google 用户，创建用户记录
+                        const newUser = {
+                            name: user.name || user.email.split('@')[0],
+                            email: user.email,
+                            image: user.image || undefined,
+                            role: isAdminAccount(user.email)
+                                ? (user.email.toLowerCase().startsWith('root@') ? UserRole.SUPER_ADMIN : UserRole.ADMIN)
+                                : UserRole.USER,
+                            createdAt: new Date(),
+                            updatedAt: new Date(),
+                            lastLogin: new Date(),
+                            provider: 'google'
+                        };
+
+                        const result = await db.collection('users').insertOne(newUser);
+
+                        user.id = result.insertedId.toString();
+                    } else if (dbUser) {
+                        // 检查是否需要更新provider字段
+                        const updates: {
+                            lastLogin: Date;
+                            updatedAt: Date;
+                            provider?: string;
+                        } = {
+                            lastLogin: new Date(),
+                            updatedAt: new Date()
+                        };
+
+                        if (account?.provider === 'google' && (!dbUser.provider || dbUser.provider !== 'google')) {
+                            updates.provider = 'google';
+                        } else if (!dbUser.provider) {
+                            updates.provider = 'credentials';
+                        }
+
+                        // 更新现有用户的最后登录时间和provider
+                        await db.collection('users').updateOne(
+                            { _id: new ObjectId(dbUser._id) },
+                            { $set: updates }
+                        );
+                        user.id = dbUser._id.toString();
+                    }
+                }
+
+                return true;
+            } catch {
+                return true; // 即使更新失败也允许用户登录
+            }
         },
         jwt({ token, user, account }) {
             // 初次登录时，将用户信息添加到token中
