@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 // 更新用户角色
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { [key: string]: string | string[] } }
+    { params }: { params: { userId: string } }
 ) {
     try {
         // 验证权限
@@ -25,7 +25,7 @@ export async function PUT(
         }
 
         // 验证参数
-        const userId = params.userId as string;
+        const userId = params.userId;
 
         if (!userId || !ObjectId.isValid(userId)) {
             return NextResponse.json(
