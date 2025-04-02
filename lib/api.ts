@@ -290,7 +290,7 @@ export const systemApi = {
             prime_products: number;
             last_update: string;
         }
-    }>>('/health'),
+    }>>('/api/health'),
 
     /**
      * 获取用户统计数据
