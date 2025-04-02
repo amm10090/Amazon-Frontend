@@ -18,9 +18,10 @@ interface User {
 
 interface AuthStatusProps {
     isMobileMenu?: boolean;
+    onNavigate?: () => void;
 }
 
-export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
+export default function AuthStatus({ isMobileMenu = false, onNavigate }: AuthStatusProps) {
     const { data: session, status } = useSession();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -50,6 +51,7 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
         try {
             // 关闭下拉菜单
             setIsDropdownOpen(false);
+            onNavigate?.();
 
             // 直接调用signOut并指定回调URL
             await signOut({
@@ -91,6 +93,7 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                         <Link
                             href="/auth/signin"
                             className="flex items-center justify-start px-3 py-2.5 text-gray-700 bg-gradient-to-r from-[#16A085]/90 to-[#138D75]  font-medium rounded-lg transition-colors hover:bg-gray-100 w-full text-left"
+                            onClick={onNavigate}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -100,6 +103,7 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                         <Link
                             href="/auth/signup"
                             className="flex items-center justify-start px-3 py-2.5 text-gray-700 bg-white font-medium rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors w-full text-left"
+                            onClick={onNavigate}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -151,6 +155,7 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                     <Link
                         href="/favorites"
                         className="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        onClick={onNavigate}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -172,11 +177,12 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                         <Link
                             href="/dashboard"
                             className="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            onClick={onNavigate}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
-                            仪表盘
+                            Dashboard
                         </Link>
                     )}
                 </div>
@@ -192,6 +198,10 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                 <Link
                     href="/favorites"
                     className="relative group"
+                    onClick={() => {
+                        setIsDropdownOpen(false);
+                        onNavigate?.();
+                    }}
                 >
                     <div className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
                         <Heart size={20} className="text-gray-500 group-hover:text-[#F39C12] transition-colors" />
@@ -221,7 +231,10 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                                 <Link
                                     href="/auth/signin"
                                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                    onClick={() => setIsDropdownOpen(false)}
+                                    onClick={() => {
+                                        setIsDropdownOpen(false);
+                                        onNavigate?.();
+                                    }}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -231,7 +244,10 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                                 <Link
                                     href="/auth/signup"
                                     className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                                    onClick={() => setIsDropdownOpen(false)}
+                                    onClick={() => {
+                                        setIsDropdownOpen(false);
+                                        onNavigate?.();
+                                    }}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -255,6 +271,10 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
             <Link
                 href="/favorites"
                 className="relative group"
+                onClick={() => {
+                    setIsDropdownOpen(false);
+                    onNavigate?.();
+                }}
             >
                 <div className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
                     <Heart size={20} className="text-gray-500 group-hover:text-[#F39C12] transition-colors" />
@@ -313,7 +333,10 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                                 <Link
                                     href="/favorites"
                                     className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                                    onClick={() => setIsDropdownOpen(false)}
+                                    onClick={() => {
+                                        setIsDropdownOpen(false);
+                                        onNavigate?.();
+                                    }}
                                 >
                                     <div className="w-7 h-7 mr-2 flex items-center justify-center rounded-full bg-red-50 text-red-500">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -337,7 +360,10 @@ export default function AuthStatus({ isMobileMenu = false }: AuthStatusProps) {
                                     <Link
                                         href="/dashboard"
                                         className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                                        onClick={() => setIsDropdownOpen(false)}
+                                        onClick={() => {
+                                            setIsDropdownOpen(false);
+                                            onNavigate?.();
+                                        }}
                                     >
                                         <div className="w-7 h-7 mr-2 flex items-center justify-center rounded-full bg-indigo-50 text-indigo-500">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

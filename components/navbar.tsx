@@ -24,7 +24,7 @@ import { formatPrice } from "@/lib/utils";
 // Animation variants
 const navbarVariants = {
   initial: { height: "auto" },
-  scrolled: { height: 64 }
+  scrolled: { height: "64px" }
 };
 
 const _searchIconVariants = {
@@ -81,7 +81,8 @@ export const Navbar = () => {
   const [isTabletSearchOpen, setIsTabletSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // 限制预览搜索结果的数量
   const previewLimit = 5;
@@ -94,9 +95,13 @@ export const Navbar = () => {
     sort_by: "relevance"
   });
 
-  // 使用useEffect确保组件已挂载
+  // 使用useEffect确保组件已挂载并延迟启用动画
   useEffect(() => {
-    setIsMounted(true);
+    const timer = setTimeout(() => {
+      setShouldAnimate(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // 监听滚动事件
@@ -188,13 +193,26 @@ export const Navbar = () => {
     return false;
   };
 
+  // 添加关闭所有面板的函数
+  const closeAllPanels = () => {
+    setIsSearchOpen(false);
+    setIsTabletSearchOpen(false);
+    setIsMenuOpen(false);
+  };
+
+  // 处理导航点击
+  const handleNavigation = () => {
+    closeAllPanels();
+  };
+
   return (
     <motion.div
       initial={false}
-      animate={isMounted && isScrolled ? "scrolled" : "initial"}
+      animate={shouldAnimate && isScrolled ? "scrolled" : "initial"}
       variants={navbarVariants}
       transition={{ duration: 0.3 }}
-      className="w-full relative z-[100]"
+      className="w-full relative z-[9990]"
+      style={{ height: "auto" }}
     >
       {/* 添加全局样式 */}
       <style jsx global>{searchInputStyles}</style>
@@ -204,8 +222,10 @@ export const Navbar = () => {
         className={`bg-background/80 backdrop-blur-lg border-b border-divider/50 transition-all duration-300 ${isScrolled ? "shadow-md" : ""
           }`}
         position="sticky"
+        isMenuOpen={isMenuOpen}
+        onMenuOpenChange={setIsMenuOpen}
       >
-        <div className="max-w-[1400px] mx-auto px-0 flex items-center justify-between w-full relative z-[110]">
+        <div className="max-w-[1400px] mx-auto px-0 flex items-center justify-between w-full relative z-[9991]">
           {/* Logo and Search Bar Content - Left Side */}
           <NavbarContent className="flex flex-1 items-center gap-0 md:gap-1 lg:gap-2 px-0 pl-4" justify="start">
             {/* Logo - Always visible */}
@@ -267,7 +287,7 @@ export const Navbar = () => {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="absolute z-[9999] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
+                    className="absolute z-[9995] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
                   >
                     {isLoading ? (
                       <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
@@ -418,7 +438,7 @@ export const Navbar = () => {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="absolute z-[9999] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
+                        className="absolute z-[9995] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
                       >
                         {isLoading ? (
                           <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
@@ -536,6 +556,7 @@ export const Navbar = () => {
               <NavbarMenuToggle
                 icon={<Menu size={20} />}
                 className="w-8 h-8 p-1.5 text-default-500 bg-default-100/50 hover:bg-default-200/70 rounded-lg"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
               />
             </NavbarItem>
 
@@ -559,7 +580,7 @@ export const Navbar = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="absolute inset-x-0 top-full mt-2 px-0 pb-4 bg-white shadow-lg md:hidden z-50"
+                className="absolute inset-x-0 top-full mt-2 px-0 pb-4 bg-white shadow-lg md:hidden z-[9994]"
               >
                 <form onSubmit={handleSearchSubmit} className="relative w-full max-w-[1400px] mx-auto px-4">
                   <Input
@@ -597,7 +618,7 @@ export const Navbar = () => {
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                      className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-[9999] shadow-md"
+                      className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-[9995] shadow-md"
                     >
                       {isLoading ? (
                         <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
@@ -683,7 +704,7 @@ export const Navbar = () => {
           </AnimatePresence>
 
           {/* Mobile Menu */}
-          <NavbarMenu className="pt-4 pb-4 bg-background/95 backdrop-blur-lg text-left z-[120]">
+          <NavbarMenu className="z-[9999]">
             <div className="px-4 flex flex-col max-w-[1400px] ml-0">
               <h3 className="text-gray-500 text-sm font-medium mb-2 mt-1 text-left">Menu</h3>
 
@@ -695,6 +716,7 @@ export const Navbar = () => {
                       key={item.label || `menu-item-${item.href}`}
                       className="w-full px-3 py-2.5 text-base text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-left"
                       href={item.href}
+                      onClick={handleNavigation}
                     >
                       {item.label}
                     </Link>
@@ -705,7 +727,7 @@ export const Navbar = () => {
               <div className="pt-2 border-t border-gray-200">
                 <h3 className="text-gray-500 text-sm font-medium mb-2 mt-1 text-left">Account</h3>
                 <div className="flex w-full">
-                  <AuthStatus isMobileMenu={true} />
+                  <AuthStatus isMobileMenu={true} onNavigate={handleNavigation} />
                 </div>
               </div>
             </div>
@@ -751,7 +773,7 @@ export const Navbar = () => {
               initial="hidden"
               animate="visible"
               exit="exit"
-              className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-[130] shadow-md"
+              className="mt-2 bg-white rounded-lg border border-gray-100 overflow-hidden max-h-[60vh] overflow-y-auto absolute left-4 right-4 z-[9995] shadow-md"
             >
               {isLoading ? (
                 <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
