@@ -4,7 +4,7 @@ import type { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
-import { UserRole, isAdminAccount } from "@/lib/models/UserRole";
+import { UserRole, isAdminAccount, isSuperAdminAccount } from "@/lib/models/UserRole";
 
 // Strategy: Execute database and authentication related code only on the server side
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -164,13 +164,22 @@ export const config = {
 
                     if (!dbUser && account?.provider === 'google') {
                         // 如果是新的 Google 用户，创建用户记录
+                        let role = UserRole.USER;
+
+                        // 首先检查是否为超级管理员账户
+                        if (isSuperAdminAccount(user.email)) {
+                            role = UserRole.SUPER_ADMIN;
+                        }
+                        // 然后检查是否为普通管理员账户
+                        else if (isAdminAccount(user.email)) {
+                            role = UserRole.ADMIN;
+                        }
+
                         const newUser = {
                             name: user.name || user.email.split('@')[0],
                             email: user.email,
                             image: user.image || undefined,
-                            role: isAdminAccount(user.email)
-                                ? (user.email.toLowerCase().startsWith('root@') ? UserRole.SUPER_ADMIN : UserRole.ADMIN)
-                                : UserRole.USER,
+                            role,
                             createdAt: new Date(),
                             updatedAt: new Date(),
                             lastLogin: new Date(),
@@ -219,9 +228,15 @@ export const config = {
             }
 
             // 对于Google登录，检查是否为预定义的管理员账户
-            if (account && account.provider === "google" && user?.email && isAdminAccount(user.email)) {
-                // 根据邮箱区分超级管理员和普通管理员
-                token.role = user.email.toLowerCase().startsWith('root@') ? UserRole.SUPER_ADMIN : UserRole.ADMIN;
+            if (account && account.provider === "google" && user?.email) {
+                // 首先检查是否为超级管理员账户
+                if (isSuperAdminAccount(user.email)) {
+                    token.role = UserRole.SUPER_ADMIN;
+                }
+                // 然后检查是否为普通管理员账户
+                else if (isAdminAccount(user.email)) {
+                    token.role = UserRole.ADMIN;
+                }
             }
 
             return token;

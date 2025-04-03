@@ -81,6 +81,14 @@ export const ADMIN_ACCOUNTS = [
 ] as const;
 
 /**
+ * 预定义的超级管理员账户列表
+ */
+export const SUPER_ADMIN_ACCOUNTS = [
+    'a.aadil26@gmail.com',
+    'oohuntofficial@gmail.com'
+] as const;
+
+/**
  * 检查邮箱是否为预定义的管理员账户
  */
 export function isAdminAccount(email: string): boolean {
@@ -88,4 +96,14 @@ export function isAdminAccount(email: string): boolean {
     const normalizedEmail = email.toLowerCase();
 
     return ADMIN_ACCOUNTS.some(admin => admin.toLowerCase() === normalizedEmail);
+}
+
+/**
+ * 检查邮箱是否为预定义的超级管理员账户
+ */
+export function isSuperAdminAccount(email: string): boolean {
+    // 转换为小写后比较，确保大小写不敏感
+    const normalizedEmail = email.toLowerCase();
+
+    return SUPER_ADMIN_ACCOUNTS.some(admin => admin.toLowerCase() === normalizedEmail);
 } 
