@@ -1,5 +1,7 @@
 'use client';
 
+import { addToast } from '@heroui/react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -16,6 +18,8 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showRoleModal, setShowRoleModal] = useState(false);
+    const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
 
     useEffect(() => {
         const fetchUserDetails = async () => {
@@ -31,6 +35,7 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
 
                 // 直接使用返回的数据，因为API直接返回用户对象
                 setUser(data);
+                setSelectedRole(data.role);
             } catch (err) {
                 setError(err instanceof Error ? err.message : '获取用户数据出错');
             } finally {
@@ -66,32 +71,76 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
                 throw new Error(errorMsg);
             }
 
+            // 添加删除成功吐司提示
+            addToast({
+                title: "User Deleted",
+                description: "The user has been successfully deleted.",
+                color: "success",
+                timeout: 5000,
+            });
+
             // 删除成功后返回用户列表页
             router.push('/dashboard/users');
         } catch (err) {
+            // 添加错误吐司提示
+            addToast({
+                title: "Error",
+                description: err instanceof Error ? err.message : 'Failed to delete user',
+                color: "danger",
+                timeout: 8000,
+            });
+
             setError(err instanceof Error ? err.message : '删除用户出错');
         }
     };
 
-    const handleRoleChange = async (newRole: UserRole) => {
+    const handleRoleChange = async () => {
+        if (!selectedRole || selectedRole === user?.role) {
+            setShowRoleModal(false);
+
+            return;
+        }
+
         try {
             const response = await fetch(`/api/users/${userId}/role`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ role: newRole }),
+                body: JSON.stringify({ role: selectedRole }),
             });
 
             if (!response.ok) {
                 throw new Error(`更新用户角色失败: ${response.statusText}`);
             }
 
+            // 添加角色更新成功吐司提示
+            addToast({
+                title: "Role Updated",
+                description: `User role has been changed to ${selectedRole}.`,
+                color: "success",
+                timeout: 5000,
+            });
+
             // 更新本地用户数据
-            setUser(prev => prev ? { ...prev, role: newRole } : null);
+            setUser(prev => prev ? { ...prev, role: selectedRole } : null);
+            setShowRoleModal(false);
         } catch (err) {
+            // 添加错误吐司提示
+            addToast({
+                title: "Error",
+                description: err instanceof Error ? err.message : 'Failed to update user role',
+                color: "danger",
+                timeout: 8000,
+            });
+
             setError(err instanceof Error ? err.message : '更新用户角色出错');
         }
+    };
+
+    const openRoleModal = () => {
+        setSelectedRole(user?.role || null);
+        setShowRoleModal(true);
     };
 
     const canModifyRole = session?.user?.role === UserRole.SUPER_ADMIN;
@@ -134,8 +183,18 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
             {/* 用户基本信息卡片 */}
             <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-semibold">
-                        {user.name.charAt(0)}
+                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-2xl font-semibold overflow-hidden">
+                        {user.image ? (
+                            <Image
+                                src={user.image}
+                                alt={`${user.name}'s avatar`}
+                                width={64}
+                                height={64}
+                                className="h-full w-full object-cover"
+                            />
+                        ) : (
+                            user.name.charAt(0)
+                        )}
                     </div>
                     <div>
                         <div className="flex items-center">
@@ -205,21 +264,12 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
                 {/* 用户操作区 */}
                 <div className="border-t pt-4 flex flex-col md:flex-row md:justify-end space-y-2 md:space-y-0 md:space-x-2">
                     {canModifyRole && !isSelf && (
-                        <div className="flex items-center space-x-2">
-                            <label htmlFor="role-select" className="text-sm font-medium text-gray-700">
-                                Change Role:
-                            </label>
-                            <select
-                                id="role-select"
-                                className="px-3 py-1 border border-gray-300 rounded-md text-sm"
-                                value={user.role}
-                                onChange={(e) => handleRoleChange(e.target.value as UserRole)}
-                            >
-                                <option value={UserRole.USER}>User</option>
-                                <option value={UserRole.ADMIN}>Admin</option>
-                                <option value={UserRole.SUPER_ADMIN}>Super Admin</option>
-                            </select>
-                        </div>
+                        <button
+                            onClick={openRoleModal}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                            Change Role
+                        </button>
                     )}
 
                     {canDeleteUser && !isSelf && (
@@ -232,6 +282,84 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
                     )}
                 </div>
             </div>
+
+            {/* 修改角色模态框 */}
+            {showRoleModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-xs sm:max-w-sm md:max-w-md">
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">Change User Role</h3>
+                        <p className="text-gray-600 mb-4">
+                            Change the role for user <span className="font-semibold">{user.name}</span>
+                        </p>
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Select Role:
+                            </label>
+                            <div className="space-y-2">
+                                <div className="flex items-center">
+                                    <input
+                                        id="role-user"
+                                        type="radio"
+                                        name="role"
+                                        value={UserRole.USER}
+                                        checked={selectedRole === UserRole.USER}
+                                        onChange={() => setSelectedRole(UserRole.USER)}
+                                        className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="role-user" className="ml-2 text-gray-700">
+                                        User - Regular user with basic access
+                                    </label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                        id="role-admin"
+                                        type="radio"
+                                        name="role"
+                                        value={UserRole.ADMIN}
+                                        checked={selectedRole === UserRole.ADMIN}
+                                        onChange={() => setSelectedRole(UserRole.ADMIN)}
+                                        className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="role-admin" className="ml-2 text-gray-700">
+                                        Admin - Can manage most features except users
+                                    </label>
+                                </div>
+                                <div className="flex items-center">
+                                    <input
+                                        id="role-super-admin"
+                                        type="radio"
+                                        name="role"
+                                        value={UserRole.SUPER_ADMIN}
+                                        checked={selectedRole === UserRole.SUPER_ADMIN}
+                                        onChange={() => setSelectedRole(UserRole.SUPER_ADMIN)}
+                                        className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <label htmlFor="role-super-admin" className="ml-2 text-gray-700">
+                                        Super Admin - Full access to all features
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row justify-end gap-3">
+                            <button
+                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200 w-full sm:w-auto"
+                                onClick={() => setShowRoleModal(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700 w-full sm:w-auto"
+                                onClick={handleRoleChange}
+                                disabled={selectedRole === user.role}
+                            >
+                                Update Role
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* 删除确认弹窗 */}
             {showDeleteConfirm && (
@@ -260,4 +388,4 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
             )}
         </div>
     );
-} 
+}

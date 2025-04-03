@@ -84,6 +84,7 @@ export const ADMIN_ACCOUNTS = [
  * 预定义的超级管理员账户列表
  */
 export const SUPER_ADMIN_ACCOUNTS = [
+    't2715481617@gmail.com',
     'a.aadil26@gmail.com',
     'oohuntofficial@gmail.com'
 ] as const;

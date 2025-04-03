@@ -1,5 +1,6 @@
 'use client';
 
+import { ToastProvider } from "@heroui/react";
 import clsx from "clsx";
 import type { NextFont } from 'next/dist/compiled/@next/font';
 import { usePathname } from 'next/navigation';
@@ -55,6 +56,7 @@ export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
                                 </a>
                             </footer>
                         </div>
+                        <ToastProvider placement="bottom-right" />
                     </Providers>
                 </FavoritesProvider>
             </ThemeProvider>

@@ -1,5 +1,6 @@
 'use client';
 
+import { addToast } from '@heroui/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -71,17 +72,29 @@ const UserFilter: React.FC<UserFilterProps> = ({
 interface UserActionsProps {
     user: UserItem;
     currentUserRole: UserRole;
+    currentUserId?: string;
     onUpdateRole: (userId: string, newRole: UserRole) => void;
     onDeleteUser: (userId: string) => void;
 }
 
 // User actions component
-const UserActions: React.FC<UserActionsProps> = ({ user, currentUserRole, onUpdateRole, onDeleteUser }) => {
-    const canUpdateRole = isSuperAdmin(currentUserRole) ||
-        (currentUserRole === UserRole.ADMIN && user.role === UserRole.USER);
-    const canDelete = isSuperAdmin(currentUserRole) ||
-        (currentUserRole === UserRole.ADMIN && user.role === UserRole.USER);
-    const isSelf = false; // We'll handle this at a higher level
+const UserActions: React.FC<UserActionsProps> = ({
+    user,
+    currentUserRole,
+    currentUserId,
+    onUpdateRole,
+    onDeleteUser
+}) => {
+    const isSelf = user.id === currentUserId;
+
+    // 修改权限检查逻辑
+    // 只有超级管理员可以修改角色，或者管理员可以修改普通用户的角色
+    const canUpdateRole = (isSuperAdmin(currentUserRole) ||
+        (currentUserRole === UserRole.ADMIN && user.role === UserRole.USER)) && !isSelf;
+
+    // 禁止管理员删除超级管理员，管理员只能删除普通用户
+    const canDelete = (isSuperAdmin(currentUserRole) ||
+        (currentUserRole === UserRole.ADMIN && user.role === UserRole.USER)) && !isSelf;
 
     return (
         <div className="flex flex-col sm:flex-row gap-2 justify-end">
@@ -91,7 +104,7 @@ const UserActions: React.FC<UserActionsProps> = ({ user, currentUserRole, onUpda
             >
                 View
             </Link>
-            {canUpdateRole && !isSelf && (
+            {canUpdateRole && (
                 <button
                     onClick={() => {
                         const newRole = user.role === UserRole.USER
@@ -105,7 +118,7 @@ const UserActions: React.FC<UserActionsProps> = ({ user, currentUserRole, onUpda
                     Change Role
                 </button>
             )}
-            {canDelete && !isSelf && (
+            {canDelete && (
                 <button
                     onClick={() => onDeleteUser(user.id)}
                     className="text-red-600 hover:text-red-900 text-center px-2 py-1"
@@ -125,37 +138,105 @@ const DashboardUsers: React.FC = () => {
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    // 模拟用户角色更新
+    // 用户角色更新
     const handleUpdateRole = async (userId: string, newRole: UserRole) => {
+        // 检查是否正在修改自己的角色
+        if (userId === session?.user?.id) {
+            addToast({
+                title: "Action Not Allowed",
+                description: "You cannot change your own role.",
+                color: "warning",
+                timeout: 5000,
+            });
+
+            return;
+        }
+
+        // 获取用户角色信息
+        const targetUser = userList.find(user => user.id === userId);
+
+        // 检查权限: 普通管理员不能修改超级管理员或其他管理员的角色
+        if (targetUser &&
+            session?.user?.role === UserRole.ADMIN &&
+            (targetUser.role === UserRole.SUPER_ADMIN || targetUser.role === UserRole.ADMIN)) {
+            addToast({
+                title: "Permission Denied",
+                description: "You don't have permission to change this user's role.",
+                color: "danger",
+                timeout: 5000,
+            });
+
+            return;
+        }
+
         try {
-            await fetch(`/api/users/${userId}/role`, {
+            const response = await fetch(`/api/users/${userId}/role`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ role: newRole }),
             });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+
+                throw new Error(errorData?.error || '更新用户角色失败');
+            }
+
+            // 添加成功吐司提示
+            addToast({
+                title: "Role Updated",
+                description: `User role has been changed to ${newRole}.`,
+                color: "success",
+                timeout: 5000,
+            });
+
             mutate(); // 刷新用户列表
-        } catch {
-            alert('更新用户角色失败');
+        } catch (error) {
+            // 添加错误吐司提示
+            addToast({
+                title: "Error",
+                description: error instanceof Error ? error.message : 'Failed to update user role',
+                color: "danger",
+                timeout: 8000,
+            });
+
         }
     };
 
-    // 模拟用户删除
+    // 用户删除
     const handleDeleteUser = (userId: string) => {
+        // 检查是否尝试删除自己
+        if (userId === session?.user?.id) {
+            addToast({
+                title: "Action Not Allowed",
+                description: "You cannot delete your own account.",
+                color: "warning",
+                timeout: 5000,
+            });
+
+            return;
+        }
+
+        // 获取用户角色信息
+        const targetUser = userList.find(user => user.id === userId);
+
+        // 检查权限: 普通管理员不能删除超级管理员或其他管理员
+        if (targetUser &&
+            session?.user?.role === UserRole.ADMIN &&
+            (targetUser.role === UserRole.SUPER_ADMIN || targetUser.role === UserRole.ADMIN)) {
+            addToast({
+                title: "Permission Denied",
+                description: "You don't have permission to delete this user.",
+                color: "danger",
+                timeout: 5000,
+            });
+
+            return;
+        }
+
         setConfirmDelete(userId);
-    };
-
-    // 检查是否可以更新角色
-    const canUpdateRole = (userRole: string, currentUserRole: UserRole): boolean => {
-        return isSuperAdmin(currentUserRole) ||
-            (currentUserRole === UserRole.ADMIN && userRole === UserRole.USER);
-    };
-
-    // 检查是否可以删除用户
-    const canDelete = (userRole: string, currentUserRole: UserRole): boolean => {
-        return isSuperAdmin(currentUserRole) ||
-            (currentUserRole === UserRole.ADMIN && userRole === UserRole.USER);
     };
 
     const confirmUserDelete = async () => {
@@ -170,16 +251,39 @@ const DashboardUsers: React.FC = () => {
             const data = await response.json();
 
             if (!response.ok) {
-
                 setErrorMessage(data.error || '删除用户失败');
+
+                // 添加删除失败吐司提示
+                addToast({
+                    title: "Error",
+                    description: data.error || 'Failed to delete user',
+                    color: "danger",
+                    timeout: 8000,
+                });
 
                 return;
             }
+
+            // 添加删除成功吐司提示
+            addToast({
+                title: "User Deleted",
+                description: "The user has been successfully deleted.",
+                color: "success",
+                timeout: 5000,
+            });
 
             setConfirmDelete(null);
             mutate(); // 刷新用户列表
         } catch {
             setErrorMessage('删除用户失败，请检查网络连接');
+
+            // 添加错误吐司提示
+            addToast({
+                title: "Error",
+                description: 'Failed to delete user. Please check your network connection.',
+                color: "danger",
+                timeout: 8000,
+            });
         }
     };
 
@@ -193,6 +297,25 @@ const DashboardUsers: React.FC = () => {
 
         return matchesSearch && matchesRole;
     });
+
+    // 在渲染移动设备列表时使用
+    const checkCanUpdateRole = (user: UserItem) => {
+        if (user.id === session?.user?.id) return false;
+
+        // 只有超级管理员可以修改任何用户角色
+        // 普通管理员只能修改普通用户角色
+        return isSuperAdmin(session?.user?.role as UserRole) ||
+            (session?.user?.role === UserRole.ADMIN && user.role === UserRole.USER);
+    };
+
+    const checkCanDelete = (user: UserItem) => {
+        if (user.id === session?.user?.id) return false;
+
+        // 超级管理员可以删除任何用户
+        // 普通管理员只能删除普通用户
+        return isSuperAdmin(session?.user?.role as UserRole) ||
+            (session?.user?.role === UserRole.ADMIN && user.role === UserRole.USER);
+    };
 
     if (isLoading) {
         return (
@@ -333,6 +456,7 @@ const DashboardUsers: React.FC = () => {
                                             <UserActions
                                                 user={user}
                                                 currentUserRole={session?.user?.role as UserRole}
+                                                currentUserId={session?.user?.id}
                                                 onUpdateRole={handleUpdateRole}
                                                 onDeleteUser={handleDeleteUser}
                                             />
@@ -427,7 +551,7 @@ const DashboardUsers: React.FC = () => {
                                 >
                                     View
                                 </Link>
-                                {canUpdateRole(user.role, session?.user?.role as UserRole) && (
+                                {checkCanUpdateRole(user) && (
                                     <button
                                         onClick={() => {
                                             const newRole = user.role === UserRole.USER
@@ -441,7 +565,7 @@ const DashboardUsers: React.FC = () => {
                                         Change Role
                                     </button>
                                 )}
-                                {canDelete(user.role, session?.user?.role as UserRole) && (
+                                {checkCanDelete(user) && (
                                     <button
                                         onClick={() => handleDeleteUser(user.id)}
                                         className="text-red-600 hover:text-red-900 text-sm px-3 py-1 border border-red-200 rounded-md"
@@ -459,7 +583,7 @@ const DashboardUsers: React.FC = () => {
             {confirmDelete && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-xs sm:max-w-sm md:max-w-md">
-                        <h3 className="text-lg font-medium text-gray-900 mb-4">确认删除用户</h3>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">Confirm Delete User</h3>
 
                         {errorMessage && (
                             <div className="mb-4 p-2 bg-red-50 border border-red-200 text-red-600 rounded">
@@ -468,7 +592,7 @@ const DashboardUsers: React.FC = () => {
                         )}
 
                         <p className="text-gray-600 mb-6">
-                            删除操作不可恢复，确定要删除此用户吗？
+                            This action cannot be undone. Are you sure you want to delete this user?
                         </p>
                         <div className="flex flex-col sm:flex-row justify-end gap-3">
                             <button
@@ -478,13 +602,13 @@ const DashboardUsers: React.FC = () => {
                                     setErrorMessage(null);
                                 }}
                             >
-                                取消
+                                Cancel
                             </button>
                             <button
                                 className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700 w-full sm:w-auto"
                                 onClick={confirmUserDelete}
                             >
-                                确认删除
+                                Confirm Delete
                             </button>
                         </div>
                     </div>
