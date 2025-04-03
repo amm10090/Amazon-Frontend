@@ -261,7 +261,34 @@ export const productsApi = {
             throw new Error('关键词是必填的搜索参数');
         }
 
-        return api.get<ApiResponse<ListResponse<Product>>>('/search/products', { params });
+        // 首先尝试解码关键词，确保它是原始未编码状态
+        let cleanKeyword = params.keyword;
+
+        try {
+            // 尝试解码，看是否是编码过的
+            while (cleanKeyword.includes('%')) {
+                const decoded = decodeURIComponent(cleanKeyword);
+
+                if (decoded === cleanKeyword) {
+                    break; // 已经不能再解码了
+                }
+                cleanKeyword = decoded;
+            }
+        } catch {
+            // 解码失败，保持原样
+            cleanKeyword = params.keyword;
+        }
+
+        // 创建干净的参数对象，使用解码后的关键词并添加默认排序
+        const cleanParams = {
+            ...params,
+            keyword: cleanKeyword,
+            sort_order: params.sort_order || 'desc' // 设置默认排序为desc
+        };
+
+        // 不要在这里进行编码，让axios自动处理
+        // axios会自动对URL参数进行编码
+        return api.get<ApiResponse<ListResponse<Product>>>('/search/products', { params: cleanParams });
     },
 };
 

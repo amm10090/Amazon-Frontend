@@ -21,7 +21,7 @@ const ProductsPageContent = () => {
     const [error, setError] = useState<string | null>(null);
     const [screenSize, setScreenSize] = useState<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('xl');
     const [sortField, setSortField] = useState<string | null>(null);
-    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const tableRef = useRef<HTMLDivElement>(null);
 
     // 新增状态变量
@@ -36,7 +36,7 @@ const ProductsPageContent = () => {
         page: 1,
         page_size: itemsPerPage,
         sort_by: sortField as 'relevance' | 'price' | 'discount' | 'created' | undefined,
-        sort_order: sortDirection,
+        sort_order: 'desc' as 'asc' | 'desc',
         min_price: undefined as number | undefined,
         max_price: undefined as number | undefined,
         min_discount: undefined as number | undefined,
@@ -180,7 +180,7 @@ const ProductsPageContent = () => {
 
     // 修改排序处理函数
     const handleSort = (field: string) => {
-        const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+        const newDirection = sortField === field && sortDirection === 'desc' ? 'asc' : 'desc';
 
         setSortField(field);
         setSortDirection(newDirection);
@@ -266,9 +266,9 @@ const ProductsPageContent = () => {
     const getSortIcon = (field: string) => {
         if (sortField !== field) return <FaSort className="ml-1 text-gray-400" size={12} />;
 
-        return sortDirection === 'asc' ?
-            <FaSortUp className="ml-1 text-blue-500" size={12} /> :
-            <FaSortDown className="ml-1 text-blue-500" size={12} />;
+        return sortDirection === 'desc' ?
+            <FaSortDown className="ml-1 text-blue-500" size={12} /> :
+            <FaSortUp className="ml-1 text-blue-500" size={12} />;
     };
 
     // Render animated loading skeleton
