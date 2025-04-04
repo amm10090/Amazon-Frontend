@@ -47,7 +47,7 @@ export async function POST(request: Request) {
         ]) as Promise<MongoClient>;
 
         const client = await clientPromiseWithTimeout;
-        const db = client.db();
+        const db = client.db(process.env.MONGODB_DB || "oohunt");
 
         // 检查电子邮件是否已在使用中
         const existingUser = await db.collection('users').findOne({ email });

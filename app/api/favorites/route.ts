@@ -22,7 +22,7 @@ export async function GET() {
         }
 
         const client = await clientPromise;
-        const db = client.db(process.env.MONGODB_DB || "test");
+        const db = client.db(process.env.MONGODB_DB || "oohunt");
         const favorites = await db.collection('favorites')
             .find({ userId: session.user.id })
             .toArray();
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
         }
 
         const client = await clientPromise;
-        const db = client.db(process.env.MONGODB_DB || "test");
+        const db = client.db(process.env.MONGODB_DB || "oohunt");
 
         await db.collection('favorites').updateOne(
             { userId: session.user.id, productId },
@@ -111,7 +111,7 @@ export async function DELETE(request: Request) {
         }
 
         const client = await clientPromise;
-        const db = client.db(process.env.MONGODB_DB || "test");
+        const db = client.db(process.env.MONGODB_DB || "oohunt");
 
         await db.collection('favorites').deleteOne({
             userId: session.user.id,

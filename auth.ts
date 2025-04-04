@@ -60,7 +60,7 @@ export const config = {
                         }
 
                         const client = await clientPromise;
-                        const db = client.db();
+                        const db = client.db(process.env.MONGODB_DB || "oohunt");
 
                         // Find user by email or username
                         const user = await db.collection("users").findOne({
@@ -157,7 +157,7 @@ export const config = {
                 if (typeof window === 'undefined' && user?.email) {
                     const clientPromise = (await import('@/lib/mongodb')).default;
                     const client = await clientPromise;
-                    const db = client.db();
+                    const db = client.db(process.env.MONGODB_DB || "oohunt");
 
                     // 检查用户是否已存在
                     const dbUser = await db.collection('users').findOne({ email: user.email });

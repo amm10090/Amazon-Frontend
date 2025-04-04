@@ -8,7 +8,7 @@ import clientPromise from "@/lib/mongodb";
  */
 async function getFavoritesCollection(): Promise<Collection<UserFavorite>> {
     const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB || "test");
+    const db = client.db(process.env.MONGODB_DB || "oohunt");
 
     return db.collection<UserFavorite>("favorites");
 }

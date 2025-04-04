@@ -9,7 +9,7 @@ import clientPromise from "@/lib/mongodb";
  */
 async function getUsersCollection(): Promise<Collection<User>> {
     const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB || "test");
+    const db = client.db(process.env.MONGODB_DB || "oohunt");
 
     return db.collection<User>("users");
 }
@@ -19,7 +19,7 @@ async function getUsersCollection(): Promise<Collection<User>> {
  */
 async function getFavoritesCollection(): Promise<Collection<UserFavorite>> {
     const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB || "test");
+    const db = client.db(process.env.MONGODB_DB || "oohunt");
 
     return db.collection<UserFavorite>("favorites");
 }
