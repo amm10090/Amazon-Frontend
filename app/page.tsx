@@ -86,7 +86,7 @@ export default function Home() {
     }, [isLoading, categoryStats, processed]);
 
     return (
-        <div className="max-w-[1400px] mx-auto overflow-hidden">
+        <div className="max-w-[1800px] mx-auto overflow-hidden">
             <div className="relative flex">
                 {/* 左侧分类导航 */}
                 <div className="hidden lg:block w-[240px] fixed top-[110px] h-auto max-h-[calc(100vh-110px)] overflow-auto bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800">

@@ -5,10 +5,6 @@ export const siteConfig = {
   description: "Amazon Deals Display Platform",
   navItems: [
     {
-      label: "Home",
-      href: "/",
-    },
-    {
       label: "All Products",
       href: "/products",
     },
@@ -22,10 +18,7 @@ export const siteConfig = {
     },
   ],
   navMenuItems: [
-    {
-      label: "Home",
-      href: "/",
-    },
+
     {
       label: "All Products",
       href: "/products",
