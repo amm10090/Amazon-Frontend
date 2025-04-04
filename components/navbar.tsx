@@ -2,7 +2,6 @@
 
 import {
   Navbar as HeroUINavbar,
-  NavbarContent,
   NavbarMenuToggle,
   NavbarBrand,
   NavbarItem,
@@ -236,148 +235,176 @@ export const Navbar = () => {
                   <MobileSearchButton toggleSearch={toggleSearch} />
                 </div>
 
-                {/* Logo */}
-                <NavbarBrand as="li" className="lg:relative lg:left-0 lg:transform-none lg:mr-6 flex-shrink-0 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 lg:top-auto lg:translate-x-0 lg:translate-y-0">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                    <NextLink className="flex justify-start items-center gap-1" href="/">
-                      <motion.span
-                        className="font-bold text-lg md:text-xl bg-linear-to-r from-[#81D8F7] via-[#62B6D9] to-[#81D8F7] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
-                        animate={{
-                          backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
-                        }}
-                        transition={{
-                          duration: 8,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
-                      >
-                        OOHUNT
-                      </motion.span>
-                    </NextLink>
-                  </motion.div>
-                </NavbarBrand>
-
-                {/* Desktop Search Bar */}
-                <div className="hidden lg:block flex-1 max-w-[500px]" ref={searchContainerRef}>
-                  <form onSubmit={handleSearchSubmit} className="w-full relative">
-                    <Input
-                      ref={searchInputRef}
-                      aria-label="Search"
-                      classNames={{
-                        base: "w-full",
-                        inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-10 px-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
-                        input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-[90px] search-input h-full"
-                      }}
-                      placeholder="Search deals..."
-                      size="sm"
-                      type="search"
-                      value={searchKeyword}
-                      onChange={handleSearchInputChange}
-                      onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
-                      endContent={
-                        <Button
-                          className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full h-8 px-4 text-sm transition-colors duration-200 flex items-center justify-center min-w-[80px]"
-                          size="sm"
-                          type="submit"
+                {/* 移动端居中 Logo */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2 lg:hidden">
+                  <NavbarBrand as="li" className="flex-shrink-0">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                      <NextLink className="flex justify-start items-center gap-1" href="/">
+                        <motion.span
+                          className="font-bold text-lg md:text-xl bg-linear-to-r from-[#81D8F7] via-[#62B6D9] to-[#81D8F7] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
+                          animate={{
+                            backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                          }}
+                          transition={{
+                            duration: 8,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
                         >
-                          Hunt
-                        </Button>
-                      }
-                    />
-                  </form>
+                          OOHUNT
+                        </motion.span>
+                      </NextLink>
+                    </motion.div>
+                  </NavbarBrand>
+                </div>
 
-                  {/* Desktop Search Preview */}
-                  <AnimatePresence>
-                    {showSearchPreview && searchKeyword.length > 0 && (
-                      <motion.div
-                        variants={searchDropdownVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        className="absolute z-[9995] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
-                      >
-                        {isLoading ? (
-                          <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
-                            Searching...
-                          </div>
-                        ) : !searchResults?.items?.length ? (
-                          <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
-                            No matching products found
-                          </div>
-                        ) : (
-                          <>
-                            <div className="p-1 sm:p-2">
-                              {searchResults.items.slice(0, previewLimit).map((product) => (
-                                <div
-                                  key={product.asin || `product-${Math.random()}`}
-                                  className="flex items-center p-1.5 sm:p-2 hover:bg-gray-100 rounded-md cursor-pointer transition-colors"
-                                  onClick={() => handlePreviewItemClick(product.asin)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                      e.preventDefault();
-                                      handlePreviewItemClick(product.asin);
-                                    }
-                                  }}
-                                  tabIndex={0}
-                                  role="button"
-                                  aria-label={`View details for ${product.title}`}
-                                >
-                                  {product.main_image && (
-                                    <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 mr-2 relative">
-                                      <Image
-                                        src={product.main_image}
-                                        alt={product.title}
-                                        fill
-                                        sizes="(max-width: 640px) 32px, (max-width: 768px) 40px, 48px"
-                                        className="object-cover"
-                                      />
-                                    </div>
-                                  )}
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                                      {product.title}
-                                    </p>
-                                    <div className="flex items-center mt-0.5">
-                                      {product.offers && product.offers[0] && (
-                                        <span className="text-xs sm:text-sm font-bold text-green-600">
-                                          {formatPrice(product.offers[0].price)}
-                                        </span>
-                                      )}
-                                      {product.offers && product.offers[0]?.savings_percentage && (
-                                        <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs bg-red-100 text-red-600 px-1 sm:px-1.5 py-0.5 rounded-full">
-                                          {product.offers[0].savings_percentage}% OFF
-                                        </span>
-                                      )}
+                <div className="hidden lg:flex items-center gap-2 lg:gap-3">
+                  {/* 桌面端 Logo */}
+                  <NavbarBrand as="li" className="flex-shrink-0">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                      <NextLink className="flex justify-start items-center gap-1" href="/">
+                        <motion.span
+                          className="font-bold text-lg md:text-xl bg-linear-to-r from-[#81D8F7] via-[#62B6D9] to-[#81D8F7] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
+                          animate={{
+                            backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
+                          }}
+                          transition={{
+                            duration: 8,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
+                        >
+                          OOHUNT
+                        </motion.span>
+                      </NextLink>
+                    </motion.div>
+                  </NavbarBrand>
+
+                  {/* Desktop Search Bar */}
+                  <div className="hidden lg:block flex-1 max-w-[500px] min-w-[300px]" ref={searchContainerRef}>
+                    <form onSubmit={handleSearchSubmit} className="w-full relative">
+                      <Input
+                        ref={searchInputRef}
+                        aria-label="Search"
+                        classNames={{
+                          base: "w-full",
+                          inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-10 px-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                          input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-[90px] search-input h-full"
+                        }}
+                        placeholder="Search deals..."
+                        size="sm"
+                        type="search"
+                        value={searchKeyword}
+                        onChange={handleSearchInputChange}
+                        onFocus={() => setShowSearchPreview(searchKeyword.length > 0)}
+                        endContent={
+                          <Button
+                            className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-[#F39C12] hover:bg-[#E67E22] text-white font-medium rounded-full h-8 px-4 text-sm transition-colors duration-200 flex items-center justify-center min-w-[80px]"
+                            size="sm"
+                            type="submit"
+                          >
+                            Hunt
+                          </Button>
+                        }
+                      />
+                    </form>
+
+                    {/* Desktop Search Preview */}
+                    <AnimatePresence>
+                      {showSearchPreview && searchKeyword.length > 0 && (
+                        <motion.div
+                          variants={searchDropdownVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit="exit"
+                          className="absolute z-[9995] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
+                        >
+                          {isLoading ? (
+                            <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
+                              Searching...
+                            </div>
+                          ) : !searchResults?.items?.length ? (
+                            <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">
+                              No matching products found
+                            </div>
+                          ) : (
+                            <>
+                              <div className="p-1 sm:p-2">
+                                {searchResults.items.slice(0, previewLimit).map((product) => (
+                                  <div
+                                    key={product.asin || `product-${Math.random()}`}
+                                    className="flex items-center p-1.5 sm:p-2 hover:bg-gray-100 rounded-md cursor-pointer transition-colors"
+                                    onClick={() => handlePreviewItemClick(product.asin)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        handlePreviewItemClick(product.asin);
+                                      }
+                                    }}
+                                    tabIndex={0}
+                                    role="button"
+                                    aria-label={`View details for ${product.title}`}
+                                  >
+                                    {product.main_image && (
+                                      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 mr-2 relative">
+                                        <Image
+                                          src={product.main_image}
+                                          alt={product.title}
+                                          fill
+                                          sizes="(max-width: 640px) 32px, (max-width: 768px) 40px, 48px"
+                                          className="object-cover"
+                                        />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
+                                        {product.title}
+                                      </p>
+                                      <div className="flex items-center mt-0.5">
+                                        {product.offers && product.offers[0] && (
+                                          <span className="text-xs sm:text-sm font-bold text-green-600">
+                                            {formatPrice(product.offers[0].price)}
+                                          </span>
+                                        )}
+                                        {product.offers && product.offers[0]?.savings_percentage && (
+                                          <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs bg-red-100 text-red-600 px-1 sm:px-1.5 py-0.5 rounded-full">
+                                            {product.offers[0].savings_percentage}% OFF
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
-                            <div
-                              className="p-2 sm:p-3 bg-gray-50 text-left hover:bg-gray-100 cursor-pointer border-t"
-                              onClick={() => handleSearchSubmit()}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  handleSearchSubmit();
-                                }
-                              }}
-                              tabIndex={0}
-                              role="button"
-                              aria-label="View all search results"
-                            >
-                              <span className="text-xs sm:text-sm font-medium text-blue-600 text-left">
-                                View all {searchResults?.total || 0} results
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                                ))}
+                              </div>
+                              <div
+                                className="p-2 sm:p-3 bg-gray-50 text-left hover:bg-gray-100 cursor-pointer border-t"
+                                onClick={() => handleSearchSubmit()}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSearchSubmit();
+                                  }
+                                }}
+                                tabIndex={0}
+                                role="button"
+                                aria-label="View all search results"
+                              >
+                                <span className="text-xs sm:text-sm font-medium text-blue-600 text-left">
+                                  View all {searchResults?.total || 0} results
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
 
