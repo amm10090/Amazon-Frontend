@@ -18,6 +18,11 @@ interface Category {
     color?: string;
 }
 
+// 添加组件属性接口，包含useAnchorLinks选项
+interface CategoryNavigationProps {
+    useAnchorLinks?: boolean; // 是否使用锚链接
+}
+
 // 产品组到分类的映射
 const productGroupToCategoryMapping: Record<string, { slug: string, name: string }> = {
     'Electronics': { slug: 'Electronics', name: 'Electronics' },
@@ -135,7 +140,7 @@ const categoryIcons: Record<string, { emoji: string, color: string }> = {
     }
 };
 
-export function CategoryNavigation() {
+export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigationProps) {
     const [categories, setCategories] = useState<Category[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [_activeTab, _setActiveTab] = useState<string | null>(null);
@@ -497,11 +502,24 @@ export function CategoryNavigation() {
     const handleCategoryClick = (slug: string) => {
         if (!slug) return;
 
-        // 构建产品页面URL，使用原始分类名称作为product_groups参数
-        const productPageUrl = `/products?product_groups=${encodeURIComponent(slug)}`;
+        if (useAnchorLinks) {
+            // 使用锚点链接滚动到对应分类区域
+            const categoryElement = document.getElementById(`category-${slug}`);
 
-        // 使用window.location导航
-        window.location.href = productPageUrl;
+            if (categoryElement) {
+                // 滚动到元素，添加一些顶部偏移以避免被导航栏遮挡
+                window.scrollTo({
+                    top: categoryElement.offsetTop - 120, // 120px的偏移，根据需要调整
+                    behavior: 'smooth'
+                });
+            }
+        } else {
+            // 原有行为：构建产品页面URL，使用原始分类名称作为product_groups参数
+            const productPageUrl = `/products?product_groups=${encodeURIComponent(slug)}`;
+
+            // 使用window.location导航
+            window.location.href = productPageUrl;
+        }
     };
 
     // 滚动到左侧
@@ -747,45 +765,94 @@ export function CategoryNavigation() {
                         whileHover={{ y: isMobile ? -8 : 0, transition: { duration: 0.3, type: "spring", stiffness: 300 } }}
                         whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
                     >
-                        <Link
-                            href="/products"
-                            className={`block ${isActiveCategory('all') ? 'pointer-events-none' : ''}`}
-                        >
-                            <motion.div
-                                className={`
-                                    relative overflow-hidden rounded-xl lg:rounded-md
-                                    ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2.5' : 'h-40 sm:h-44 md:h-48'}
-                                    bg-gray-100 dark:bg-gray-800/60
-                                    border border-gray-200 dark:border-gray-700
-                                    p-3 sm:p-4 lg:py-2.5 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full
-                                `}
-                                whileHover={{
-                                    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                                    transition: { duration: 0.3 }
+                        {useAnchorLinks ? (
+                            <button
+                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }
                                 }}
+                                className="block cursor-pointer w-full text-left"
+                                aria-label="查看所有分类"
                             >
-                                {/* Icon */}
                                 <motion.div
-                                    className="relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center bg-white dark:bg-gray-700 text-primary dark:text-primary-light shadow-sm group-hover:shadow-md transition-all duration-300"
+                                    className={`
+                                        relative overflow-hidden rounded-xl lg:rounded-md
+                                        ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2.5' : 'h-40 sm:h-44 md:h-48'}
+                                        bg-gray-100 dark:bg-gray-800/60
+                                        border border-gray-200 dark:border-gray-700
+                                        p-3 sm:p-4 lg:py-2.5 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full
+                                    `}
                                     whileHover={{
-                                        scale: isMobile ? 1.1 : 1.05,
-                                        transition: { duration: 0.2 }
+                                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                                        transition: { duration: 0.3 }
                                     }}
                                 >
-                                    <span className="text-xl lg:text-lg">🔍</span>
-                                </motion.div>
+                                    {/* Icon */}
+                                    <motion.div
+                                        className="relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center bg-white dark:bg-gray-700 text-primary dark:text-primary-light shadow-sm group-hover:shadow-md transition-all duration-300"
+                                        whileHover={{
+                                            scale: isMobile ? 1.1 : 1.05,
+                                            transition: { duration: 0.2 }
+                                        }}
+                                    >
+                                        <span className="text-xl lg:text-lg">🔍</span>
+                                    </motion.div>
 
-                                {/* Text */}
-                                <motion.h3
-                                    className="text-center lg:text-left font-medium text-xs sm:text-sm md:text-base lg:text-sm text-primary-dark dark:text-white transition-colors lg:flex-1"
-                                    initial={{ opacity: 0, y: 5 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, delay: 0.2 }}
+                                    {/* Text */}
+                                    <motion.h3
+                                        className="text-center lg:text-left font-medium text-xs sm:text-sm md:text-base lg:text-sm text-primary-dark dark:text-white transition-colors lg:flex-1"
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, delay: 0.2 }}
+                                    >
+                                        All Categories
+                                    </motion.h3>
+                                </motion.div>
+                            </button>
+                        ) : (
+                            <Link
+                                href="/products"
+                                className={`block ${isActiveCategory('all') ? 'pointer-events-none' : ''}`}
+                            >
+                                <motion.div
+                                    className={`
+                                        relative overflow-hidden rounded-xl lg:rounded-md
+                                        ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2.5' : 'h-40 sm:h-44 md:h-48'}
+                                        bg-gray-100 dark:bg-gray-800/60
+                                        border border-gray-200 dark:border-gray-700
+                                        p-3 sm:p-4 lg:py-2.5 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full
+                                    `}
+                                    whileHover={{
+                                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                                        transition: { duration: 0.3 }
+                                    }}
                                 >
-                                    All Categories
-                                </motion.h3>
-                            </motion.div>
-                        </Link>
+                                    {/* Icon */}
+                                    <motion.div
+                                        className="relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center bg-white dark:bg-gray-700 text-primary dark:text-primary-light shadow-sm group-hover:shadow-md transition-all duration-300"
+                                        whileHover={{
+                                            scale: isMobile ? 1.1 : 1.05,
+                                            transition: { duration: 0.2 }
+                                        }}
+                                    >
+                                        <span className="text-xl lg:text-lg">🔍</span>
+                                    </motion.div>
+
+                                    {/* Text */}
+                                    <motion.h3
+                                        className="text-center lg:text-left font-medium text-xs sm:text-sm md:text-base lg:text-sm text-primary-dark dark:text-white transition-colors lg:flex-1"
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.3, delay: 0.2 }}
+                                    >
+                                        All Categories
+                                    </motion.h3>
+                                </motion.div>
+                            </Link>
+                        )}
                     </motion.div>
 
                     {/* Dynamic categories */}
@@ -802,71 +869,146 @@ export function CategoryNavigation() {
                             }}
                             whileHover={{ y: isMobile ? -8 : 0, transition: { duration: 0.3, type: "spring", stiffness: 300 } }}
                             whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
-                            onClick={() => handleCategoryClick(category.slug)}
                         >
-                            <Link
-                                href={`/products?product_groups=${encodeURIComponent(category.slug)}`}
-                                className={`block ${isActiveCategory(category.slug) ? 'pointer-events-none' : ''}`}
-                            >
-                                <motion.div
-                                    className={`
-                                        relative overflow-hidden rounded-xl lg:rounded-md
-                                        ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2' : 'h-40 sm:h-44 md:h-48'}
-                                        ${isActiveCategory(category.slug)
-                                            ? 'bg-primary/10 dark:bg-primary/20 border-l-4 border-primary dark:border-primary'
-                                            : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
-                                        }
-                                        p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full mb-1.5
-                                    `}
-                                    whileHover={{
-                                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-                                        transition: { duration: 0.3 }
+                            {useAnchorLinks ? (
+                                <button
+                                    className={`block cursor-pointer w-full text-left ${isActiveCategory(category.slug) ? 'pointer-events-none' : ''}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCategoryClick(category.slug);
                                     }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            handleCategoryClick(category.slug);
+                                        }
+                                    }}
+                                    aria-label={`查看${category.name}分类`}
                                 >
-                                    {/* Category icon */}
                                     <motion.div
                                         className={`
-                                            relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
+                                            relative overflow-hidden rounded-xl lg:rounded-md
+                                            ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2' : 'h-40 sm:h-44 md:h-48'}
                                             ${isActiveCategory(category.slug)
-                                                ? `bg-primary text-white`
-                                                : `bg-gray-100 dark:bg-gray-700 text-primary-dark dark:text-white`
+                                                ? 'bg-primary/10 dark:bg-primary/20 border-l-4 border-primary dark:border-primary'
+                                                : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
                                             }
-                                            shadow-sm transition-all duration-300
+                                            p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full mb-1.5
                                         `}
                                         whileHover={{
-                                            scale: isMobile ? 1.1 : 1.05,
-                                            transition: { duration: 0.2 }
+                                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                                            transition: { duration: 0.3 }
                                         }}
                                     >
-                                        {/* 显示emoji图标 */}
-                                        <span className="text-xl lg:text-lg">
-                                            {category.emoji || categoryIcons[category.slug.toLowerCase()]?.emoji || '🛒'}
-                                        </span>
-                                    </motion.div>
-
-                                    {/* Category name and count */}
-                                    <div className="lg:flex-1 text-center lg:text-left w-full">
-                                        <motion.h3
-                                            className="text-xs sm:text-sm md:text-base lg:text-sm font-medium text-primary-dark dark:text-white mb-1 sm:mb-2 lg:mb-0 transition-colors truncate"
-                                            initial={{ opacity: 0, y: 5 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3, delay: 0.1 }}
+                                        {/* Category icon */}
+                                        <motion.div
+                                            className={`
+                                                relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
+                                                ${isActiveCategory(category.slug)
+                                                    ? `bg-primary text-white`
+                                                    : `bg-gray-100 dark:bg-gray-700 text-primary-dark dark:text-white`
+                                                }
+                                                shadow-sm transition-all duration-300
+                                            `}
+                                            whileHover={{
+                                                scale: isMobile ? 1.1 : 1.05,
+                                                transition: { duration: 0.2 }
+                                            }}
                                         >
-                                            {category.name}
-                                        </motion.h3>
-                                        {category.count > 0 && (
-                                            <motion.p
-                                                className="text-xs text-gray-500 dark:text-gray-400 transition-colors"
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                transition={{ duration: 0.3, delay: 0.2 }}
+                                            {/* 显示emoji图标 */}
+                                            <span className="text-xl lg:text-lg">
+                                                {category.emoji || categoryIcons[category.slug.toLowerCase()]?.emoji || '🛒'}
+                                            </span>
+                                        </motion.div>
+
+                                        {/* Category name and count */}
+                                        <div className="lg:flex-1 text-center lg:text-left w-full">
+                                            <motion.h3
+                                                className="text-xs sm:text-sm md:text-base lg:text-sm font-medium text-primary-dark dark:text-white mb-1 sm:mb-2 lg:mb-0 transition-colors truncate"
+                                                initial={{ opacity: 0, y: 5 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.3, delay: 0.1 }}
                                             >
-                                                {category.count} items
-                                            </motion.p>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            </Link>
+                                                {category.name}
+                                            </motion.h3>
+                                            {category.count > 0 && (
+                                                <motion.p
+                                                    className="text-xs text-gray-500 dark:text-gray-400 transition-colors"
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{ duration: 0.3, delay: 0.2 }}
+                                                >
+                                                    {category.count} items
+                                                </motion.p>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                </button>
+                            ) : (
+                                <Link
+                                    href={`/products?product_groups=${encodeURIComponent(category.slug)}`}
+                                    className={`block ${isActiveCategory(category.slug) ? 'pointer-events-none' : ''}`}
+                                >
+                                    <motion.div
+                                        className={`
+                                            relative overflow-hidden rounded-xl lg:rounded-md
+                                            ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2' : 'h-40 sm:h-44 md:h-48'}
+                                            ${isActiveCategory(category.slug)
+                                                ? 'bg-primary/10 dark:bg-primary/20 border-l-4 border-primary dark:border-primary'
+                                                : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                                            }
+                                            p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full mb-1.5
+                                        `}
+                                        whileHover={{
+                                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                                            transition: { duration: 0.3 }
+                                        }}
+                                    >
+                                        {/* Category icon */}
+                                        <motion.div
+                                            className={`
+                                                relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
+                                                ${isActiveCategory(category.slug)
+                                                    ? `bg-primary text-white`
+                                                    : `bg-gray-100 dark:bg-gray-700 text-primary-dark dark:text-white`
+                                                }
+                                                shadow-sm transition-all duration-300
+                                            `}
+                                            whileHover={{
+                                                scale: isMobile ? 1.1 : 1.05,
+                                                transition: { duration: 0.2 }
+                                            }}
+                                        >
+                                            {/* 显示emoji图标 */}
+                                            <span className="text-xl lg:text-lg">
+                                                {category.emoji || categoryIcons[category.slug.toLowerCase()]?.emoji || '🛒'}
+                                            </span>
+                                        </motion.div>
+
+                                        {/* Category name and count */}
+                                        <div className="lg:flex-1 text-center lg:text-left w-full">
+                                            <motion.h3
+                                                className="text-xs sm:text-sm md:text-base lg:text-sm font-medium text-primary-dark dark:text-white mb-1 sm:mb-2 lg:mb-0 transition-colors truncate"
+                                                initial={{ opacity: 0, y: 5 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.3, delay: 0.1 }}
+                                            >
+                                                {category.name}
+                                            </motion.h3>
+                                            {category.count > 0 && (
+                                                <motion.p
+                                                    className="text-xs text-gray-500 dark:text-gray-400 transition-colors"
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{ duration: 0.3, delay: 0.2 }}
+                                                >
+                                                    {category.count} items
+                                                </motion.p>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                </Link>
+                            )}
                         </motion.div>
                     ))}
                 </div>
