@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 
 import Breadcrumb, { type BreadcrumbItem } from '@/components/ui/Breadcrumb';
