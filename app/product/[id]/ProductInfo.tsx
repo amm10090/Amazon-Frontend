@@ -1,8 +1,10 @@
 "use client";
 
 import { motion } from 'framer-motion';
+import { BellRing } from 'lucide-react';
 import { useState } from 'react';
 
+import { NewsletterSubscribe } from '@/components/ui/NewsletterSubscribe';
 import { userApi } from '@/lib/api';
 import { StoreIdentifier } from '@/lib/store';
 import { formatPrice } from '@/lib/utils';
@@ -80,7 +82,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
             {/* Price information and discount area */}
             <div className="price-container flex flex-col space-y-2 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
-                <div className="flex items-center flex-wrap space-x-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <div className="current-price text-3xl md:text-4xl font-bold text-[#1A5276] dark:text-white">
                         {formatPrice(product.price)}
                     </div>
@@ -120,7 +122,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             </div>
 
             {/* Action buttons */}
-            <div className="cta-buttons flex items-center space-x-3 pt-4">
+            <div className="cta-buttons flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
                 <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
@@ -133,42 +135,74 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     </svg>
                 </motion.button>
 
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className={`wishlist-btn w-12 h-12 rounded-md flex items-center justify-center shadow-sm border-2 ${isWishlisted
-                        ? 'bg-red-500 border-red-500 text-white'
-                        : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'
-                        }`}
-                    onClick={handleWishlistToggle}
-                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
-                        fill={isWishlisted ? 'currentColor' : 'none'}
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                <div className="flex gap-3 justify-end sm:justify-start">
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className={`wishlist-btn w-12 h-12 rounded-md flex items-center justify-center shadow-sm border-2 ${isWishlisted
+                            ? 'bg-red-500 border-red-500 text-white'
+                            : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'
+                            }`}
+                        onClick={handleWishlistToggle}
+                        aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                     >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                </motion.button>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill={isWishlisted ? 'currentColor' : 'none'}
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                    </motion.button>
 
-                <motion.button
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="share-btn w-12 h-12 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md flex items-center justify-center shadow-sm"
-                    onClick={handleShare}
-                    aria-label="Share"
+                    <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        className="share-btn w-12 h-12 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md flex items-center justify-center shadow-sm"
+                        onClick={handleShare}
+                        aria-label="Share"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                    </motion.button>
+                </div>
+            </div>
+
+            {/* Newsletter for mobile only */}
+            <div className="lg:hidden mt-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="newsletter-section bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/80 dark:to-gray-800/60 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                </motion.button>
+                    <div className="flex flex-col space-y-3">
+                        <div className="flex items-center space-x-3">
+                            <div className="bg-[#16A085]/10 p-2 rounded-lg">
+                                <BellRing className="w-5 h-5 text-[#16A085]" />
+                            </div>
+                            <h3 className="font-medium text-[#16A085] dark:text-white text-lg">Don&apos;t Miss More Deals</h3>
+                        </div>
+
+                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                            Subscribe to our newsletter for exclusive deals and promotions.
+                        </p>
+
+                        <div className="mt-1">
+                            <NewsletterSubscribe compact={true} />
+                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                We respect your privacy and will never share your email with third parties.
+                            </p>
+                        </div>
+                    </div>
+                </motion.div>
             </div>
 
             {/* Help information box */}
-            <div className="help-box mt-8 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+            <div className="help-box bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mt-6">
                 <h3 className="font-bold text-[#1A5276] dark:text-white mb-2">How OOHunt Works</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
                     We verify all deals to ensure they&apos;re valid and offer real savings. When you click &ldquo;View Deal,&rdquo; you&apos;ll be directed to the store&apos;s website where you can complete your purchase. OOHunt may earn a commission at no cost to you.
