@@ -39,7 +39,7 @@ export function CategoryProducts({ title, slug, page_size = 6, className = '', i
             const width = window.innerWidth;
 
             if (width >= 1280) { // xl
-                setDynamicLimit(6); // 桌面端显示6个商品
+                setDynamicLimit(4); // 桌面端显示4个商品
                 setIsMobile(false);
             } else if (width >= 768) { // md
                 setDynamicLimit(3);
@@ -175,7 +175,7 @@ export function CategoryProducts({ title, slug, page_size = 6, className = '', i
                             )}
 
                             {/* Product image */}
-                            <div className="relative w-full aspect-square bg-gray-50 dark:bg-gray-800">
+                            <div className="relative w-full aspect-square bg-white dark:bg-gray-800">
                                 <div className="h-full w-full relative">
                                     {productImage ? (
                                         <Image
@@ -183,14 +183,14 @@ export function CategoryProducts({ title, slug, page_size = 6, className = '', i
                                             alt={title}
                                             fill
                                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                                            className="object-contain w-full h-full p-2"
+                                            className="object-cover w-full h-full p-2"
                                             priority={index < 2}
                                             loading={index < 2 ? "eager" : "lazy"}
                                             quality={90}
                                             unoptimized={productImage.startsWith('data:')}
                                         />
                                     ) : (
-                                        <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                        <div className="h-full w-full flex items-center justify-center text-gray-400 bg-white dark:bg-gray-800">
                                             No image available
                                         </div>
                                     )}
@@ -199,20 +199,20 @@ export function CategoryProducts({ title, slug, page_size = 6, className = '', i
 
                             {/* Product information */}
                             <div className="p-2 sm:p-3 flex-grow flex flex-col">
-                                {/* StoreIdentifier */}
-                                <StoreIdentifier
-                                    url={productUrl}
-                                    align="right"
-                                />
-
-                                {/* Brand information */}
-                                {product.brand && (
-                                    <div className="mb-0.5">
+                                {/* 品牌信息和StoreIdentifier放在同一行 */}
+                                <div className="flex items-center justify-between mb-1.5">
+                                    {product.brand ? (
                                         <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded inline-block">
                                             {product.brand}
                                         </span>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <div /> /* 占位空元素，确保右对齐 */
+                                    )}
+                                    <StoreIdentifier
+                                        url={productUrl}
+                                        align="right"
+                                    />
+                                </div>
 
                                 <h3 className="text-sm sm:text-base font-medium line-clamp-2 mb-1 flex-grow text-primary-dark dark:text-white">
                                     {title}
@@ -351,8 +351,8 @@ export function CategoryProducts({ title, slug, page_size = 6, className = '', i
             {isMobile ? (
                 <ProductSwiper products={products} />
             ) : (
-                // 大屏幕保持网格布局，修改为3列布局
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+                // 大屏幕保持网格布局，lg布局显示3列
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                     {products.map((product, index) => renderProductCard(product, index)).filter(Boolean)}
                 </div>
             )}

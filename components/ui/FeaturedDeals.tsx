@@ -190,7 +190,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                             */}
 
                             {/* Product image */}
-                            <div className="relative w-full aspect-[1/1] bg-gray-100 dark:bg-gray-800 pt-0.5">
+                            <div className="relative w-full aspect-[1/1] bg-white dark:bg-gray-800 pt-0.5">
                                 <motion.div
                                     whileHover={{ scale: 1.05 }}
                                     className="h-full w-full relative"
@@ -208,7 +208,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                                             unoptimized={productImage.startsWith('data:')}
                                         />
                                     ) : (
-                                        <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                        <div className="h-full w-full flex items-center justify-center text-gray-400 bg-white dark:bg-gray-800">
                                             No image available
                                         </div>
                                     )}
@@ -217,39 +217,39 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
 
                             {/* Product information */}
                             <div className="p-3 flex-grow flex flex-col">
-                                {/* StoreIdentifier */}
-                                <StoreIdentifier
-                                    url={productUrl}
-                                    align="right"
-                                />
-
-                                {/* Brand information */}
-                                {deal.brand && (
-                                    <div className="mb-1.5">
+                                {/* 品牌信息和StoreIdentifier放在同一行 */}
+                                <div className="flex items-center justify-between mb-1.5">
+                                    {deal.brand ? (
                                         <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded inline-block">
                                             {deal.brand}
                                         </span>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <div /> /* 占位空元素，确保右对齐 */
+                                    )}
+                                    <StoreIdentifier
+                                        url={productUrl}
+                                        align="right"
+                                    />
+                                </div>
 
                                 <h3 className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-white">
                                     {title}
                                 </h3>
 
                                 {/* Price and discount */}
-                                <div className="flex items-center justify-between mt-1 mb-2 flex-wrap gap-2">
-                                    <div className="flex items-baseline gap-1.5">
-                                        <span className="text-lg font-semibold text-primary dark:text-primary-light">
+                                <div className="flex items-center justify-between mt-1 mb-2">
+                                    <div className="flex items-baseline min-w-0 overflow-hidden mr-2">
+                                        <span className="text-lg font-semibold text-primary dark:text-primary-light whitespace-nowrap">
                                             {formatPrice(price)}
                                         </span>
                                         {originalPrice > price && (
-                                            <span className="text-xs text-secondary dark:text-gray-400 line-through">
+                                            <span className="text-xs text-secondary dark:text-gray-400 line-through whitespace-nowrap ml-1.5">
                                                 {formatPrice(originalPrice)}
                                             </span>
                                         )}
                                     </div>
                                     {savingsPercentage > 0 && (
-                                        <span className={`text-xs font-bold text-white px-2 py-0.5 rounded ${savingsPercentage > 30 ? 'bg-primary-badge' :
+                                        <span className={`text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${savingsPercentage > 30 ? 'bg-primary-badge' :
                                             savingsPercentage > 10 ? 'bg-accent' :
                                                 'bg-secondary'
                                             }`}>
