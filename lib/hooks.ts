@@ -49,8 +49,27 @@ export function useProducts(params?: {
         }
     );
 
+    // 处理嵌套的API响应结构
+    let processedData = undefined;
+
+    if (data) {
+        // 判断数据结构，支持直接结构或嵌套在data字段中的结构
+        const anyData = data as any; // 使用any类型暂时绕过类型检查
+
+        if (anyData.success && anyData.data && typeof anyData.data === 'object') {
+            // 嵌套结构 { success: true, data: { items: [...], total: ... } }
+            processedData = anyData.data;
+        } else if (anyData.items) {
+            // 直接结构 { items: [...], total: ... }
+            processedData = anyData;
+        } else if (anyData.data && anyData.data.items) {
+            // 嵌套结构 { data: { items: [...], total: ... } }
+            processedData = anyData.data;
+        }
+    }
+
     return {
-        data: data?.data,
+        data: processedData,
         isLoading,
         isError: error,
         mutate,

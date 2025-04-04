@@ -35,8 +35,18 @@ interface FilterParams extends DrawerFilters {
 
 // 添加类型定义
 interface ProductsApiResponse {
-    items: Product[];
-    total: number;
+    items?: Product[];
+    total?: number;
+    page?: number;
+    page_size?: number;
+    // 支持嵌套结构
+    success?: boolean;
+    data?: {
+        items: Product[];
+        total: number;
+        page: number;
+        page_size: number;
+    };
 }
 
 // API参数类型
@@ -429,7 +439,38 @@ function ProductsContent() {
                     if (response.ok) {
                         const responseData = await response.json();
 
-                        setDirectData(responseData);
+                        // 处理可能的不同响应格式
+                        let processedData;
+
+                        if (responseData.success && responseData.data && typeof responseData.data === 'object') {
+                            // 嵌套结构 { success: true, data: { items: [...], total: ... } }
+                            processedData = responseData;
+                        } else if (responseData.items) {
+                            // 直接结构 { items: [...], total: ... }
+                            processedData = {
+                                success: true,
+                                data: responseData
+                            };
+                        } else if (responseData.data && responseData.data.items) {
+                            // 嵌套结构 { data: { items: [...], total: ... } }
+                            processedData = {
+                                success: true,
+                                data: responseData.data
+                            };
+                        } else {
+                            // 未知结构，使用空结果
+                            processedData = {
+                                success: true,
+                                data: {
+                                    items: [],
+                                    total: 0,
+                                    page: 1,
+                                    page_size: 20
+                                }
+                            };
+                        }
+
+                        setDirectData(processedData);
 
                         // 获取并更新缓存状态
                         const isCached = response.headers.get('X-Cache-Source') === 'cache-hit';
@@ -477,7 +518,25 @@ function ProductsContent() {
     // 将API产品数据适配为组件所需的格式
     const adaptedProducts = useMemo(() => {
         // 优先使用SWR数据，如果没有则使用直接获取的数据
-        const sourceData = data?.items || directData?.items;
+        let sourceData;
+
+        // 处理SWR数据
+        if (data) {
+            const typedData = data as ProductsApiResponse;
+
+            sourceData = typedData.items;
+        }
+
+        // 如果没有SWR数据，使用直接获取的数据
+        if (!sourceData && directData) {
+            const typedDirectData = directData as ProductsApiResponse;
+
+            if (typedDirectData.data && typedDirectData.data.items) {
+                sourceData = typedDirectData.data.items;
+            } else if (typedDirectData.items) {
+                sourceData = typedDirectData.items;
+            }
+        }
 
         if (!sourceData || !Array.isArray(sourceData)) {
             return [];
@@ -485,6 +544,31 @@ function ProductsContent() {
 
         return adaptProducts(sourceData);
     }, [data, directData]);
+
+    // 获取总商品数量，支持不同的数据结构
+    const getTotalProducts = () => {
+        if (data) {
+            const typedData = data as ProductsApiResponse;
+
+            if (typedData.total) {
+                return typedData.total;
+            } else if (typedData.data && typedData.data.total) {
+                return typedData.data.total;
+            }
+        }
+
+        if (directData) {
+            const typedDirectData = directData as ProductsApiResponse;
+
+            if (typedDirectData.data && typedDirectData.data.total) {
+                return typedDirectData.data.total;
+            } else if (typedDirectData.total) {
+                return typedDirectData.total;
+            }
+        }
+
+        return 0;
+    };
 
     // 处理分类点击
     const handleCategoryClick = (category: string) => {
@@ -732,7 +816,7 @@ function ProductsContent() {
             >
                 <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">
-                        Showing <span className="font-medium">{products.length}</span> of <span className="font-medium">{data?.total || directData?.total || 0}</span> products
+                        Showing <span className="font-medium">{products.length}</span> of <span className="font-medium">{getTotalProducts()}</span> products
                         {cacheStatus && (
                             <span className="ml-2 text-xs text-gray-500">
                                 {cacheStatus.isCached ?
@@ -772,7 +856,7 @@ function ProductsContent() {
                     products={products}
                     renderProduct={renderProduct}
                     currentPage={searchParams.page}
-                    totalPages={Math.ceil(((data?.total || directData?.total || 0) / searchParams.limit))}
+                    totalPages={Math.ceil((getTotalProducts() / searchParams.limit))}
                     onPageChange={handlePageChange}
                 />
             </motion.div>
