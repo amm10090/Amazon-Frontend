@@ -13,6 +13,7 @@
   "dependencies": {
     "@auth/core": "^0.38.0",
     "@auth/mongodb-adapter": "^3.8.0",
+    "@heroicons/react": "^2.2.0",
     "@heroui/react": "2.7.6-beta.2",
     "@heroui/system": "2.4.12",
     "@heroui/theme": "2.4.12",
@@ -45,6 +46,7 @@
     "resend": "^4.2.0",
     "swiper": "^11.2.6",
     "swr": "^2.3.3",
+    "tailwind-merge": "^3.1.0",
     "three": "^0.175.0",
     "zustand": "^5.0.3"
   },

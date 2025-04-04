@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 
 import { auth } from '@/auth';
 import { ClientLayout } from "@/components/client-layout";
+import { BackTop } from "@/components/ui/BackTop";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -41,6 +42,7 @@ export default async function RootLayout({
       <body>
         <ClientLayout inter={inter} session={session}>
           {children}
+          <BackTop />
         </ClientLayout>
       </body>
     </html>

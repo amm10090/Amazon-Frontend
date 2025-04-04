@@ -1,5 +1,8 @@
 /// <reference types="node" />
 
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
 import type { ComponentProduct } from '@/types';
 import type { Product } from '@/types/api';
 
@@ -223,4 +226,8 @@ export function adaptProducts(apiProducts: Product[]): ComponentProduct[] {
             };
         }
     });
+}
+
+export function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
 } 
