@@ -8,6 +8,7 @@ import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
 
 import { Providers } from "@/app/providers";
+import Footer from '@/components/layout/Footer';
 import { Navbar } from "@/components/navbar";
 import { ThemeProvider } from '@/components/theme-provider';
 import { FavoritesProvider } from '@/lib/favorites';
@@ -45,18 +46,7 @@ export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
                             )}>
                                 {children}
                             </main>
-                            <footer className="w-full flex items-center justify-center py-3">
-                                <a
-                                    className="flex items-center gap-1 text-current"
-                                    href="https://heroui.com?utm_source=next-app-template"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title="heroui.com homepage"
-                                >
-                                    <span className="text-default-600">Powered by</span>
-                                    <p className="text-primary">OOHUNT</p>
-                                </a>
-                            </footer>
+                            <Footer />
                         </div>
                         <ToastProvider placement="bottom-right" />
                     </Providers>

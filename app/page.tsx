@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { CategoryNavigation } from "@/components/ui/CategoryNavigation";
 import { CategoryProducts } from "@/components/ui/CategoryProducts";
@@ -22,7 +22,7 @@ const productGroupToCategoryMapping: Record<string, { slug: string, name: string
     'Kitchen': { slug: 'Kitchen', name: 'Kitchen' },
     'Apparel': { slug: 'Apparel', name: 'Apparel' },
     'Sports': { slug: 'Sports', name: 'Sports & Outdoors' },
-    'Beauty': { slug: 'Beauty', name: 'Beauty & Personal Care' },
+    'Beauty': { slug: 'Beauty', name: 'Beauty & Care' },
     'Furniture': { slug: 'Furniture', name: 'Furniture' },
     'Shoes': { slug: 'Shoes', name: 'Shoes' },
     'Personal Computer': { slug: 'Personal Computer', name: 'Computers' },
@@ -33,10 +33,11 @@ const productGroupToCategoryMapping: Record<string, { slug: string, name: string
 };
 
 export default function Home() {
-    // 使用状态来存储分类信息
     const [categories, setCategories] = useState<Category[]>([]);
-    // 标记是否已处理过数据，避免重复处理
     const [processed, setProcessed] = useState(false);
+    const [navStyle, setNavStyle] = useState<{ top: string; transform?: string }>({ top: '110px' });
+    const navRef = useRef<HTMLDivElement>(null);
+    const footerRef = useRef<HTMLElement | null>(null);
 
     // 使用useCategoryStats钩子获取分类数据
     const { data: categoryStats, isLoading } = useCategoryStats({
@@ -85,11 +86,63 @@ export default function Home() {
         }
     }, [isLoading, categoryStats, processed]);
 
+    // 添加节流函数
+    const throttle = (func: (...args: unknown[]) => void, limit: number) => {
+        let inThrottle: boolean;
+
+        return function (this: unknown, ...args: unknown[]) {
+            if (!inThrottle) {
+                func.apply(this, args);
+                inThrottle = true;
+                setTimeout(() => (inThrottle = false), limit);
+            }
+        };
+    };
+
+    // 添加滚动监听
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        // 获取 footer 元素
+        footerRef.current = document.querySelector('footer');
+
+        const handleScroll = throttle(() => {
+            if (!navRef.current || !footerRef.current) return;
+
+            const footerTop = footerRef.current.getBoundingClientRect().top;
+            const navHeight = navRef.current.offsetHeight;
+            const windowHeight = window.innerHeight;
+            const bottomOffset = 240; // 距离 footer 的最小距离
+
+            // 如果 footer 接近可视区域底部
+            if (footerTop - windowHeight < bottomOffset) {
+                const diff = footerTop - windowHeight;
+                const newTop = windowHeight - navHeight - bottomOffset + diff;
+
+                setNavStyle({ top: '110px', transform: `translateY(${newTop}px)` });
+            } else {
+                setNavStyle({ top: '110px', transform: 'none' });
+            }
+        }, 100);
+
+        window.addEventListener('scroll', handleScroll);
+        // 初始化时执行一次
+        handleScroll();
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     return (
         <div className="max-w-[1800px] mx-auto overflow-hidden">
             <div className="relative flex">
                 {/* 左侧分类导航 */}
-                <div className="hidden lg:block w-[240px] fixed top-[110px] h-auto max-h-[calc(100vh-110px)] overflow-auto bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800">
+                <div
+                    ref={navRef}
+                    style={navStyle}
+                    className="hidden lg:block w-[240px] fixed h-auto max-h-[calc(100vh-110px)] overflow-auto bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800 transition-transform duration-200"
+                >
                     <div className="p-4">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Categories</h2>
                         <CategoryNavigation useAnchorLinks={true} />

@@ -2,107 +2,67 @@ import Link from 'next/link';
 
 const Footer = () => {
     return (
-        <footer className="bg-background border-t border-text/10">
-            <div className="container mx-auto px-4 py-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                    {/* 关于我们 */}
-                    <div>
-                        <h3 className="text-lg font-semibold mb-4">关于我们</h3>
-                        <ul className="space-y-2">
-                            <li>
-                                <Link href="/about" className="nav-link">
-                                    关于AmazonDeals
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/contact" className="nav-link">
-                                    联系我们
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/privacy" className="nav-link">
-                                    隐私政策
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* 帮助中心 */}
-                    <div>
-                        <h3 className="text-lg font-semibold mb-4">帮助中心</h3>
-                        <ul className="space-y-2">
-                            <li>
-                                <Link href="/faq" className="nav-link">
-                                    常见问题
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/guide" className="nav-link">
-                                    使用指南
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/feedback" className="nav-link">
-                                    意见反馈
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* 商品分类 */}
-                    <div>
-                        <h3 className="text-lg font-semibold mb-4">商品分类</h3>
-                        <ul className="space-y-2">
-                            <li>
-                                <Link href="/category/electronics" className="nav-link">
-                                    电子产品
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/category/fashion" className="nav-link">
-                                    时尚服饰
-                                </Link>
-                            </li>
-                            <li>
-                                <Link href="/category/home" className="nav-link">
-                                    家居生活
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* 关注我们 */}
-                    <div>
-                        <h3 className="text-lg font-semibold mb-4">关注我们</h3>
-                        <div className="flex space-x-4">
-                            <a
-                                href="#"
-                                className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
-                                aria-label="微信"
-                            >
-                                <span className="text-xl">📱</span>
-                            </a>
-                            <a
-                                href="#"
-                                className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
-                                aria-label="微博"
-                            >
-                                <span className="text-xl">💬</span>
-                            </a>
-                            <a
-                                href="#"
-                                className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
-                                aria-label="抖音"
-                            >
-                                <span className="text-xl">🎵</span>
-                            </a>
+        <footer className="bg-background border-t border-text/10 pt-12 pb-6">
+            <div className="container mx-auto px-6">
+                {/* 主要内容区域 */}
+                <div className="flex flex-col md:flex-row justify-between gap-10">
+                    {/* About Us */}
+                    <div className="md:w-1/3">
+                        <h3 className="text-lg font-bold mb-6 text-primary">About Us</h3>
+                        <div className="pr-8">
+                            <Link href="/about" className="hover:text-primary transition-colors duration-200">
+                                About Oohunt
+                            </Link>
+                            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                                Oohunt helps you find the best deals on products from Amazon and other retailers. We connect shoppers with the best prices and most trusted products.
+                            </p>
                         </div>
+                    </div>
+
+                    {/* Legal - 右对齐布局 */}
+                    <div className="md:w-1/3">
+                        <h3 className="text-lg font-bold mb-6 text-primary">Legal</h3>
+                        <ul className="space-y-3">
+                            <li>
+                                <Link href="/legal/terms" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                    Terms of Use
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/legal/privacy" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                    Privacy Policy
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/legal/cookies" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                    Cookies Policy
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/legal/disclaimer" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                    Disclaimer
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/legal/affiliate-disclosure" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                    Affiliate Disclosure
+                                </Link>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
-                {/* 版权信息 */}
-                <div className="mt-8 pt-8 border-t border-text/10 text-center text-sm text-text-light">
-                    <p>© 2024 AmazonDeals. All rights reserved.</p>
+                {/* 分隔线 */}
+                <div className="border-t border-gray-200 dark:border-gray-800 my-8" />
+
+                {/* Copyright */}
+                <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+                    <p>© {new Date().getFullYear()} Oohunt. All rights reserved.</p>
+                    <p className="mt-2 md:mt-0">
+                        <Link href="/" className="hover:text-primary transition-colors duration-200">
+                            Oohunt
+                        </Link> - Finding the best deals for you
+                    </p>
                 </div>
             </div>
         </footer>
