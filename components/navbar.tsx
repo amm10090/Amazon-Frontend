@@ -288,14 +288,16 @@ export const Navbar = () => {
 
                   {/* Desktop Search Bar */}
                   <div className="hidden lg:block flex-1 max-w-[500px] min-w-[300px]" ref={searchContainerRef}>
-                    <form onSubmit={handleSearchSubmit} className="w-full relative">
+                    <form onSubmit={handleSearchSubmit} className="w-full relative group">
                       <Input
                         ref={searchInputRef}
                         aria-label="Search"
                         classNames={{
                           base: "w-full",
-                          inputWrapper: "shadow-sm border border-gray-200 hover:border-gray-300 rounded-full h-10 px-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-200 [&>*]:!bg-white hover:[&>*]:!bg-white",
-                          input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-[90px] search-input h-full"
+                          inputWrapper: "bg-white shadow-sm border border-gray-200 hover:border-gray-300 rounded-full h-10 overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all duration-200",
+                          input: "text-sm border-0 outline-none focus:outline-none focus:ring-0 pr-[90px] h-full bg-transparent",
+                          innerWrapper: "bg-transparent",
+                          mainWrapper: "bg-transparent"
                         }}
                         placeholder="Search deals..."
                         size="sm"
