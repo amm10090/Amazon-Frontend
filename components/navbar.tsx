@@ -294,8 +294,8 @@ export const Navbar = () => {
                         aria-label="Search"
                         classNames={{
                           base: "w-full",
-                          inputWrapper: "bg-white shadow-sm border border-gray-200 hover:border-gray-300 rounded-full h-10 overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all duration-200",
-                          input: "text-sm border-0 outline-none focus:outline-none focus:ring-0 pr-[90px] h-full bg-transparent",
+                          inputWrapper: "bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 rounded-full h-10 overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all duration-200",
+                          input: "text-sm border-0 outline-none focus:outline-none focus:ring-0 pr-[90px] h-full bg-transparent dark:text-gray-100",
                           innerWrapper: "bg-transparent",
                           mainWrapper: "bg-transparent"
                         }}
