@@ -30,7 +30,7 @@ const productGroupToCategoryMapping: Record<string, { slug: string, name: string
     'Kitchen': { slug: 'Kitchen', name: 'Kitchen' },
     'Apparel': { slug: 'Apparel', name: 'Apparel' },
     'Sports': { slug: 'Sports', name: 'Sports & Outdoors' },
-    'Beauty': { slug: 'Beauty', name: 'Beauty & Personal Care' },
+    'Beauty': { slug: 'Beauty', name: 'Beauty & Care' },
     'Furniture': { slug: 'Furniture', name: 'Furniture' },
     'Shoes': { slug: 'Shoes', name: 'Shoes' },
     'Personal Computer': { slug: 'Personal Computer', name: 'Computers' },
