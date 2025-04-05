@@ -300,7 +300,7 @@ const ScrollToTopButton = () => {
 // 使用 Client Component 包装搜索参数逻辑
 function ProductsContent() {
     const searchParamsFromUrl = useSearchParams();
-    const [isFilterFixed, setIsFilterFixed] = useState(false);
+    const [_isFilterFixed, setIsFilterFixed] = useState(false);
     const [_isFilterAtBottom, _setIsFilterAtBottom] = useState(false);
     const filterRef = useRef<HTMLDivElement>(null);
     const filterContainerRef = useRef<HTMLDivElement>(null);
@@ -338,26 +338,47 @@ function ProductsContent() {
         const handleScroll = () => {
             if (!filterRef.current || !filterContainerRef.current) return;
 
-            const containerRect = filterContainerRef.current.getBoundingClientRect();
+            const footerElement = document.querySelector('footer');
+
+            if (!footerElement) return;
+
+            const _containerRect = filterContainerRef.current.getBoundingClientRect();
             const filterRect = filterRef.current.getBoundingClientRect();
+            const footerRect = footerElement.getBoundingClientRect();
             const scrollY = window.scrollY;
-            const _windowHeight = window.innerHeight;
+            const windowHeight = window.innerHeight;
 
             // 如果还没有记录初始偏移量，记录它
             if (filterOffset === 0) {
                 setFilterOffset(filterRect.top + scrollY);
             }
 
-            // 计算容器底部相对于页面顶部的距离
-            const _containerBottom = containerRect.top + scrollY + containerRect.height;
             // 计算筛选器高度
-            const _filterHeight = filterRect.height;
+            const filterHeight = filterRect.height;
+
+            // 计算到 footer 的距离
+            const distanceToFooter = footerRect.top - windowHeight;
+            const bottomOffset = 240; // 与 footer 保持的距离
 
             // 判断是否应该固定在顶部
-            // 只有当滚动位置超过初始位置，并且还没有到达容器底部时才固定
             const shouldBeFixed = scrollY > filterOffset - 72;
 
-            setIsFilterFixed(shouldBeFixed);
+            // 如果接近 footer，计算新的 top 值
+            if (shouldBeFixed && distanceToFooter < bottomOffset) {
+                const newTop = windowHeight - filterHeight - bottomOffset + distanceToFooter;
+
+                filterRef.current.style.position = 'fixed';
+                filterRef.current.style.top = `${newTop}px`;
+                setIsFilterFixed(true);
+            } else if (shouldBeFixed) {
+                filterRef.current.style.position = 'fixed';
+                filterRef.current.style.top = '72px';
+                setIsFilterFixed(true);
+            } else {
+                filterRef.current.style.position = 'relative';
+                filterRef.current.style.top = '0';
+                setIsFilterFixed(false);
+            }
         };
 
         window.addEventListener('scroll', handleScroll);
@@ -1134,10 +1155,7 @@ function ProductsContent() {
                     <div ref={filterContainerRef} className="hidden lg:block lg:w-[280px] relative scrollbar-hide">
                         <div
                             ref={filterRef}
-                            className={`w-[280px] ${isFilterFixed
-                                ? 'fixed top-[72px]'
-                                : 'relative'
-                                } max-h-[calc(100vh-80px)] overflow-auto bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800 scrollbar-hide`}
+                            className="w-[280px] relative max-h-[calc(100vh-80px)] overflow-auto bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800 scrollbar-hide"
                             style={{
                                 transition: 'all 0.2s ease-out'
                             }}
