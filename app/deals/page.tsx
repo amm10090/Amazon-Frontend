@@ -1,11 +1,14 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 
+import FavoriteButton from '@/components/common/FavoriteButton';
 import { productsApi } from '@/lib/api';
 import { StoreIdentifier } from '@/lib/store';
+import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types/api';
 
 // 定义筛选器选项接口
@@ -112,167 +115,143 @@ const DealsPage = () => {
         const mainOffer = product.offers && product.offers.length > 0 ? product.offers[0] : null;
 
         // 如果没有offers数据，使用其他可用的价格数据
-        let currentPrice = 0;
-        let originalPrice = 0;
-        let discountPercentage = 0;
-        let hasCoupon = false;
-        let couponType = '';
-        let couponValue = 0;
+        const currentPrice = mainOffer?.price || product.price || 0;
+        const originalPrice = mainOffer && mainOffer.savings
+            ? currentPrice + mainOffer.savings
+            : product.original_price || currentPrice;
 
-        if (mainOffer) {
-            currentPrice = mainOffer.price;
-            // 如果有savings，使用它计算原价
-            if (mainOffer.savings) {
-                originalPrice = currentPrice + mainOffer.savings;
-            } else {
-                // 否则使用商品自身的原价（如果有）
-                originalPrice = product.original_price || currentPrice;
-            }
+        // 计算折扣百分比
+        const discountPercentage = mainOffer?.savings_percentage ||
+            product.discount_rate ||
+            (originalPrice > 0 ? Math.round((1 - currentPrice / originalPrice) * 100) : 0);
 
-            // 如果有折扣百分比，直接使用，否则计算
-            discountPercentage = mainOffer.savings_percentage ||
-                (originalPrice > 0 ? Math.round((1 - currentPrice / originalPrice) * 100) : 0);
 
-            // 检查是否有优惠券
-            hasCoupon = !!mainOffer.coupon_type && !!mainOffer.coupon_value;
-            couponType = mainOffer.coupon_type || '';
-            couponValue = mainOffer.coupon_value || 0;
-        } else {
-            // 使用产品本身的价格信息（如果有）
-            currentPrice = product.price || 0;
-            originalPrice = product.original_price || currentPrice;
-            discountPercentage = product.discount_rate ||
-                (originalPrice > 0 ? Math.round((1 - currentPrice / originalPrice) * 100) : 0);
-        }
-
-        // 如果没有足够的价格信息，跳过此产品
-        if (currentPrice <= 0) {
-            return null;
-        }
 
         const productId = product.asin || product.id;
+        const productUrl = product.url || product.cj_url || '';
+        const isPrime = mainOffer?.is_prime || false;
 
-        if (!productId) {
+        if (!productId || currentPrice <= 0) {
             return null;
         }
 
-        // 处理优惠券标签
-        let couponLabel = '';
-
-        if (hasCoupon) {
-            if (couponType === 'percentage') {
-                couponLabel = `-${couponValue}%`;
-            } else if (couponType === 'fixed') {
-                couponLabel = `$${couponValue}`;
-            }
-        }
-
-        // 判断是否有任何形式的折扣
-        const hasAnyDiscount = discountPercentage > 0 || hasCoupon;
-
-        // 计算折扣标签的样式类
-        let discountBadgeClass = 'bg-secondary';
-
-        if (discountPercentage > 30) {
-            discountBadgeClass = 'bg-primary-badge';
-        } else if (discountPercentage > 10) {
-            discountBadgeClass = 'bg-accent';
-        }
-
-        // 没有明确的primary-badge类，使用合适的红色
-        discountBadgeClass = discountPercentage > 30 ? 'bg-red-500' : 'bg-orange-500';
-
         return (
-            <div key={productId} className="relative group h-full cursor-pointer">
-                <div className="relative h-full flex flex-col overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl transition-all duration-300">
-                    {/* 收藏按钮可以在此添加 */}
+            <motion.div
+                key={productId}
+                className="relative w-full"
+                whileHover={{ y: -8, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.03)' }}
+                transition={{ duration: 0.3 }}
+            >
+                {/* 收藏按钮 */}
+                <div
+                    className="absolute top-3 right-3 z-20"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    role="button"
+                    tabIndex={0}
+                >
+                    <FavoriteButton
+                        productId={productId}
+                        size="md"
+                        withAnimation={true}
+                        className="bg-white/80 dark:bg-gray-800/80 shadow-sm hover:bg-white dark:hover:bg-gray-800"
+                    />
+                </div>
 
-                    {/* 图片容器固定比例 */}
-                    <div className="relative w-full pt-[100%]">
-                        <Image
-                            src={product.main_image || product.image_url || "/placeholder.png"}
-                            alt={product.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                            className="object-contain object-center transform group-hover:scale-105 transition-transform duration-300"
-                            loading="lazy"
-                        />
-
-                        {/* 添加商品来源标识到右下角 */}
-                        <div className="absolute right-2 bottom-2 z-10">
-                            <StoreIdentifier
-                                url={product.url || ''}
-                                align="right"
-                                showName={false}
-                                className="mb-0 bg-white/80 backdrop-blur-sm p-1 rounded-md shadow-sm"
-                            />
-                        </div>
-
+                <Link href={`/product/${productId}`} className="block">
+                    <motion.div
+                        className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden h-full flex flex-col max-w-[320px] mx-auto w-full"
+                    >
                         {/* Prime badge */}
-                        {mainOffer && mainOffer.is_prime && (
-                            <div className="absolute top-2 left-2 z-10">
-                                <div className="bg-[#0574F7] text-white px-2 py-0.5 rounded-full text-xs font-medium shadow-sm flex items-center">
+                        {isPrime && (
+                            <div className="absolute top-3 left-3 z-10">
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
+                                >
                                     Prime
-                                </div>
+                                </motion.div>
                             </div>
                         )}
 
-                        {/* 折扣标签 - 移到右上角 */}
-                        {discountPercentage > 0 && (
-                            <div className={`absolute top-2 right-2 z-10 ${discountBadgeClass} text-white px-2 py-0.5 rounded text-xs font-bold`}>
-                                -{discountPercentage}%
-                            </div>
-                        )}
-                    </div>
-
-                    {/* 内容区域使用flex-grow保证卡片高度一致 */}
-                    <div className="p-3 sm:p-4 flex-grow flex flex-col">
-                        {/* 品牌信息和优惠券 - 放在同一行 */}
-                        <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
-                            {product.brand && (
-                                <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded inline-block">
-                                    {product.brand.toUpperCase()}
-                                </span>
-                            )}
-
-                            {/* 优惠券标签 - 使用绿色 */}
-                            {hasCoupon && couponLabel && (
-                                <span className="text-xs font-bold text-white px-2 py-0.5 rounded bg-green-500">
-                                    {couponLabel} Coupon
-                                </span>
-                            )}
+                        {/* 商品图片 */}
+                        <div className="relative w-full aspect-[1/1] bg-white dark:bg-gray-800 pt-0.5">
+                            <motion.div
+                                whileHover={{ scale: 1.05 }}
+                                className="h-full w-full relative"
+                            >
+                                <Image
+                                    src={product.main_image || product.image_url || "/placeholder.png"}
+                                    alt={product.title}
+                                    fill
+                                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                                    className="object-cover p-2"
+                                    loading="lazy"
+                                    quality={90}
+                                    unoptimized={product.main_image?.startsWith('data:')}
+                                />
+                            </motion.div>
                         </div>
 
-                        {/* 标题固定高度，确保一致性 */}
-                        <h3 className="text-sm md:text-base font-medium line-clamp-2 mb-2 flex-grow text-gray-800">
-                            {product.title}
-                        </h3>
+                        {/* 商品信息 */}
+                        <div className="p-3 flex-grow flex flex-col">
+                            {/* 品牌信息和StoreIdentifier */}
+                            <div className="flex items-center justify-between mb-1.5">
+                                {product.brand ? (
+                                    <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded inline-block">
+                                        {product.brand}
+                                    </span>
+                                ) : (
+                                    <div /> /* 占位空元素 */
+                                )}
+                                <StoreIdentifier
+                                    url={productUrl}
+                                    align="right"
+                                />
+                            </div>
 
-                        {/* 使用mt-auto将价格信息推到底部，确保所有卡片布局一致 */}
-                        <div className="mt-auto flex items-center justify-between mb-2">
-                            {/* 价格区域 - 使用baseline对齐 */}
-                            <div className="flex items-baseline gap-1.5">
-                                <span className="text-lg font-semibold text-red-500">
-                                    ${currentPrice.toFixed(2)}
-                                </span>
-                                {hasAnyDiscount && originalPrice > currentPrice && (
-                                    <span className="text-xs text-gray-500 line-through">
-                                        ${originalPrice.toFixed(2)}
+                            {/* 商品标题 */}
+                            <h3 className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-white">
+                                {product.title}
+                            </h3>
+
+                            {/* 价格和折扣 */}
+                            <div className="flex items-center justify-between mt-1 mb-2">
+                                <div className="flex items-baseline min-w-0 overflow-hidden mr-2">
+                                    <span className="text-lg font-semibold text-primary dark:text-primary-light whitespace-nowrap">
+                                        {formatPrice(currentPrice)}
+                                    </span>
+                                    {originalPrice > currentPrice && (
+                                        <span className="text-xs text-secondary dark:text-gray-400 line-through whitespace-nowrap ml-1.5">
+                                            {formatPrice(originalPrice)}
+                                        </span>
+                                    )}
+                                </div>
+                                {discountPercentage > 0 && (
+                                    <span className={`text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${discountPercentage > 30 ? 'bg-primary-badge' :
+                                        discountPercentage > 10 ? 'bg-accent' :
+                                            'bg-secondary'
+                                        }`}>
+                                        -{Math.round(discountPercentage)}%
                                     </span>
                                 )}
                             </div>
-
-                            {/* 限时标签 */}
-                            <span className="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 rounded">
-                                Limited Time
-                            </span>
                         </div>
-                    </div>
 
-                    {/* 添加Link包装整个卡片，使整个卡片可点击 */}
-                    <Link href={`/product/${productId}`} className="absolute inset-0" aria-label={product.title} />
-                </div>
-            </div>
+                        {/* 查看详情按钮 */}
+                        <div className="px-3 pb-3">
+                            <motion.div
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="w-full py-2 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-button-light dark:hover:bg-primary-button text-white text-center rounded-full font-medium shadow-sm transition-colors"
+                            >
+                                View Details
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                </Link>
+            </motion.div>
         );
     };
 

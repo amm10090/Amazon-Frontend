@@ -481,22 +481,65 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
 
     // 判断一个分类是否被激活
     const isActiveCategory = (slug: string) => {
-        // 检查当前路径是否为产品页面
-        if (pathname.startsWith('/products')) {
-            // 尝试从URL获取product_groups参数
+        // 检查当前路径
+        if (pathname === '/') {
+            // 在主页上，检查当前滚动位置是否在对应分类区域
+            const categoryElement = document.getElementById(`category-${slug}`);
+
+            if (categoryElement) {
+                const rect = categoryElement.getBoundingClientRect();
+                // 考虑到顶部导航栏的高度（120px），以及一些容差值
+                const topOffset = 120;
+                const bottomOffset = window.innerHeight / 2;
+
+                return rect.top >= -topOffset && rect.top <= bottomOffset;
+            }
+
+            return false;
+        } else if (pathname.startsWith('/products')) {
+            // 在产品页面上，检查 URL 参数
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const productGroups = urlParams.get('product_groups');
 
                 return productGroups === slug;
             } catch {
-                // 如果解析URL参数出错，返回false
                 return false;
             }
         }
 
         return false;
     };
+
+    // 添加滚动监听
+    useEffect(() => {
+        if (useAnchorLinks) {
+            const handleScroll = () => {
+                // 强制重新渲染以更新激活状态
+                setCategories([...categories]);
+            };
+
+            // 使用节流函数来限制滚动事件的触发频率
+            let timeoutId: ReturnType<typeof setTimeout> | null = null;
+            const throttledHandleScroll = () => {
+                if (!timeoutId) {
+                    timeoutId = setTimeout(() => {
+                        handleScroll();
+                        timeoutId = null;
+                    }, 100); // 每 100ms 最多触发一次
+                }
+            };
+
+            window.addEventListener('scroll', throttledHandleScroll);
+
+            return () => {
+                window.removeEventListener('scroll', throttledHandleScroll);
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+            };
+        }
+    }, [categories, useAnchorLinks]);
 
     // 处理分类点击事件
     const handleCategoryClick = (slug: string) => {
@@ -890,13 +933,13 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                             relative overflow-hidden rounded-xl lg:rounded-md
                                             ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2' : 'h-40 sm:h-44 md:h-48'}
                                             ${isActiveCategory(category.slug)
-                                                ? 'bg-primary/10 dark:bg-primary/20 border-l-4 border-primary dark:border-primary'
-                                                : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                                                ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 dark:border-blue-400'
+                                                : 'bg-white dark:bg-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-700/80 border border-gray-100 dark:border-gray-700/50'
                                             }
                                             p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full mb-1.5
                                         `}
                                         whileHover={{
-                                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                                            boxShadow: "0 8px 20px -4px rgba(0, 0, 0, 0.1), 0 6px 8px -4px rgba(0, 0, 0, 0.03)",
                                             transition: { duration: 0.3 }
                                         }}
                                     >
@@ -905,8 +948,8 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                             className={`
                                                 relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
                                                 ${isActiveCategory(category.slug)
-                                                    ? `bg-primary text-white`
-                                                    : `bg-gray-100 dark:bg-gray-700 text-primary-dark dark:text-white`
+                                                    ? 'bg-blue-500 dark:bg-blue-400 text-white'
+                                                    : 'bg-gray-50 dark:bg-gray-700/60 text-gray-700 dark:text-gray-200'
                                                 }
                                                 shadow-sm transition-all duration-300
                                             `}
@@ -924,7 +967,13 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                         {/* Category name and count */}
                                         <div className="lg:flex-1 text-center lg:text-left w-full">
                                             <motion.h3
-                                                className="text-xs sm:text-sm md:text-base lg:text-sm font-medium text-primary-dark dark:text-white mb-1 sm:mb-2 lg:mb-0 transition-colors truncate"
+                                                className={`
+                                                    text-xs sm:text-sm md:text-base lg:text-sm font-medium mb-1 sm:mb-2 lg:mb-0 transition-colors truncate
+                                                    ${isActiveCategory(category.slug)
+                                                        ? 'text-blue-700 dark:text-blue-300'
+                                                        : 'text-gray-700 dark:text-gray-200'
+                                                    }
+                                                `}
                                                 initial={{ opacity: 0, y: 5 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.3, delay: 0.1 }}
@@ -933,7 +982,13 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                             </motion.h3>
                                             {category.count > 0 && (
                                                 <motion.p
-                                                    className="text-xs text-gray-500 dark:text-gray-400 transition-colors"
+                                                    className={`
+                                                        text-xs transition-colors
+                                                        ${isActiveCategory(category.slug)
+                                                            ? 'text-blue-500/70 dark:text-blue-400/70'
+                                                            : 'text-gray-500 dark:text-gray-400'
+                                                        }
+                                                    `}
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: 1 }}
                                                     transition={{ duration: 0.3, delay: 0.2 }}
@@ -954,13 +1009,13 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                             relative overflow-hidden rounded-xl lg:rounded-md
                                             ${!isMobile ? 'h-40 sm:h-44 md:h-48 lg:h-auto lg:py-2' : 'h-40 sm:h-44 md:h-48'}
                                             ${isActiveCategory(category.slug)
-                                                ? 'bg-primary/10 dark:bg-primary/20 border-l-4 border-primary dark:border-primary'
-                                                : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                                                ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 dark:border-blue-400'
+                                                : 'bg-white dark:bg-gray-800/60 hover:bg-gray-50 dark:hover:bg-gray-700/80 border border-gray-100 dark:border-gray-700/50'
                                             }
                                             p-3 sm:p-4 lg:py-2 lg:px-3 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col lg:flex-row items-center lg:items-center lg:justify-start w-full mb-1.5
                                         `}
                                         whileHover={{
-                                            boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+                                            boxShadow: "0 8px 20px -4px rgba(0, 0, 0, 0.1), 0 6px 8px -4px rgba(0, 0, 0, 0.03)",
                                             transition: { duration: 0.3 }
                                         }}
                                     >
@@ -969,8 +1024,8 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                             className={`
                                                 relative w-9 h-9 sm:w-10 sm:h-10 lg:w-9 lg:h-9 rounded-full mb-3 sm:mb-4 lg:mb-0 lg:mr-3 flex items-center justify-center 
                                                 ${isActiveCategory(category.slug)
-                                                    ? `bg-primary text-white`
-                                                    : `bg-gray-100 dark:bg-gray-700 text-primary-dark dark:text-white`
+                                                    ? 'bg-blue-500 dark:bg-blue-400 text-white'
+                                                    : 'bg-gray-50 dark:bg-gray-700/60 text-gray-700 dark:text-gray-200'
                                                 }
                                                 shadow-sm transition-all duration-300
                                             `}
@@ -988,7 +1043,13 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                         {/* Category name and count */}
                                         <div className="lg:flex-1 text-center lg:text-left w-full">
                                             <motion.h3
-                                                className="text-xs sm:text-sm md:text-base lg:text-sm font-medium text-primary-dark dark:text-white mb-1 sm:mb-2 lg:mb-0 transition-colors truncate"
+                                                className={`
+                                                    text-xs sm:text-sm md:text-base lg:text-sm font-medium mb-1 sm:mb-2 lg:mb-0 transition-colors truncate
+                                                    ${isActiveCategory(category.slug)
+                                                        ? 'text-blue-700 dark:text-blue-300'
+                                                        : 'text-gray-700 dark:text-gray-200'
+                                                    }
+                                                `}
                                                 initial={{ opacity: 0, y: 5 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.3, delay: 0.1 }}
@@ -997,7 +1058,13 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                             </motion.h3>
                                             {category.count > 0 && (
                                                 <motion.p
-                                                    className="text-xs text-gray-500 dark:text-gray-400 transition-colors"
+                                                    className={`
+                                                        text-xs transition-colors
+                                                        ${isActiveCategory(category.slug)
+                                                            ? 'text-blue-500/70 dark:text-blue-400/70'
+                                                            : 'text-gray-500 dark:text-gray-400'
+                                                        }
+                                                    `}
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: 1 }}
                                                     transition={{ duration: 0.3, delay: 0.2 }}

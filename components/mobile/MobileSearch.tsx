@@ -23,6 +23,7 @@ const searchDropdownVariants = {
 
 interface MobileSearchProps {
     isSearchOpen: boolean;
+    isTabletSearchOpen?: boolean;
     searchKeyword: string;
     searchInputRef: React.RefObject<HTMLInputElement | null>;
     handleSearchSubmit: (e?: React.FormEvent) => void;
@@ -40,6 +41,7 @@ interface MobileSearchProps {
 
 export const MobileSearch: React.FC<MobileSearchProps> = ({
     isSearchOpen,
+    isTabletSearchOpen,
     searchKeyword,
     searchInputRef,
     handleSearchSubmit,
@@ -51,15 +53,27 @@ export const MobileSearch: React.FC<MobileSearchProps> = ({
     previewLimit,
     handlePreviewItemClick
 }) => {
+    const shouldShow = isSearchOpen || isTabletSearchOpen;
+
     return (
-        <div className="w-full px-0 py-3 bg-white shadow-sm xl:hidden md:hidden" style={{ display: isSearchOpen ? 'block' : 'none' }}>
+        <div
+            className="w-full px-0 py-3 bg-white shadow-sm xl:hidden"
+            style={{
+                display: shouldShow ? 'block' : 'none',
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                zIndex: 50
+            }}
+        >
             <form onSubmit={handleSearchSubmit} className="relative w-full max-w-[1400px] mx-auto px-4">
                 <Input
                     ref={searchInputRef}
                     aria-label="Search"
                     classNames={{
                         base: "w-full",
-                        inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                        inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:bg-[#1B5479]/5 focus:outline-none focus:border-[#1B5479] focus:ring-1 focus:ring-[#1B5479]",
                         input: "text-sm pr-12 focus:outline-none focus:ring-0 focus-visible:outline-none search-input h-full"
                     }}
                     placeholder="Search deals..."

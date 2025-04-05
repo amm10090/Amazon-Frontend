@@ -285,7 +285,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
         return (
             <div className={`bg-gray-100 dark:bg-gray-800 rounded-xl p-4 sm:p-6 ${className}`}>
                 <div className="h-8 w-48 bg-gray-300 dark:bg-gray-700 rounded mb-4" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {Array.from({ length: isMobile ? 1 : dynamicLimit }).map(() => {
                         const uniqueId = `placeholder-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -354,7 +354,7 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
                 <ProductSwiper products={deals} />
             ) : (
                 // 大屏幕保持网格布局
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {deals.map((deal, index) => renderProductCard(deal, index)).filter(Boolean)}
                 </div>
             )}

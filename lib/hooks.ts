@@ -54,7 +54,21 @@ export function useProducts(params?: {
 
     if (data) {
         // 判断数据结构，支持直接结构或嵌套在data字段中的结构
-        const anyData = data as any; // 使用any类型暂时绕过类型检查
+        interface ApiDataStructure {
+            success?: boolean;
+            data?: {
+                items: Product[];
+                total: number;
+                page: number;
+                page_size: number;
+            };
+            items: Product[];
+            total: number;
+            page: number;
+            page_size: number;
+        }
+
+        const anyData = data as unknown as ApiDataStructure;
 
         if (anyData.success && anyData.data && typeof anyData.data === 'object') {
             // 嵌套结构 { success: true, data: { items: [...], total: ... } }

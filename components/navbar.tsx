@@ -156,7 +156,7 @@ export const Navbar = () => {
   // 优化触发搜索框显示/隐藏的函数
   const toggleSearch = () => {
     // 判断是移动端还是平板端
-    const isTablet = window.innerWidth >= 768 && window.innerWidth < 1280;
+    const isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1279px)').matches;
 
     if (isTablet) {
       setIsTabletSearchOpen(!isTabletSearchOpen);
@@ -226,10 +226,10 @@ export const Navbar = () => {
               {/* Logo and Search Bar Content - Left Side */}
               <div className="flex items-center gap-4 flex-1 lg:max-w-[800px]">
                 {/* Mobile Menu & Search Buttons */}
-                <div className="flex items-center gap-1 lg:hidden">
+                <div className="flex items-center gap-1 xl:hidden">
                   <NavbarMenuToggle
                     icon={<Menu size={20} />}
-                    className="w-8 h-8 p-1.5 text-default-500 bg-default-100/50 hover:bg-default-200/70 rounded-lg"
+                    className="w-8 h-8 p-1.5 text-white bg-gradient-to-r from-[#1B5479] to-[#287EB7] hover:opacity-90 rounded-lg lg:hidden"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   />
                   <MobileSearchButton toggleSearch={toggleSearch} />
@@ -294,7 +294,7 @@ export const Navbar = () => {
                         aria-label="Search"
                         classNames={{
                           base: "w-full",
-                          inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-10 px-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+                          inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-10 px-3 focus:bg-[#1B5479]/5 focus:outline-none focus:border-[#1B5479] focus:ring-1 focus:ring-[#1B5479]",
                           input: "text-sm focus:outline-none focus:ring-0 focus:border-none focus-visible:outline-none focus-visible:ring-0 pr-[90px] search-input h-full"
                         }}
                         placeholder="Search deals..."
@@ -454,6 +454,7 @@ export const Navbar = () => {
       {/* Mobile Search */}
       <MobileSearch
         isSearchOpen={isSearchOpen}
+        isTabletSearchOpen={isTabletSearchOpen}
         searchKeyword={searchKeyword}
         searchInputRef={searchInputRef}
         handleSearchSubmit={handleSearchSubmit}
