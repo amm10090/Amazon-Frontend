@@ -250,15 +250,67 @@ const ProductSkeleton = () => (
     </div>
 );
 
+// 添加返回顶部按钮组件
+const ScrollToTopButton = () => {
+    const [isVisible, setIsVisible] = useState(false);
+
+    // 检测滚动位置以控制按钮可见性
+    useEffect(() => {
+        const toggleVisibility = () => {
+            if (window.pageYOffset > 500) {
+                setIsVisible(true);
+            } else {
+                setIsVisible(false);
+            }
+        };
+
+        window.addEventListener('scroll', toggleVisibility);
+
+        return () => window.removeEventListener('scroll', toggleVisibility);
+    }, []);
+
+    // 滚动到顶部的函数
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
+
+    return (
+        <AnimatePresence>
+            {isVisible && (
+                <motion.button
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.5 }}
+                    className="fixed bottom-8 right-8 z-50 p-3 rounded-full bg-primary text-white shadow-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    onClick={scrollToTop}
+                    aria-label="Scroll to top"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    </svg>
+                </motion.button>
+            )}
+        </AnimatePresence>
+    );
+};
+
 // 使用 Client Component 包装搜索参数逻辑
 function ProductsContent() {
     const searchParamsFromUrl = useSearchParams();
+    const [isFilterFixed, setIsFilterFixed] = useState(false);
+    const [_isFilterAtBottom, _setIsFilterAtBottom] = useState(false);
+    const filterRef = useRef<HTMLDivElement>(null);
+    const filterContainerRef = useRef<HTMLDivElement>(null);
+    const [filterOffset, setFilterOffset] = useState(0);
 
     const [searchParams, setSearchParams] = useState({
         product_groups: '' as string,
         brands: '' as string,
         page: 1,
-        limit: 12,
+        limit: 50,
         sort_by: 'all' as 'price' | 'discount' | 'created' | 'all',
         sort_order: 'desc' as 'asc' | 'desc',
         min_price: undefined as number | undefined,
@@ -275,11 +327,45 @@ function ProductsContent() {
     const [urlParamsLoaded, setUrlParamsLoaded] = useState(false);
 
     // 添加缓存状态展示
-    const [cacheStatus, setCacheStatus] = useState<{
+    const [_cacheStatus, setCacheStatus] = useState<{
         isCached: boolean;
         responseTime: number;
         expires: string;
     } | null>(null);
+
+    // 添加滚动监听
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!filterRef.current || !filterContainerRef.current) return;
+
+            const containerRect = filterContainerRef.current.getBoundingClientRect();
+            const filterRect = filterRef.current.getBoundingClientRect();
+            const scrollY = window.scrollY;
+            const _windowHeight = window.innerHeight;
+
+            // 如果还没有记录初始偏移量，记录它
+            if (filterOffset === 0) {
+                setFilterOffset(filterRect.top + scrollY);
+            }
+
+            // 计算容器底部相对于页面顶部的距离
+            const _containerBottom = containerRect.top + scrollY + containerRect.height;
+            // 计算筛选器高度
+            const _filterHeight = filterRect.height;
+
+            // 判断是否应该固定在顶部
+            // 只有当滚动位置超过初始位置，并且还没有到达容器底部时才固定
+            const shouldBeFixed = scrollY > filterOffset - 72;
+
+            setIsFilterFixed(shouldBeFixed);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        // 初始化时也执行一次
+        handleScroll();
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [filterOffset]);
 
     // 添加useEffect，确保从URL参数正确加载
     useEffect(() => {
@@ -714,7 +800,7 @@ function ProductsContent() {
 
                 <Link href={`/product/${product.id}`} className="block">
                     <motion.div
-                        className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden h-full flex flex-col max-w-[320px] mx-auto w-full"
+                        className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden h-full flex flex-col mx-auto w-full"
                         whileHover={{ y: -8, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.03)' }}
                         transition={{ duration: 0.3 }}
                     >
@@ -828,13 +914,7 @@ function ProductsContent() {
                 <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <p className="text-sm md:text-base text-gray-600 dark:text-gray-300">
                         Showing <span className="font-medium">{products.length}</span> of <span className="font-medium">{getTotalProducts()}</span> products
-                        {cacheStatus && (
-                            <span className="ml-2 text-xs text-gray-500">
-                                {cacheStatus.isCached ?
-                                    `(cached, ${cacheStatus.responseTime}ms)` :
-                                    `(fresh, ${cacheStatus.responseTime}ms)`}
-                            </span>
-                        )}
+
                     </p>
                     <div className="flex items-center gap-2">
                         <label htmlFor="sort" className="text-sm text-gray-600 dark:text-gray-400">
@@ -874,13 +954,13 @@ function ProductsContent() {
         </AnimatePresence>
     );
 
-    const skeletonIds = useMemo(() => Array.from({ length: 6 }, () => Math.random().toString(36).substring(2)), []);
+    const skeletonIds = useMemo(() => Array.from({ length: 15 }, (_, index) => `skeleton-${index}`), []);
 
     // 渲染骨架屏
     const renderSkeletons = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
             {skeletonIds.map((id) => (
-                <ProductSkeleton key={`product-skeleton-${id}`} />
+                <ProductSkeleton key={id} />
             ))}
         </div>
     );
@@ -922,6 +1002,9 @@ function ProductsContent() {
     return (
         <div className="min-h-screen pb-20">
             <LiquidFilter />
+
+            {/* 返回顶部按钮 */}
+            <ScrollToTopButton />
 
             {/* 英雄区块与动画SVG插图 - 优化移动端显示 */}
             <section className="relative h-[30vh] md:h-[35vh] min-h-[300px] md:min-h-[400px] w-[100vw] left-[calc(-50vw+50%)] right-0 -mt-5 overflow-hidden bg-gradient-to-br from-[#1B5479] to-[#287EB7]">
@@ -1045,124 +1128,63 @@ function ProductsContent() {
             </motion.header>
 
             {/* 商品列表区域 - 响应式布局 */}
-            <section ref={catalogRef} className="container mx-auto px-4 py-6 md:py-12">
-                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-8">
-                    {/* 移动端和平板端筛选器切换按钮 */}
-                    <div className="lg:hidden mb-4">
-                        <button
-                            className="w-full py-3 px-4 sm:py-4 sm:rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-xl shadow-md flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                            onClick={() => {
-                                // 更新临时筛选状态为当前筛选条件
-                                setDrawerFilters({
-                                    min_price: searchParams.min_price,
-                                    max_price: searchParams.max_price,
-                                    min_discount: searchParams.min_discount,
-                                    brands: searchParams.brands,
-                                    is_prime_only: searchParams.is_prime_only
-                                });
-
-                                // 使用抽屉式面板
-                                const drawerElem = document.getElementById('mobile-filter-drawer');
-                                const overlayElem = document.getElementById('drawer-overlay');
-
-                                if (drawerElem && overlayElem) {
-                                    // 显示遮罩和抽屉
-                                    drawerElem.classList.remove('translate-y-full');
-                                    // 使用opacity-70替代完全不透明，保持遮罩半透明效果
-                                    overlayElem.classList.remove('opacity-0');
-                                    overlayElem.classList.add('opacity-70');
-                                    overlayElem.classList.remove('pointer-events-none');
-                                    // 防止背景滚动
-                                document.body.classList.add('overflow-hidden');
-                            }
-                        }}
-                    >
-                        <span className="font-medium">Filter Products</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
-                        </svg>
-                    </button>
-                </div>
-
-                    {/* 移动端和平板端抽屉式筛选器面板的背景遮罩 */}
-                    <div id="drawer-overlay"
-                        className="fixed inset-0 bg-black bg-opacity-50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 ease-in-out"
-                        onClick={closeDrawer}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                                closeDrawer();
-                            }
-                        }}
-                        tabIndex={0}
-                        role="button"
-                        aria-label="Close filter drawer"
-                    />
-
-                    {/* 移动端和平板端抽屉式筛选器面板 */}
-                    <div id="mobile-filter-drawer" className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg z-50 transform translate-y-full transition-transform duration-300 ease-in-out max-h-[85vh] overflow-y-auto sm:max-h-[90vh] sm:overflow-y-auto no-scrollbar">
-                        <div className="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Filter Options</h3>
-                                <button
-                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                    onClick={closeDrawer}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' || e.key === ' ') {
-                                            closeDrawer();
-                                        }
-                                    }}
-                                    tabIndex={0}
-                                    aria-label="Close filter drawer"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            {/* 可拖动条示意 - 在平板端隐藏 */}
-                            <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mt-1 sm:hidden" />
-                        </div>
-
-                        {/* 移动端显示常规ProductFilter */}
-                        <div className="sm:hidden p-4 no-scrollbar">
-                            <div id="mobile-filter">
-                                <ProductFilter
-                                    onFilter={(filters) => {
-                                        setDrawerFilters(filters);
-                                    }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* 平板端显示网格布局的筛选区 */}
-                        <div className="hidden sm:block p-6 pb-20 no-scrollbar">
-                            <div id="tablet-filter">
-                                <ProductFilter
-                                    onFilter={(filters) => {
-                                        setDrawerFilters(filters);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
+            <section ref={catalogRef} className="max-w-[1800px] mx-auto">
+                <div className="relative flex">
                     {/* 桌面端左侧筛选器 */}
-                    <div className="hidden lg:block lg:col-span-1">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className="sticky top-28 bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-md"
+                    <div ref={filterContainerRef} className="hidden lg:block lg:w-[280px] relative scrollbar-hide">
+                        <div
+                            ref={filterRef}
+                            className={`w-[280px] ${isFilterFixed
+                                ? 'fixed top-[72px]'
+                                : 'relative'
+                                } max-h-[calc(100vh-80px)] overflow-auto bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800 scrollbar-hide`}
+                            style={{
+                                transition: 'all 0.2s ease-out'
+                            }}
                         >
-                            <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">Filter</h2>
-                            <ProductFilter
-                                onFilter={handleFilterChange}
-                            />
-                        </motion.div>
+                            <div className="p-4">
+                                <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">Filter</h2>
+                                <ProductFilter
+                                    onFilter={handleFilterChange}
+                                />
+                            </div>
+                        </div>
                     </div>
 
-                    {/* 右侧商品列表 */}
-                    <div className="lg:col-span-3">
+                    {/* 右侧商品列表区域 */}
+                    <main className="flex-1  w-full px-4 py-6 md:py-12">
+                        {/* 移动端和平板端筛选器切换按钮 */}
+                        <div className="lg:hidden mb-4">
+                            <button
+                                className="w-full py-3 px-4 sm:py-4 sm:rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-xl shadow-md flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                onClick={() => {
+                                    setDrawerFilters({
+                                        min_price: searchParams.min_price,
+                                        max_price: searchParams.max_price,
+                                        min_discount: searchParams.min_discount,
+                                        brands: searchParams.brands,
+                                        is_prime_only: searchParams.is_prime_only
+                                    });
+
+                                    const drawerElem = document.getElementById('mobile-filter-drawer');
+                                    const overlayElem = document.getElementById('drawer-overlay');
+
+                                    if (drawerElem && overlayElem) {
+                                        drawerElem.classList.remove('translate-y-full');
+                                        overlayElem.classList.remove('opacity-0');
+                                        overlayElem.classList.add('opacity-70');
+                                        overlayElem.classList.remove('pointer-events-none');
+                                        document.body.classList.add('overflow-hidden');
+                                    }
+                                }}
+                            >
+                                <span className="font-medium">Filter Products</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+
                         <ApiStateWrapper
                             isLoading={isLoading || isDirectLoading}
                             isError={!!isError && !directData}
@@ -1173,7 +1195,7 @@ function ProductsContent() {
                         >
                             {renderProductList}
                         </ApiStateWrapper>
-                    </div>
+                    </main>
                 </div>
             </section>
         </div>

@@ -73,7 +73,7 @@ export const MobileSearch: React.FC<MobileSearchProps> = ({
                     aria-label="Search"
                     classNames={{
                         base: "w-full",
-                        inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:bg-[#1B5479]/5 focus:outline-none focus:border-[#1B5479] focus:ring-1 focus:ring-[#1B5479]",
+                        inputWrapper: "bg-white/90 shadow-sm border border-gray-200 rounded-full h-11 px-3 md:px-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary group-data-[focus=true]:bg-white",
                         input: "text-sm pr-12 focus:outline-none focus:ring-0 focus-visible:outline-none search-input h-full"
                     }}
                     placeholder="Search deals..."

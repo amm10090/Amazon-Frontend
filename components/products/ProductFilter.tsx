@@ -6,6 +6,18 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { useBrandStats } from '@/lib/hooks';
 
+// 添加用于隐藏滚动条的全局样式
+const noScrollbarStyle = `
+    .no-scrollbar::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+    }
+`;
+
 export type ProductFilterProps = {
     onFilter: (filter: Record<string, unknown>) => void;
     hideButtons?: boolean;
@@ -71,9 +83,9 @@ function PriceRangeSlider({ min, max, value, onChange }: {
     };
 
     return (
-        <div className="pt-6 pb-2">
+        <div className="pt-4 pb-2 w-full overflow-x-hidden">
             {/* Slider track and range */}
-            <div className="relative h-2 mb-6">
+            <div className="relative h-2 mb-6 mx-3">
                 {/* Background track */}
                 <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full" />
 
@@ -174,10 +186,10 @@ function PriceRangeSlider({ min, max, value, onChange }: {
             </div>
 
             {/* Direct price input fields */}
-            <div className="flex items-center justify-between mt-2 gap-2">
-                <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 dark:text-gray-400 text-sm">$</span>
+            <div className="flex items-center justify-between mt-2 gap-1 sm:gap-2 px-3">
+                <div className="relative flex-1 min-w-0">
+                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                        <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">$</span>
                     </div>
                     <input
                         type="number"
@@ -191,14 +203,14 @@ function PriceRangeSlider({ min, max, value, onChange }: {
                                 onChange([newVal, value[1]]);
                             }
                         }}
-                        className="pl-7 pr-2 py-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="pl-5 sm:pl-7 pr-1 sm:pr-2 py-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs sm:text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         aria-label="Minimum price input"
                     />
                 </div>
-                <span className="text-gray-400">—</span>
-                <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 dark:text-gray-400 text-sm">$</span>
+                <span className="text-gray-400 text-sm flex-shrink-0">—</span>
+                <div className="relative flex-1 min-w-0">
+                    <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                        <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">$</span>
                     </div>
                     <input
                         type="number"
@@ -212,14 +224,14 @@ function PriceRangeSlider({ min, max, value, onChange }: {
                                 onChange([value[0], newVal]);
                             }
                         }}
-                        className="pl-7 pr-2 py-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-green-500"
+                        className="pl-5 sm:pl-7 pr-1 sm:pr-2 py-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs sm:text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-green-500"
                         aria-label="Maximum price input"
                     />
                 </div>
             </div>
 
             {/* Quick price range selectors */}
-            <div className="flex flex-wrap gap-2 mt-4">
+            <div className="flex flex-wrap gap-1 md:gap-2 mt-4 px-3">
                 {[
                     { label: "Low ¥200", values: [0, 200] },
                     { label: "¥200-¥500", values: [200, 500] },
@@ -251,36 +263,38 @@ function Checkbox({ id, checked, onChange, label }: {
     label?: string;
 }) {
     return (
-        <div className="relative inline-flex items-center gap-2">
-            <input
-                type="checkbox"
-                id={id}
-                checked={checked}
-                onChange={(e) => onChange(e.target.checked)}
-                className="sr-only"
-            />
-            <div className={`w-5 h-5 border-2 rounded transition-all duration-200 flex items-center justify-center ${checked ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300 dark:border-gray-600'}`}>
-                {checked && (
-                    <motion.svg
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="white"
-                        className="w-4 h-4"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                        />
-                    </motion.svg>
-                )}
+        <div className="relative inline-flex items-start gap-2 w-full">
+            <div className="flex-shrink-0 mt-0.5">
+                <input
+                    type="checkbox"
+                    id={id}
+                    checked={checked}
+                    onChange={(e) => onChange(e.target.checked)}
+                    className="sr-only"
+                />
+                <div className={`w-5 h-5 border-2 rounded transition-all duration-200 flex items-center justify-center ${checked ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                    {checked && (
+                        <motion.svg
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="white"
+                            className="w-4 h-4"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                            />
+                        </motion.svg>
+                    )}
+                </div>
             </div>
             {label && (
-                <label htmlFor={id} className="text-sm cursor-pointer text-gray-700 dark:text-gray-200">
+                <label htmlFor={id} className="text-sm cursor-pointer text-gray-700 dark:text-gray-200 truncate">
                     {label}
                 </label>
             )}
@@ -318,6 +332,9 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         discount: true,
         brands: true
     });
+
+    // 添加品牌展开状态
+    const [isBrandExpanded, setIsBrandExpanded] = useState(false);
 
     // 添加这个useEffect，监听URL参数变化并更新filter状态
     useEffect(() => {
@@ -577,7 +594,10 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     }, [onFilter, searchParams, router, pathname]);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 w-full overflow-x-hidden">
+            {/* 添加全局样式 */}
+            <style jsx global>{noScrollbarStyle}</style>
+
             {/* Price Filter Section */}
             <div className="border-b pb-4 dark:border-gray-700">
                 <div
@@ -609,7 +629,8 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden"
                     >
                         <PriceRangeSlider
                             min={0}
@@ -652,8 +673,8 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-2"
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="space-y-2 overflow-hidden"
                     >
                         {discountOptions.map(discount => (
                             <div key={`discount-option-${discount}`} className="flex items-center">
@@ -700,33 +721,69 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-2 max-h-60 overflow-y-auto pr-1 no-scrollbar"
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="relative"
                     >
-                        {loading || isBrandStatsLoading ? (
-                            <div className="animate-pulse space-y-2">
-                                {['first', 'second', 'third', 'fourth', 'fifth'].map((id) => (
-                                    <div key={`brand-skeleton-${id}`} className="h-6 bg-gray-200 dark:bg-gray-700 rounded" />
-                                ))}
-                            </div>
-                        ) : availableBrands.length > 0 ? (
-                            availableBrands.map(brand => (
-                                <div key={brand} className="flex items-center justify-between">
-                                    <div className="flex-grow min-w-0">
-                                        <Checkbox
-                                            id={`brand-${brand}`}
-                                            checked={filter.brands.split(',').includes(brand)}
-                                            onChange={(checked) => handleBrandChange(brand, checked)}
-                                            label={brand}
-                                        />
+                        {/* 使用双层容器结构 */}
+                        <div
+                            className={`overflow-hidden ${!isBrandExpanded ? 'h-36' : 'h-[300px]'}`}
+                            style={{ WebkitMaskImage: !isBrandExpanded ? 'linear-gradient(to bottom, black 80%, transparent 100%)' : 'none' }}
+                        >
+                            <div
+                                className="h-full pr-4 -mr-4 overflow-y-auto space-y-2 no-scrollbar"
+                                style={{
+                                    scrollbarWidth: 'none',
+                                    msOverflowStyle: 'none',
+                                    WebkitOverflowScrolling: 'touch'
+                                }}
+                            >
+                                {loading || isBrandStatsLoading ? (
+                                    <div className="animate-pulse space-y-2">
+                                        {['first', 'second', 'third', 'fourth'].map((id) => (
+                                            <div key={`brand-skeleton-${id}`} className="h-6 bg-gray-200 dark:bg-gray-700 rounded" />
+                                        ))}
                                     </div>
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1 flex-shrink-0">
-                                        {brandStats?.brands[brand] || 0}
-                                    </span>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-sm text-gray-500 dark:text-gray-400">无可用品牌</div>
+                                ) : availableBrands.length > 0 ? (
+                                    availableBrands.map(brand => (
+                                        <div key={brand} className="flex items-center justify-between w-full">
+                                            <div className="flex-grow min-w-0 mr-2">
+                                                <Checkbox
+                                                    id={`brand-${brand}`}
+                                                    checked={filter.brands.split(',').includes(brand)}
+                                                    onChange={(checked) => handleBrandChange(brand, checked)}
+                                                    label={brand}
+                                                />
+                                            </div>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
+                                                {brandStats?.brands[brand] || 0}
+                                            </span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">无可用品牌</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {availableBrands.length > 4 && (
+                            <div className="flex items-center justify-center">
+                                <button
+                                    onClick={() => setIsBrandExpanded(!isBrandExpanded)}
+                                    className="mt-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white flex items-center gap-1 transition-colors"
+                                >
+                                    <span>{isBrandExpanded ? 'Hide' : 'Show More'}</span>
+                                    <motion.svg
+                                        className="w-4 h-4"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        animate={{ rotate: isBrandExpanded ? 180 : 0 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <path d="M19 9l-7 7-7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </motion.svg>
+                                </button>
+                            </div>
                         )}
                     </motion.div>
                 )}
@@ -746,11 +803,11 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
 
             {/* Action Buttons */}
             {!hideButtons && (
-                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                <div className="flex gap-2 flex-wrap sm:flex-nowrap sticky bottom-0 pt-2 bg-white dark:bg-gray-800 z-10">
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="px-4 py-2 bg-gradient-to-r bg-primary-background text-white text-sm font-medium rounded-md flex-grow transition-all"
+                        className="px-4 py-2 bg-gradient-to-r bg-primary-background text-white text-sm font-medium rounded-md flex-grow transition-all shadow-sm"
                         onClick={updateUrlParams}
                     >
                         Apply Filters
@@ -758,7 +815,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-sm font-medium rounded-md transition-all flex-shrink-0"
+                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-sm font-medium rounded-md transition-all flex-shrink-0 shadow-sm"
                         onClick={handleClearFilters}
                     >
                         Clear
