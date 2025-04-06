@@ -186,8 +186,7 @@ export default function Home() {
                         ref={sidebarRef}
                         className="w-[240px] bg-white shadow-sm border-r border-gray-100 z-40"
                         style={{
-                            maxHeight: 'calc(100vh - 110px)',
-                            overflowY: 'auto',
+                            minHeight: 'calc(100vh - 110px)',
                             willChange: 'transform'
                         }}
                     >

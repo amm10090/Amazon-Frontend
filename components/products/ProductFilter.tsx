@@ -233,11 +233,11 @@ function PriceRangeSlider({ min, max, value, onChange }: {
             {/* Quick price range selectors */}
             <div className="flex flex-wrap gap-1 md:gap-2 mt-4 px-3">
                 {[
-                    { label: "Low ¥200", values: [0, 200] },
-                    { label: "¥200-¥500", values: [200, 500] },
-                    { label: "¥500-¥1000", values: [500, 1000] },
-                    { label: "¥1000-¥5000", values: [1000, 5000] },
-                    { label: "¥5000+", values: [5000, max] }
+                    { label: "Under $200", values: [0, 200] },
+                    { label: "$200-$500", values: [200, 500] },
+                    { label: "$500-$1000", values: [500, 1000] },
+                    { label: "$1000-$5000", values: [1000, 5000] },
+                    { label: "$5000+", values: [5000, max] }
                 ].map((range, _) => (
                     <button
                         key={`price-range-${range.label}`}

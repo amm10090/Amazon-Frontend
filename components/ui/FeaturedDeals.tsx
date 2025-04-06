@@ -17,12 +17,17 @@ import { StoreIdentifier } from '@/lib/store';
 import { formatPrice, calculateDiscount } from '@/lib/utils';
 import type { Product } from '@/types/api';
 
-interface FeaturedDealsProps {
+type FeaturedDealsProps = {
     limit?: number;
     className?: string;
-}
+    hideTitle?: boolean;
+};
 
-export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps) {
+export function FeaturedDeals({
+    limit = 4,
+    className = '',
+    hideTitle = false
+}: FeaturedDealsProps) {
     const [deals, setDeals] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -311,51 +316,53 @@ export function FeaturedDeals({ limit = 4, className = '' }: FeaturedDealsProps)
 
     return (
         <motion.div
-            className={`bg-gray-100 dark:bg-gray-800 rounded-xl p-4 sm:p-6 ${className}`}
+            className={className}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
         >
             {/* 标题区域：标题左对齐，右侧添加"See All"链接 */}
-            <div className="flex items-center justify-between mb-4">
-                <motion.h2
-                    className="text-2xl font-bold text-primary-dark dark:text-white"
-                    variants={itemVariants}
-                >
-                    Today&apos;s Best Deals
-                </motion.h2>
-
-                <motion.div variants={itemVariants}>
-                    <Link
-                        href="/products"
-                        className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors"
+            {!hideTitle && (
+                <div className="flex items-center justify-between mb-6">
+                    <motion.h2
+                        className="text-2xl font-bold text-gray-800 dark:text-white"
+                        variants={itemVariants}
                     >
-                        <span>See All</span>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 ml-1"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                        Today&apos;s Best Deals
+                    </motion.h2>
+
+                    <motion.div variants={itemVariants}>
+                        <Link
+                            href="/products"
+                            className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M13 7l5 5m0 0l-5 5m5-5H6"
-                            />
-                        </svg>
-                    </Link>
-                </motion.div>
-            </div>
+                            <span>See All</span>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 ml-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                />
+                            </svg>
+                        </Link>
+                    </motion.div>
+                </div>
+            )}
 
             {/* 移动端使用Swiper轮播 */}
             {isMobile ? (
                 <ProductSwiper products={deals} />
             ) : (
                 // 大屏幕保持网格布局
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {deals.map((deal, index) => renderProductCard(deal, index)).filter(Boolean)}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {deals.slice(0, dynamicLimit).map((deal, index) => renderProductCard(deal, index)).filter(Boolean)}
                 </div>
             )}
         </motion.div>

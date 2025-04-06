@@ -322,7 +322,6 @@ function ProductsContent() {
     const paginationRef = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({ layoutEffect: false });
     const headerOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.97]);
-    const headerY = useTransform(scrollYProgress, [0, 0.2], [0, -20]);
 
     // 添加缓存状态展示
     const [_cacheStatus, setCacheStatus] = useState<{
@@ -1097,10 +1096,9 @@ function ProductsContent() {
 
             {/* 分类导航 - 设备响应式设计 */}
             <motion.header
-                className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm"
+                className="sticky top-0 z-[60] bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm"
                 style={{
                     opacity: headerOpacity,
-                    y: headerY,
                 }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

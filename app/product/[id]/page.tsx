@@ -82,15 +82,11 @@ export async function generateMetadata(
 }
 
 // Main page component
-export default async function ProductPage(
-    props: ProductPageProps
-) {
+export default async function ProductPage(props: ProductPageProps) {
     const params = await props.params;
     const id = params.id;
 
     const product = await getProduct(id);
-
-    // Convert API product data to component format
     const adaptedProduct = product ? adaptProducts([product])[0] : null;
 
     if (!adaptedProduct) {
@@ -115,24 +111,59 @@ export default async function ProductPage(
     }
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 py-8">
+        <div className="w-full">
             {/* Product details main content */}
-            <ProductClient product={adaptedProduct} />
+            <div className="bg-gray-50 dark:bg-gray-900 py-8">
+                <ProductClient product={adaptedProduct} />
+            </div>
 
-            {/* Similar products section */}
-            <div className="container mx-auto px-4 mt-12">
-                <div className="section-header flex justify-between items-center mb-6">
-                    <h2 className="section-title text-2xl font-bold text-gray-800 dark:text-white">
-                        Similar Products
-                    </h2>
-                    <Link href="/products" className="see-all text-primary hover:text-primary-dark dark:hover:text-primary-light transition-colors">
-                        See All →
-                    </Link>
-                </div>
+            {/* Similar products and Today's Best Deals sections */}
+            <div className="container mx-auto px-4 space-y-12 py-12">
+                {/* Similar products section */}
+                <section>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                            Similar Products
+                        </h2>
+                        <Link
+                            href={`/products?product_groups=${encodeURIComponent(adaptedProduct.category)}`}
+                            className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors"
+                        >
+                            <span>See All</span>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 ml-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                />
+                            </svg>
+                        </Link>
+                    </div>
+                    <Suspense fallback={<div className="h-64 animate-pulse" />}>
+                        <FeaturedDeals
+                            limit={4}
+                            className="bg-transparent"
+                            hideTitle={true}
+                        />
+                    </Suspense>
+                </section>
 
-                <Suspense fallback={<div className="h-64 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />}>
-                    <FeaturedDeals limit={4} />
-                </Suspense>
+                {/* Today's Best Deals section */}
+                <section>
+                    <Suspense fallback={<div className="h-64 animate-pulse" />}>
+                        <FeaturedDeals
+                            limit={4}
+                            className="bg-transparent"
+                        />
+                    </Suspense>
+                </section>
             </div>
         </div>
     );
