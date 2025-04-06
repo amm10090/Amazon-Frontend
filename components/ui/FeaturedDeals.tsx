@@ -21,12 +21,29 @@ type FeaturedDealsProps = {
     limit?: number;
     className?: string;
     hideTitle?: boolean;
+    productGroups?: string;
+    useListApi?: boolean;
+};
+
+// 工具函数：Fisher-Yates 洗牌算法
+const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled;
 };
 
 export function FeaturedDeals({
     limit = 4,
     className = '',
-    hideTitle = false
+    hideTitle = false,
+    productGroups,
+    useListApi = false
 }: FeaturedDealsProps) {
     const [deals, setDeals] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -66,33 +83,101 @@ export function FeaturedDeals({
         const fetchDeals = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(`/api/products/featured?limit=${dynamicLimit}`);
 
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
-                }
+                if (useListApi) {
+                    // 第一步：使用新的计数 API 获取总商品数
+                    const countParams = new URLSearchParams();
 
-                const result = await response.json();
+                    if (productGroups) {
+                        countParams.append('product_groups', productGroups);
+                    }
 
-                if (result.success && Array.isArray(result.data)) {
-                    setDeals(result.data);
-                } else {
-                    setDeals([]);
-                    if (result.error) {
-                        setError(result.error);
+                    const countResponse = await fetch(`/api/products/count?${countParams.toString()}`);
+
+                    if (!countResponse.ok) {
+                        throw new Error(`API error: ${countResponse.status}`);
+                    }
+
+                    const countResult = await countResponse.json();
+
+                    if (!countResult.success) {
+                        throw new Error('Failed to get total count');
+                    }
+
+                    const total = countResult.data.total;
+                    const pageSize = 20; // 使用适中的页面大小
+                    const maxPage = Math.ceil(total / pageSize);
+
+                    // 生成1到maxPage之间的随机页码
+                    const randomPage = Math.max(1, Math.floor(Math.random() * maxPage));
+
+                    // 第二步：使用随机页码获取商品
+                    const params = new URLSearchParams({
+                        page: randomPage.toString(),
+                        page_size: pageSize.toString()
+                    });
+
+                    if (productGroups) {
+                        params.append('product_groups', productGroups);
+                    }
+
+                    const response = await fetch(`/api/products/list?${params.toString()}`);
+
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        let products = result.data.items;
+
+                        if (Array.isArray(products) && products.length > 0) {
+                            // 随机打乱商品数组
+                            products = shuffleArray(products);
+                            // 只取需要的数量
+                            products = products.slice(0, dynamicLimit);
+                        }
+                        setDeals(products);
                     } else {
-                        setError('No deals available at the moment');
+                        setDeals([]);
+                        setError(result.error || 'No deals available at the moment');
+                    }
+                } else {
+                    // 原有的 featured API 逻辑
+                    const params = new URLSearchParams({
+                        limit: dynamicLimit.toString()
+                    });
+
+                    if (productGroups) {
+                        params.append('product_groups', productGroups);
+                    }
+
+                    const response = await fetch(`/api/products/featured?${params.toString()}`);
+
+                    if (!response.ok) {
+                        throw new Error(`API error: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        setDeals(Array.isArray(result.data) ? result.data : []);
+                    } else {
+                        setDeals([]);
+                        setError(result.error || 'No deals available at the moment');
                     }
                 }
             } catch {
                 setError('Unable to load deals. Please try again later.');
+                setDeals([]);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchDeals();
-    }, [dynamicLimit]);
+    }, [dynamicLimit, productGroups, useListApi]);
 
     const containerVariants = {
         hidden: { opacity: 0 },

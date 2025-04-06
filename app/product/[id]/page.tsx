@@ -151,6 +151,8 @@ export default async function ProductPage(props: ProductPageProps) {
                             limit={4}
                             className="bg-transparent"
                             hideTitle={true}
+                            productGroups={adaptedProduct.category}
+                            useListApi={true}
                         />
                     </Suspense>
                 </section>

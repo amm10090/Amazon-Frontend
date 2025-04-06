@@ -285,20 +285,21 @@ const DealsPage = () => {
             </div>
 
             {/* 筛选器区域 */}
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm mb-6">
-                <div className="flex flex-wrap items-center gap-4">
-                    <div className="relative">
-                        <label htmlFor="discount-filter" className="block text-sm font-medium text-gray-700 mb-1">Discount Filter</label>
+            <div className="bg-white/90 backdrop-blur-sm p-3 rounded-lg shadow-sm mb-6 border border-gray-100">
+                <div className="flex items-start gap-3 flex-wrap">
+                    <div className="relative flex-1 min-w-[180px] max-w-[250px]">
+                        <label htmlFor="discount-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                            Discount Filter
+                        </label>
                         <div className="relative">
                             <select
                                 id="discount-filter"
-                                className="appearance-none block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                className="w-full h-8 pl-2.5 pr-8 text-sm bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-primary/20 focus:border-primary transition-all duration-200 appearance-none cursor-pointer hover:bg-gray-100"
                                 value={filters.minDiscount}
                                 onChange={(e) => {
                                     const newValue = Number(e.target.value);
 
                                     setFilters(prev => ({ ...prev, minDiscount: newValue }));
-                                    // 更改筛选条件时重置为第一页
                                     setPagination(prev => ({ ...prev, page: 1 }));
                                 }}
                             >
@@ -307,32 +308,33 @@ const DealsPage = () => {
                                 <option value="70">70% Off or More</option>
                                 <option value="80">80% Off or More</option>
                             </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg className="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                            <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">
+                                <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center">
-                        <div className="relative flex items-start">
-                            <div className="flex items-center h-5">
-                                <input
-                                    id="prime-only"
-                                    type="checkbox"
-                                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                                    checked={filters.isPrimeOnly || false}
-                                    onChange={(e) => {
-                                        setFilters(prev => ({ ...prev, isPrimeOnly: e.target.checked }));
-                                        // 更改筛选条件时重置为第一页
-                                        setPagination(prev => ({ ...prev, page: 1 }));
-                                    }}
-                                />
-                            </div>
-                            <div className="ml-2 text-sm">
-                                <label htmlFor="prime-only" className="font-medium text-gray-700">Prime Only</label>
-                                <p className="text-gray-500 text-xs">Show only Amazon Prime products</p>
+                    <div className="relative flex-1 min-w-[180px] max-w-[250px]">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Prime Filter
+                        </label>
+                        <div className="flex items-center h-8 space-x-2.5 bg-gray-50 px-2.5 rounded-md border border-gray-200 hover:bg-gray-100 transition-colors duration-200">
+                            <input
+                                id="prime-only"
+                                type="checkbox"
+                                className="w-3.5 h-3.5 rounded border-gray-300 text-primary focus:ring-primary/30 transition-all duration-200"
+                                checked={filters.isPrimeOnly || false}
+                                onChange={(e) => {
+                                    setFilters(prev => ({ ...prev, isPrimeOnly: e.target.checked }));
+                                    setPagination(prev => ({ ...prev, page: 1 }));
+                                }}
+                            />
+                            <div className="flex flex-col justify-center">
+                                <label htmlFor="prime-only" className="text-sm font-medium text-gray-700 cursor-pointer leading-none" />
+
+                                <p className="text-[10px] text-gray-500 mt-0.5">Show only Amazon Prime products</p>
                             </div>
                         </div>
                     </div>
