@@ -6,10 +6,20 @@ import Link from 'next/link';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 
 import FavoriteButton from '@/components/common/FavoriteButton';
+import Pagination from '@/components/ui/Pagination';
 import { productsApi } from '@/lib/api';
 import { StoreIdentifier } from '@/lib/store';
 import { formatPrice } from '@/lib/utils';
 import type { Product } from '@/types/api';
+
+// 定义API参数接口
+interface GetDealsParams {
+    active?: boolean;
+    page?: number;
+    page_size?: number;
+    min_discount?: number;
+    is_prime_only?: boolean;
+}
 
 // 定义筛选器选项接口
 interface FilterOptions {
@@ -22,7 +32,7 @@ interface FilterOptions {
 // 定义分页接口
 interface PaginationState {
     page: number;
-    limit: number;
+    page_size: number;
     total?: number;
 }
 
@@ -30,7 +40,7 @@ interface PaginationState {
 const SKELETON_IDS = [
     'sk1', 'sk2', 'sk3', 'sk4', 'sk5', 'sk6', 'sk7', 'sk8',
     'sk9', 'sk10', 'sk11', 'sk12', 'sk13', 'sk14', 'sk15', 'sk16',
-    'sk17', 'sk18', 'sk19', 'sk20', 'sk21', 'sk22', 'sk23', 'sk24'
+    'sk17', 'sk18', 'sk19', 'sk20', 'sk21', 'sk22', 'sk23', 'sk24', 'sk25'
 ];
 
 const DealsPage = () => {
@@ -43,7 +53,7 @@ const DealsPage = () => {
     });
     const [pagination, setPagination] = useState<PaginationState>({
         page: 1,
-        limit: 12,
+        page_size: 25,
     });
 
     // 获取优惠商品数据
@@ -53,10 +63,10 @@ const DealsPage = () => {
             const response = await productsApi.getDeals({
                 active: true,
                 page: pagination.page,
-                limit: pagination.limit,
+                page_size: pagination.page_size,
                 min_discount: filters.minDiscount,
                 is_prime_only: filters.isPrimeOnly,
-            });
+            } as GetDealsParams);
 
             // 适配不同层级的响应结构
             let itemsData: Product[] = [];
@@ -97,7 +107,7 @@ const DealsPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [pagination.page, pagination.limit, filters.minDiscount, filters.isPrimeOnly]);
+    }, [pagination.page, pagination.page_size, filters.minDiscount, filters.isPrimeOnly]);
 
     // 监听分页和筛选器变化
     useEffect(() => {
@@ -176,17 +186,17 @@ const DealsPage = () => {
                         )}
 
                         {/* 商品图片 */}
-                        <div className="relative w-full aspect-[1/1] bg-white dark:bg-gray-800 pt-0.5">
+                        <div className="relative w-full aspect-[4/3] bg-white dark:bg-gray-800">
                             <motion.div
                                 whileHover={{ scale: 1.05 }}
-                                className="h-full w-full relative"
+                                className="h-full w-full relative p-2"
                             >
                                 <Image
                                     src={product.main_image || product.image_url || "/placeholder.png"}
                                     alt={product.title}
                                     fill
                                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                                    className="object-cover p-2"
+                                    className="object-contain"
                                     loading="lazy"
                                     quality={90}
                                     unoptimized={product.main_image?.startsWith('data:')}
@@ -256,7 +266,7 @@ const DealsPage = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 relative">
+        <div className="w-full max-w-[2000px] mx-auto px-6 py-8 relative">
             {/* 页面顶部加载指示器 */}
             {loading && (
                 <div className="absolute top-0 left-0 w-full h-1">
@@ -339,8 +349,8 @@ const DealsPage = () => {
             {/* 商品网格 */}
             <Suspense fallback={<div>Loading deals...</div>}>
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {[...Array(pagination.limit)].map((_, i) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+                        {[...Array(pagination.page_size)].map((_, i) => (
                             <div key={SKELETON_IDS[i]} className="relative group h-full">
                                 <div className="relative h-full flex flex-col overflow-hidden rounded-lg shadow-md bg-white animate-pulse">
                                     {/* 图片骨架 */}
@@ -372,7 +382,7 @@ const DealsPage = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                         {deals && deals.length > 0 ? (
                             deals.map(renderDealCard)
                         ) : (
@@ -385,34 +395,14 @@ const DealsPage = () => {
             </Suspense>
 
             {/* 分页控件 */}
-            <div className="mt-8 flex justify-center items-center">
-                <button
-                    className="px-4 py-2 mx-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
-                    disabled={pagination.page === 1}
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    aria-label="Previous Page"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                </button>
-                <span className="px-4 py-2 mx-1 rounded-md bg-white border border-gray-300 text-gray-700">
-                    Page <span className="font-medium">{pagination.page}</span>
-                    {pagination.total && pagination.limit ?
-                        <span className="text-gray-500"> of {Math.ceil(pagination.total / pagination.limit)}</span>
-                        : ''}
-                </span>
-                <button
-                    className="px-4 py-2 mx-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
-                    disabled={pagination.total ? pagination.page >= Math.ceil(pagination.total / pagination.limit) : false}
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    aria-label="Next Page"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                    </svg>
-                </button>
-            </div>
+            {pagination.total && pagination.page_size && (
+                <Pagination
+                    currentPage={pagination.page}
+                    totalPages={Math.ceil(pagination.total / pagination.page_size)}
+                    onPageChange={handlePageChange}
+                    className="mt-8"
+                />
+            )}
         </div>
     );
 };

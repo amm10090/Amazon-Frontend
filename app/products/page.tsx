@@ -1025,7 +1025,7 @@ function ProductsContent() {
             <ScrollToTopButton />
 
             {/* 英雄区块与动画SVG插图 - 优化移动端显示 */}
-            <section className="relative h-[30vh] md:h-[35vh] min-h-[300px] md:min-h-[400px] w-[100vw] left-[calc(-50vw+50%)] right-0 -mt-5 overflow-hidden bg-gradient-to-br from-[#1B5479] to-[#287EB7]">
+            <section className="relative h-[30vh] md:h-[35vh] min-h-[300px] md:min-h-[400px] w-[100vw] left-[calc(-50vw+50%)] right-0 overflow-hidden bg-gradient-to-br from-[#1B5479] to-[#287EB7]">
                 <motion.div
                     className="absolute inset-0 bg-[url('/images/dot-pattern.svg')] opacity-10"
                     animate={{
@@ -1039,7 +1039,7 @@ function ProductsContent() {
                     }}
                 />
 
-                <div className="container mx-auto h-full px-4 sm:px-6 md:px-8 lg:px-12 relative z-10 flex flex-col md:flex-row items-center justify-between">
+                <div className="container mx-auto h-full px-4 sm:px-6 md:px-8 lg:px-12 relative z-10 flex flex-col md:flex-row items-center justify-between py-8 md:py-12">
                     <motion.div
                         className="max-w-full md:max-w-2xl text-center md:text-left mt-8 md:mt-0"
                         initial={{ opacity: 0, x: -50 }}
@@ -1068,7 +1068,7 @@ function ProductsContent() {
 
             {/* 分类导航 - 设备响应式设计 */}
             <motion.header
-                className="sticky top-0 z-40 bg-white dark:bg-gray-900 shadow-sm"
+                className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-sm"
                 style={{
                     opacity: headerOpacity,
                     y: headerY,
