@@ -38,6 +38,8 @@ export default function Home() {
     const catalogRef = useRef<HTMLDivElement>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
     const mainContentRef = useRef<HTMLDivElement>(null);
+    const newsletterRef = useRef<HTMLDivElement>(null);
+    const paginationRef = useRef<HTMLDivElement>(null);
 
     // 使用useCategoryStats钩子获取分类数据
     const { data: categoryStats, isLoading } = useCategoryStats({
@@ -89,19 +91,22 @@ export default function Home() {
     // Add scroll handling effect
     useEffect(() => {
         const handleScroll = () => {
-            if (!sidebarRef.current || !mainContentRef.current || !catalogRef.current) return;
+            if (!sidebarRef.current || !mainContentRef.current || !catalogRef.current || !newsletterRef.current || !paginationRef.current) return;
 
             const sidebarElem = sidebarRef.current;
             const catalogRect = catalogRef.current.getBoundingClientRect();
             const mainContentRect = mainContentRef.current.getBoundingClientRect();
             const sidebarRect = sidebarElem.getBoundingClientRect();
+            const newsletterRect = newsletterRef.current?.getBoundingClientRect();
+            const paginationRect = paginationRef.current?.getBoundingClientRect();
 
             // 固定偏移量（导航栏高度）
             const topOffset = 110;
 
             // 计算父容器的位置
             const containerTop = catalogRect.top + window.scrollY;
-            const _containerBottom = mainContentRect.bottom + window.scrollY;
+            const _newsletterTop = newsletterRect ? newsletterRect.top + window.scrollY : Infinity;
+            const paginationTop = paginationRect ? paginationRect.top + window.scrollY : Infinity;
 
             // 计算侧边栏的高度和当前滚动位置
             const sidebarHeight = sidebarRect.height;
@@ -110,39 +115,41 @@ export default function Home() {
             // 计算主内容区域的实际高度
             const mainContentHeight = mainContentRect.height;
 
-            // 确保侧边栏不会超出主内容区域的底部
-            const maxTop = mainContentHeight - sidebarHeight;
+            // 确保侧边栏不会超出主内容区域的底部和分页区域的顶部
+            const BUFFER = 20; // 增加缓冲区到20px
+            const maxTop = Math.min(
+                mainContentHeight - sidebarHeight,
+                paginationTop + window.scrollY - containerTop - topOffset - BUFFER
+            );
 
-            // 计算当前应该设置的top值
-            let targetTop = scrollY + topOffset - containerTop;
-
-            // 限制top值不超过最大值
-            targetTop = Math.min(targetTop, maxTop);
-            // 限制top值不小于0
-            targetTop = Math.max(0, targetTop);
+            // 计算当前滚动位置相对于底部的距离
+            const currentScrollTop = scrollY + topOffset - containerTop;
+            const distanceToBottom = maxTop - currentScrollTop;
 
             // 判断滚动位置并设置样式
             if (scrollY + topOffset >= containerTop) {
-                // 检查是否到达底部边界
-                if (targetTop >= maxTop) {
-                    // 到达底部边界，使用absolute定位
-                    sidebarElem.style.position = 'absolute';
-                    sidebarElem.style.top = `${maxTop}px`;
-                    sidebarElem.style.bottom = 'auto';
-                    sidebarElem.style.transform = 'none';
+                if (distanceToBottom <= BUFFER) {
+                    // 完全到达底部时
+                    Object.assign(sidebarElem.style, {
+                        position: 'absolute',
+                        top: `${maxTop}px`,
+                        transform: 'none'
+                    });
                 } else {
-                    // 在可视区域内，使用fixed定位
-                    sidebarElem.style.position = 'fixed';
-                    sidebarElem.style.top = `${topOffset}px`;
-                    sidebarElem.style.bottom = 'auto';
-                    sidebarElem.style.transform = 'none';
+                    // 正常滚动时保持fixed
+                    Object.assign(sidebarElem.style, {
+                        position: 'fixed',
+                        top: `${topOffset}px`,
+                        transform: 'none'
+                    });
                 }
             } else {
                 // 回到顶部
-                sidebarElem.style.position = 'absolute';
-                sidebarElem.style.top = '0';
-                sidebarElem.style.bottom = 'auto';
-                sidebarElem.style.transform = 'none';
+                Object.assign(sidebarElem.style, {
+                    position: 'absolute',
+                    top: '0',
+                    transform: 'none'
+                });
             }
         };
 
@@ -181,8 +188,7 @@ export default function Home() {
                         style={{
                             maxHeight: 'calc(100vh - 110px)',
                             overflowY: 'auto',
-                            willChange: 'transform, position, top',
-                            transition: 'top 0.1s ease-out'
+                            willChange: 'transform'
                         }}
                     >
                         <div className="p-4">
@@ -224,8 +230,25 @@ export default function Home() {
                             />
                         ))}
 
+                        {/* 分页区域 */}
+                        <div ref={paginationRef} className="mb-8">
+                            {/* 分隔线 */}
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <div className="w-full border-t border-gray-200" />
+                                </div>
+                                <div className="relative flex justify-center">
+                                    <span className="px-4 text-sm text-gray-500 bg-white">
+                                        End of products
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* 邮箱订阅组件 */}
-                        <NewsletterSubscribe />
+                        <div ref={newsletterRef}>
+                            <NewsletterSubscribe />
+                        </div>
                     </div>
                 </main>
             </div>

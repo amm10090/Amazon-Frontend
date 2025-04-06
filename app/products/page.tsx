@@ -319,6 +319,7 @@ function ProductsContent() {
     const catalogRef = useRef<HTMLDivElement>(null);
     const sidebarRef = useRef<HTMLDivElement>(null);
     const mainContentRef = useRef<HTMLDivElement>(null);
+    const paginationRef = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({ layoutEffect: false });
     const headerOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.97]);
     const headerY = useTransform(scrollYProgress, [0, 0.2], [0, -20]);
@@ -333,59 +334,87 @@ function ProductsContent() {
     // 添加JS滚动逻辑，实现侧边栏在父容器内的固定效果
     useEffect(() => {
         const handleScroll = () => {
-            if (!sidebarRef.current || !mainContentRef.current || !catalogRef.current) return;
+            if (!sidebarRef.current || !mainContentRef.current || !catalogRef.current || !paginationRef.current) return;
 
             const sidebarElem = sidebarRef.current;
             const catalogRect = catalogRef.current.getBoundingClientRect();
             const mainContentRect = mainContentRef.current.getBoundingClientRect();
             const sidebarRect = sidebarElem.getBoundingClientRect();
+            const paginationRect = paginationRef.current.getBoundingClientRect();
 
             // 固定偏移量（导航栏高度）
             const topOffset = 72;
 
             // 计算父容器的位置
             const containerTop = catalogRect.top + window.scrollY;
-            const containerBottom = mainContentRect.bottom + window.scrollY;
+            const paginationTop = paginationRect.top + window.scrollY;
 
             // 计算侧边栏的高度和当前滚动位置
             const sidebarHeight = sidebarRect.height;
             const scrollY = window.scrollY;
 
-            // 计算底部边界
-            const bottomLimit = containerBottom - sidebarHeight;
+            // 计算主内容区域的实际高度
+            const mainContentHeight = mainContentRect.height;
+
+            // 确保侧边栏不会超出分页区域的顶部，同时考虑侧边栏自身的高度
+            const BUFFER = 20; // 增加缓冲区到20px
+            const maxTop = Math.min(
+                mainContentHeight - sidebarHeight,
+                paginationTop - containerTop - sidebarHeight - BUFFER
+            );
+
+            // 计算当前滚动位置相对于底部的距离
+            const currentScrollTop = scrollY + topOffset - containerTop;
+            const distanceToBottom = maxTop - currentScrollTop;
 
             // 判断滚动位置并设置样式
             if (scrollY + topOffset >= containerTop) {
-                if (scrollY + topOffset + sidebarHeight >= bottomLimit) {
-                    // 到达底部边界
-                    sidebarElem.style.position = 'absolute';
-                    sidebarElem.style.top = `${bottomLimit - containerTop}px`;
-                    sidebarElem.style.bottom = 'auto';
+                if (distanceToBottom <= BUFFER) {
+                    // 完全到达底部时
+                    Object.assign(sidebarElem.style, {
+                        position: 'absolute',
+                        top: `${maxTop}px`,
+                        transform: 'none'
+                    });
                 } else {
-                    // 固定在视口中
-                    sidebarElem.style.position = 'fixed';
-                    sidebarElem.style.top = `${topOffset}px`;
-                    sidebarElem.style.bottom = 'auto';
+                    // 正常滚动时保持fixed
+                    Object.assign(sidebarElem.style, {
+                        position: 'fixed',
+                        top: `${topOffset}px`,
+                        transform: 'none'
+                    });
                 }
             } else {
                 // 回到顶部
-                sidebarElem.style.position = 'absolute';
-                sidebarElem.style.top = '0';
-                sidebarElem.style.bottom = 'auto';
+                Object.assign(sidebarElem.style, {
+                    position: 'absolute',
+                    top: '0',
+                    transform: 'none'
+                });
             }
         };
 
-        // 添加滚动和窗口大小变化事件监听
-        window.addEventListener('scroll', handleScroll);
-        window.addEventListener('resize', handleScroll);
+        // 添加防抖处理
+        let ticking = false;
+        const scrollHandler = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    handleScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', scrollHandler, { passive: true });
+        window.addEventListener('resize', scrollHandler, { passive: true });
 
         // 初始化调用一次
         handleScroll();
 
-        // 组件卸载时移除事件监听
         return () => {
-            window.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('resize', handleScroll);
+            window.removeEventListener('scroll', scrollHandler);
+            window.removeEventListener('resize', scrollHandler);
         };
     }, []);
 
@@ -1169,8 +1198,8 @@ function ProductsContent() {
                     </div>
 
                     {/* 右侧商品列表区域 */}
-                    <main className="flex-1 min-h-screen w-full px-4 py-6 md:py-12">
-                        {/* 移动端和平板端筛选器切换按钮 */}
+                    <main className="flex-1 min-h-screen w-full px-4 py-6 md:py-12" ref={mainContentRef}>
+                        {/* 移动端筛选器按钮 */}
                         <div className="lg:hidden mb-4">
                             <button
                                 className="w-full py-3 px-4 sm:py-4 sm:rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-white rounded-xl shadow-md flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -1210,7 +1239,18 @@ function ProductsContent() {
                             data={adaptedProducts}
                             loadingFallback={renderSkeletons()}
                         >
-                            {renderProductList}
+                            {(products) => (
+                                <>
+                                    {renderProductList(products)}
+                                    {/* 分页区域作为滚动边界 */}
+                                    <div ref={paginationRef} className="mt-8">
+                                        {/* 分页组件 */}
+                                        <div className="flex justify-center space-x-2">
+                                            {/* ... 分页按钮 ... */}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </ApiStateWrapper>
                     </main>
                 </div>
