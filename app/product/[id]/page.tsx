@@ -148,7 +148,7 @@ export default async function ProductPage(props: ProductPageProps) {
                     </div>
                     <Suspense fallback={<div className="h-64 animate-pulse" />}>
                         <FeaturedDeals
-                            limit={4}
+                            limit={8}
                             className="bg-transparent"
                             hideTitle={true}
                             productGroups={adaptedProduct.category}
@@ -161,7 +161,7 @@ export default async function ProductPage(props: ProductPageProps) {
                 <section>
                     <Suspense fallback={<div className="h-64 animate-pulse" />}>
                         <FeaturedDeals
-                            limit={4}
+                            limit={8}
                             className="bg-transparent"
                         />
                     </Suspense>

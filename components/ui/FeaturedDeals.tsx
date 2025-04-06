@@ -56,15 +56,16 @@ export function FeaturedDeals({
     useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth;
+            const defaultLimit = limit || 4; // 使用传入的limit或默认值4
 
             if (width >= 1280) { // xl
-                setDynamicLimit(4);
+                setDynamicLimit(defaultLimit); // 使用传入的limit或默认值
                 setIsMobile(false);
             } else if (width >= 768) { // md
-                setDynamicLimit(3);
+                setDynamicLimit(Math.min(defaultLimit, 6)); // 平板最多显示6个
                 setIsMobile(false);
-            } else { // sm及以下使用轮播，显示9个商品
-                setDynamicLimit(9);
+            } else { // sm及以下使用轮播
+                setDynamicLimit(Math.min(defaultLimit, 9)); // 移动端最多显示9个
                 setIsMobile(true);
             }
         };
@@ -76,7 +77,7 @@ export function FeaturedDeals({
         window.addEventListener('resize', handleResize);
 
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    }, [limit]); // 添加 limit 到依赖数组
 
     // 使用动态limit获取商品数据
     useEffect(() => {
@@ -445,8 +446,8 @@ export function FeaturedDeals({
             {isMobile ? (
                 <ProductSwiper products={deals} />
             ) : (
-                // 大屏幕保持网格布局
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                // 大屏幕使用网格布局，修改为2行4列
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {deals.slice(0, dynamicLimit).map((deal, index) => renderProductCard(deal, index)).filter(Boolean)}
                 </div>
             )}
