@@ -409,9 +409,9 @@ export function FeaturedDeals({
         >
             {/* 标题区域：标题左对齐，右侧添加"See All"链接 */}
             {!hideTitle && (
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-3">
                     <motion.h2
-                        className="text-2xl font-bold text-gray-800 dark:text-white"
+                        className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white"
                         variants={itemVariants}
                     >
                         Today&apos;s Best Deals
@@ -420,12 +420,12 @@ export function FeaturedDeals({
                     <motion.div variants={itemVariants}>
                         <Link
                             href="/products"
-                            className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors"
+                            className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors text-sm"
                         >
                             <span>See All</span>
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 ml-1"
+                                className="h-4 w-4 ml-1"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -444,10 +444,12 @@ export function FeaturedDeals({
 
             {/* 移动端使用Swiper轮播 */}
             {isMobile ? (
-                <ProductSwiper products={deals} />
+                <div className="-mx-2.5 sm:-mx-3.5">
+                    <ProductSwiper products={deals} />
+                </div>
             ) : (
-                // 大屏幕使用网格布局，修改为2行4列
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                // 大屏幕使用网格布局
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {deals.slice(0, dynamicLimit).map((deal, index) => renderProductCard(deal, index)).filter(Boolean)}
                 </div>
             )}

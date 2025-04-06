@@ -63,30 +63,30 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                         />
                     </div>
 
-                    <Link href={`/product/${productId}`} className="block">
+                    <Link href={`/product/${productId}`} className="block w-full">
                         <motion.div
-                            className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-full flex flex-col w-full max-w-[280px] sm:max-w-[320px] mx-auto"
+                            className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-full flex flex-col w-full"
                             transition={{ duration: 0.3 }}
                         >
                             {/* Prime badge */}
                             {isPrime && (
-                                <div className="absolute top-3 left-3 z-10">
-                                    <div className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium">
+                                <div className="absolute top-2 left-2 z-10">
+                                    <div className="bg-[#0574F7] text-white px-2 py-0.5 rounded-full text-xs font-medium">
                                         Prime
                                     </div>
                                 </div>
                             )}
 
                             {/* Product image */}
-                            <div className="relative w-full aspect-square bg-gray-50 dark:bg-gray-800">
+                            <div className="relative w-full aspect-square bg-white dark:bg-gray-800">
                                 <div className="h-full w-full relative">
                                     {productImage ? (
                                         <Image
                                             src={productImage}
                                             alt={title}
                                             fill
-                                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                                            className="object-contain w-full h-full p-2"
+                                            sizes="100vw"
+                                            className="object-contain w-full h-full p-1"
                                             priority={index < 2}
                                             loading={index < 2 ? "eager" : "lazy"}
                                             quality={90}
@@ -101,30 +101,28 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                             </div>
 
                             {/* Product information */}
-                            <div className="p-2 sm:p-3 flex-grow flex flex-col">
-                                {/* StoreIdentifier */}
-                                <StoreIdentifier
-                                    url={productUrl}
-                                    align="right"
-                                />
-
-                                {/* Brand information */}
-                                {product.brand && (
-                                    <div className="mb-0.5">
-                                        <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded inline-block">
+                            <div className="p-2 flex-grow flex flex-col min-h-[120px]">
+                                {/* Brand and Store */}
+                                <div className="flex items-center justify-between mb-1">
+                                    {product.brand && (
+                                        <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded">
                                             {product.brand}
                                         </span>
-                                    </div>
-                                )}
+                                    )}
+                                    <StoreIdentifier
+                                        url={productUrl}
+                                        align="right"
+                                    />
+                                </div>
 
-                                <h3 className="text-sm sm:text-base font-medium line-clamp-2 mb-1 flex-grow text-primary-dark dark:text-white">
+                                <h3 className="text-sm font-medium line-clamp-2 mb-1 flex-grow text-primary-dark dark:text-white">
                                     {title}
                                 </h3>
 
                                 {/* Price and discount */}
-                                <div className="flex items-center justify-between mt-0.5 mb-1.5 flex-wrap gap-1">
+                                <div className="flex items-center justify-between mt-auto mb-1">
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-base sm:text-lg font-semibold text-primary dark:text-primary-light">
+                                        <span className="text-base font-semibold text-primary dark:text-primary-light">
                                             {formatPrice(price)}
                                         </span>
                                         {originalPrice > price && (
@@ -144,7 +142,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                                 </div>
 
                                 {/* Action button */}
-                                <button className="w-full py-1.5 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-button-light dark:hover:bg-primary-button text-white text-center rounded-full text-sm font-medium transition-colors">
+                                <button className="w-full py-1.5 mt-1 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-button-light dark:hover:bg-primary-button text-white text-center rounded-full text-xs font-medium transition-colors">
                                     View Details
                                 </button>
                             </div>
@@ -213,19 +211,18 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                     width: 100%;
                     position: relative;
                     padding: 0;
-                    background: rgb(243 244 246);
-                    border-radius: 0.75rem;
+                    background: transparent;
                 }
 
                 .product-swiper {
-                    padding: 1rem 0 2.5rem;
+                    padding: 0.5rem 0.5rem 2rem;
                 }
 
                 .swiper-slide-product {
-                    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
                     opacity: 0;
-                    transform: scale(0.9);
-                    padding: 0 0.5rem;
+                    transform: scale(0.95);
+                    padding: 0.5rem;
                 }
 
                 .swiper-slide-product.swiper-slide-active {
@@ -236,7 +233,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                 .swiper-slide-product.swiper-slide-prev,
                 .swiper-slide-product.swiper-slide-next {
                     opacity: 0.5;
-                    transform: scale(0.85);
+                    transform: scale(0.9);
                 }
 
                 /* Navigation Styles */
@@ -249,17 +246,17 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                     z-index: 10;
                     display: flex;
                     justify-content: space-between;
-                    padding: 0 1rem;
+                    padding: 0 0.5rem;
                     pointer-events: none;
                 }
 
                 .swiper-button-prev,
                 .swiper-button-next {
-                    width: 32px;
-                    height: 32px;
+                    width: 28px;
+                    height: 28px;
                     border-radius: 50%;
-                    background: #f5f5f7;
-                    border: 1px solid #e5e5e5;
+                    background: rgba(255, 255, 255, 0.9);
+                    border: 1px solid rgba(0, 0, 0, 0.1);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -288,7 +285,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
 
                 /* Pagination Styles */
                 .swiper-pagination {
-                    bottom: 1rem !important;
+                    bottom: 0.5rem !important;
                     display: flex;
                     justify-content: center;
                     align-items: center;
@@ -301,8 +298,8 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                 }
 
                 .swiper-pagination-bullet {
-                    width: 6px !important;
-                    height: 6px !important;
+                    width: 4px !important;
+                    height: 4px !important;
                     background: #D1D5DB !important;
                     opacity: 0.5 !important;
                     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -313,7 +310,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                 .swiper-pagination-bullet-active {
                     background: #9CA3AF !important;
                     opacity: 1 !important;
-                    transform: scale(1);
+                    transform: scale(1.25);
                 }
 
                 /* Dark Mode Styles */
@@ -332,7 +329,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                     }
 
                     .product-swiper {
-                        padding: 1rem 0 2.5rem;
+                        padding: 0.5rem 0 2rem;
                     }
 
                     .swiper-navigation {
@@ -344,21 +341,13 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                     }
 
                     .swiper-pagination {
-                        bottom: 0.75rem !important;
-                    }
-
-                    .swiper-button-prev {
-                        left: 5px !important;
-                    }
-
-                    .swiper-button-next {
-                        right: 5px !important;
+                        bottom: 0.5rem !important;
                     }
                 }
 
                 /* Dark mode container background */
                 .dark .product-swiper-container {
-                    background: rgb(31 41 55);
+                    background: transparent;
                 }
             `}</style>
         </div>
