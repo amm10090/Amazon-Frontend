@@ -162,7 +162,7 @@ export function CategoryProducts({ title, slug, page_size = 4, className = '', i
 
                     <Link href={`/product/${productId}`} className="block">
                         <motion.div
-                            className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-full flex flex-col max-w-[350px] mx-auto w-full"
+                            className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-full flex flex-col w-full max-w-[280px] sm:max-w-[320px] mx-auto"
                             transition={{ duration: 0.3 }}
                         >
                             {/* Prime badge */}

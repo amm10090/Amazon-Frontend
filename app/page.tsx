@@ -178,8 +178,8 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="relative min-h-screen">
-            <div className="flex max-w-[1800px] mx-auto">
+        <div className="relative min-h-screen w-full overflow-x-hidden">
+            <div className="flex max-w-[1800px] mx-auto w-full">
                 {/* 左侧导航 */}
                 <div className="hidden lg:block w-[240px] relative" ref={catalogRef}>
                     <div
@@ -198,8 +198,8 @@ export default function Home() {
                 </div>
 
                 {/* 右侧主内容区域 */}
-                <main ref={mainContentRef} className="flex-1 min-h-screen">
-                    <div className="px-4 lg:px-6 py-6 space-y-8">
+                <main ref={mainContentRef} className="flex-1 min-h-screen w-full">
+                    <div className="px-2 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
                         {/* 顶部英雄区域 */}
                         <HeroSection />
 
