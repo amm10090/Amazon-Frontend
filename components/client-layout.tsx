@@ -10,7 +10,6 @@ import { SessionProvider } from "next-auth/react";
 import { Providers } from "@/app/providers";
 import Footer from '@/components/layout/Footer';
 import { Navbar } from "@/components/navbar";
-import { ThemeProvider } from '@/components/theme-provider';
 import { FavoritesProvider } from '@/lib/favorites';
 
 interface ClientLayoutProps {
@@ -25,33 +24,26 @@ export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
 
     return (
         <SessionProvider session={session} basePath="/auth" refetchOnWindowFocus={false}>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-            >
-                <FavoritesProvider>
-                    <Providers>
-                        <div className={clsx(
-                            "min-h-screen bg-background font-sans antialiased",
-                            inter.className
+            <FavoritesProvider>
+                <Providers>
+                    <div className={clsx(
+                        "min-h-screen bg-background font-sans antialiased",
+                        inter.className
+                    )}>
+                        <Navbar />
+                        <main className={clsx(
+                            "grow pt-1",
+                            !isDashboard && pathname?.startsWith('/products')
+                                ? "container mx-auto max-w-[1800px] px-2 md:px-3 lg:px-4"
+                                : "container mx-auto max-w-9xl px-2 md:px-3 lg:px-4"
                         )}>
-                            <Navbar />
-                            <main className={clsx(
-                                "grow pt-1",
-                                !isDashboard && pathname?.startsWith('/products')
-                                    ? "container mx-auto max-w-[1800px] px-2 md:px-3 lg:px-4"
-                                    : "container mx-auto max-w-9xl px-2 md:px-3 lg:px-4"
-                            )}>
-                                {children}
-                            </main>
-                            <Footer />
-                        </div>
-                        <ToastProvider placement="bottom-right" />
-                    </Providers>
-                </FavoritesProvider>
-            </ThemeProvider>
+                            {children}
+                        </main>
+                        <Footer />
+                    </div>
+                    <ToastProvider placement="bottom-right" />
+                </Providers>
+            </FavoritesProvider>
         </SessionProvider>
     );
 } 

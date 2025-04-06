@@ -141,10 +141,10 @@ export default function Home() {
                 <div
                     ref={navRef}
                     style={navStyle}
-                    className="hidden lg:block w-[240px] fixed h-auto max-h-[calc(100vh-110px)] overflow-auto bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800 transition-transform duration-200"
+                    className="hidden lg:block w-[240px] fixed h-auto max-h-[calc(100vh-110px)] overflow-auto bg-white pb-4 shadow-sm border-r border-gray-100 transition-transform duration-200"
                 >
                     <div className="p-4">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Categories</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Categories</h2>
                         <CategoryNavigation useAnchorLinks={true} />
                     </div>
                 </div>
@@ -161,10 +161,10 @@ export default function Home() {
                         {/* 分隔线 */}
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-200 dark:border-gray-700" />
+                                <div className="w-full border-t border-gray-200" />
                             </div>
                             <div className="relative flex justify-center">
-                                <span className="px-4 text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-900">
+                                <span className="px-4 text-sm text-gray-500 bg-white">
                                     Recommended for you
                                 </span>
                             </div>

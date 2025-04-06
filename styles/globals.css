@@ -4,29 +4,29 @@
 @custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme {
-  --color-primary: #3d5a80; /* 中性蓝色 */
-  --color-primary-background: oklch(0.588 0.158 241.966); /* 淡蓝色 */
-  --color-primary-dark: #2c3e50; /* 深蓝色 */
-  --color-primary-button: oklch(0.596 0.145 163.225); /*按钮颜色*/
-  --color-primary-button-hover: oklch(0.508 0.118 165.612); /*按钮颜色*/
-  --color-primary-badge: #F39C12; /*按钮颜色*/
-  --color-primary-badge-dark: #F39C12; /*较深的按钮颜色*/
-  --color-secondary: #7f8c8d; /* 中性灰色 */
-  --color-secondary-light: #95a5a6; /* 淡灰色 */
-  --color-secondary-dark: #576574; /* 深灰色 */
-  --color-primary-Prime: #0574F7; /*按钮颜色*/
+  --color-primary: #3d5a80;
+  --color-primary-background: oklch(0.588 0.158 241.966);
+  --color-primary-dark: #2c3e50;
+  --color-primary-button: oklch(0.596 0.145 163.225);
+  --color-primary-button-hover: oklch(0.508 0.118 165.612);
+  --color-primary-badge: #F39C12;
+  --color-primary-badge-dark: #F39C12;
+  --color-secondary: #7f8c8d;
+  --color-secondary-light: #95a5a6;
+  --color-secondary-dark: #576574;
+  --color-primary-Prime: #0574F7;
   
-  --color-accent: #f39c12; /* 柔和橙色 */
-  --color-accent-light: #f5b041; /* 淡橙色 */
-  --color-accent-dark: #d35400; /* 深橙色 */
+  --color-accent: #f39c12;
+  --color-accent-light: #f5b041;
+  --color-accent-dark: #d35400;
   
-  --color-success: #27ae60; /* 绿色 */
-  --color-warning: #f39c12; /* 橙色 */
-  --color-error: #c0392b; /* 红色 */
+  --color-success: #27ae60;
+  --color-warning: #f39c12;
+  --color-error: #c0392b;
   
-  --color-background: #ffffff; /* 白色 */
-  --color-text: #2c3e50; /* 深灰色 */
-  --color-text-light: #7f8c8d; /* 中灰色 */
+  --color-background: #ffffff;
+  --color-text: #2c3e50;
+  --color-text-light: #7f8c8d;
   
   --color-gray-50: #f8fafc;
   --color-gray-100: #f1f5f9;
@@ -39,8 +39,18 @@
   --color-gray-800: #1e293b;
   --color-gray-900: #0f172a;
   --color-gray-950: #020617;
-  --heroui-default-100: #f8fafc;
-  --heroui-default-200: #f1f5f9;
+
+  /* HeroUI default colors */
+  --heroui-default-50: #f8fafc;
+  --heroui-default-100: #f1f5f9;
+  --heroui-default-200: #e2e8f0;
+  --heroui-default-300: #cbd5e1;
+  --heroui-default-400: #94a3b8;
+  --heroui-default-500: #64748b;
+  --heroui-default-600: #475569;
+  --heroui-default-700: #334155;
+  --heroui-default-800: #1e293b;
+  --heroui-default-900: #0f172a;
 
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);

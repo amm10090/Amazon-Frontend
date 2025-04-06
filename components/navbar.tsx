@@ -294,8 +294,8 @@ export const Navbar = () => {
                         aria-label="Search"
                         classNames={{
                           base: "w-full",
-                          inputWrapper: "bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 rounded-full h-10 overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all duration-200",
-                          input: "text-sm border-0 outline-none focus:outline-none focus:ring-0 pr-[90px] h-full bg-transparent dark:text-gray-100",
+                          inputWrapper: "bg-white shadow-sm border border-gray-200 hover:border-gray-300 rounded-full h-10 overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all duration-200",
+                          input: "text-sm text-gray-900 border-0 outline-none focus:outline-none focus:ring-0 pr-[90px] h-full bg-transparent",
                           innerWrapper: "bg-transparent",
                           mainWrapper: "bg-transparent"
                         }}
@@ -341,7 +341,7 @@ export const Navbar = () => {
                                 {searchResults.items.slice(0, previewLimit).map((product) => (
                                   <div
                                     key={product.asin || `product-${Math.random()}`}
-                                    className="flex items-center p-1.5 sm:p-2 hover:bg-gray-100 rounded-md cursor-pointer transition-colors"
+                                    className="flex items-center p-1.5 sm:p-2 hover:bg-gray-50 rounded-md cursor-pointer transition-colors"
                                     onClick={() => handlePreviewItemClick(product.asin)}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter' || e.key === ' ') {
@@ -354,7 +354,7 @@ export const Navbar = () => {
                                     aria-label={`View details for ${product.title}`}
                                   >
                                     {product.main_image && (
-                                      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md overflow-hidden bg-gray-200 flex-shrink-0 mr-2 relative">
+                                      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 mr-2 relative">
                                         <Image
                                           src={product.main_image}
                                           alt={product.title}
@@ -375,7 +375,7 @@ export const Navbar = () => {
                                           </span>
                                         )}
                                         {product.offers && product.offers[0]?.savings_percentage && (
-                                          <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs bg-red-100 text-red-600 px-1 sm:px-1.5 py-0.5 rounded-full">
+                                          <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs bg-red-50 text-red-600 px-1 sm:px-1.5 py-0.5 rounded-full">
                                             {product.offers[0].savings_percentage}% OFF
                                           </span>
                                         )}
@@ -385,7 +385,7 @@ export const Navbar = () => {
                                 ))}
                               </div>
                               <div
-                                className="p-2 sm:p-3 bg-gray-50 text-left hover:bg-gray-100 cursor-pointer border-t"
+                                className="p-2 sm:p-3 bg-gray-50 text-left hover:bg-gray-100 cursor-pointer border-t border-gray-100"
                                 onClick={() => handleSearchSubmit()}
                                 onKeyDown={(e) => {
                                   if (e.key === 'Enter' || e.key === ' ') {
