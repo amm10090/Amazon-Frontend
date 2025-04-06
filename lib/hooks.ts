@@ -53,18 +53,19 @@ export function useProducts(params?: {
     let processedData = undefined;
 
     if (data) {
-        // 判断数据结构，支持直接结构或嵌套在data字段中的结构
-        const anyData = data as any; // 使用any类型暂时绕过类型检查
+        // 类型守卫函数
+        const isApiResponse = (data: unknown): data is ApiResponse<ListResponse<Product>> => {
+            return typeof data === 'object' && data !== null && 'success' in data;
+        };
 
-        if (anyData.success && anyData.data && typeof anyData.data === 'object') {
-            // 嵌套结构 { success: true, data: { items: [...], total: ... } }
-            processedData = anyData.data;
-        } else if (anyData.items) {
-            // 直接结构 { items: [...], total: ... }
-            processedData = anyData;
-        } else if (anyData.data && anyData.data.items) {
-            // 嵌套结构 { data: { items: [...], total: ... } }
-            processedData = anyData.data;
+        const isListResponse = (data: unknown): data is ListResponse<Product> => {
+            return typeof data === 'object' && data !== null && 'items' in data;
+        };
+
+        if (isApiResponse(data) && data.data) {
+            processedData = data.data;
+        } else if (isListResponse(data)) {
+            processedData = data;
         }
     }
 

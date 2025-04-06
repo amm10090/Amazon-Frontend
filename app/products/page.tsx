@@ -300,12 +300,6 @@ const ScrollToTopButton = () => {
 // 使用 Client Component 包装搜索参数逻辑
 function ProductsContent() {
     const searchParamsFromUrl = useSearchParams();
-    const [_isFilterFixed, setIsFilterFixed] = useState(false);
-    const [_isFilterAtBottom, _setIsFilterAtBottom] = useState(false);
-    const filterRef = useRef<HTMLDivElement>(null);
-    const filterContainerRef = useRef<HTMLDivElement>(null);
-    const [filterOffset, setFilterOffset] = useState(0);
-
     const [searchParams, setSearchParams] = useState({
         product_groups: '' as string,
         brands: '' as string,
@@ -320,11 +314,14 @@ function ProductsContent() {
         is_prime_only: false,
     });
 
-    // 添加临时筛选状态，用于抽屉内部筛选
     const [drawerFilters, setDrawerFilters] = useState<DrawerFilters | null>(null);
-
-    // 跟踪参数是否已从URL加载的状态
     const [urlParamsLoaded, setUrlParamsLoaded] = useState(false);
+    const catalogRef = useRef<HTMLDivElement>(null);
+    const sidebarRef = useRef<HTMLDivElement>(null);
+    const mainContentRef = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({ layoutEffect: false });
+    const headerOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.97]);
+    const headerY = useTransform(scrollYProgress, [0, 0.2], [0, -20]);
 
     // 添加缓存状态展示
     const [_cacheStatus, setCacheStatus] = useState<{
@@ -333,60 +330,64 @@ function ProductsContent() {
         expires: string;
     } | null>(null);
 
-    // 添加滚动监听
+    // 添加JS滚动逻辑，实现侧边栏在父容器内的固定效果
     useEffect(() => {
         const handleScroll = () => {
-            if (!filterRef.current || !filterContainerRef.current) return;
+            if (!sidebarRef.current || !mainContentRef.current || !catalogRef.current) return;
 
-            const footerElement = document.querySelector('footer');
+            const sidebarElem = sidebarRef.current;
+            const catalogRect = catalogRef.current.getBoundingClientRect();
+            const mainContentRect = mainContentRef.current.getBoundingClientRect();
+            const sidebarRect = sidebarElem.getBoundingClientRect();
 
-            if (!footerElement) return;
+            // 固定偏移量（导航栏高度）
+            const topOffset = 72;
 
-            const _containerRect = filterContainerRef.current.getBoundingClientRect();
-            const filterRect = filterRef.current.getBoundingClientRect();
-            const footerRect = footerElement.getBoundingClientRect();
+            // 计算父容器的位置
+            const containerTop = catalogRect.top + window.scrollY;
+            const containerBottom = mainContentRect.bottom + window.scrollY;
+
+            // 计算侧边栏的高度和当前滚动位置
+            const sidebarHeight = sidebarRect.height;
             const scrollY = window.scrollY;
-            const windowHeight = window.innerHeight;
 
-            // 如果还没有记录初始偏移量，记录它
-            if (filterOffset === 0) {
-                setFilterOffset(filterRect.top + scrollY);
-            }
+            // 计算底部边界
+            const bottomLimit = containerBottom - sidebarHeight;
 
-            // 计算筛选器高度
-            const filterHeight = filterRect.height;
-
-            // 计算到 footer 的距离
-            const distanceToFooter = footerRect.top - windowHeight;
-            const bottomOffset = 240; // 与 footer 保持的距离
-
-            // 判断是否应该固定在顶部
-            const shouldBeFixed = scrollY > filterOffset - 72;
-
-            // 如果接近 footer，计算新的 top 值
-            if (shouldBeFixed && distanceToFooter < bottomOffset) {
-                const newTop = windowHeight - filterHeight - bottomOffset + distanceToFooter;
-
-                filterRef.current.style.position = 'fixed';
-                filterRef.current.style.top = `${newTop}px`;
-                setIsFilterFixed(true);
-            } else if (shouldBeFixed) {
-                filterRef.current.style.position = 'fixed';
-                filterRef.current.style.top = '72px';
-                setIsFilterFixed(true);
+            // 判断滚动位置并设置样式
+            if (scrollY + topOffset >= containerTop) {
+                if (scrollY + topOffset + sidebarHeight >= bottomLimit) {
+                    // 到达底部边界
+                    sidebarElem.style.position = 'absolute';
+                    sidebarElem.style.top = `${bottomLimit - containerTop}px`;
+                    sidebarElem.style.bottom = 'auto';
+                } else {
+                    // 固定在视口中
+                    sidebarElem.style.position = 'fixed';
+                    sidebarElem.style.top = `${topOffset}px`;
+                    sidebarElem.style.bottom = 'auto';
+                }
             } else {
-                filterRef.current.style.position = 'relative';
-                filterRef.current.style.top = '0';
-                setIsFilterFixed(false);
+                // 回到顶部
+                sidebarElem.style.position = 'absolute';
+                sidebarElem.style.top = '0';
+                sidebarElem.style.bottom = 'auto';
             }
         };
 
+        // 添加滚动和窗口大小变化事件监听
         window.addEventListener('scroll', handleScroll);
-        // 初始化时也执行一次
+        window.addEventListener('resize', handleScroll);
+
+        // 初始化调用一次
         handleScroll();
 
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [filterOffset]);
+        // 组件卸载时移除事件监听
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleScroll);
+        };
+    }, []);
 
     // 添加useEffect，确保从URL参数正确加载
     useEffect(() => {
@@ -495,10 +496,6 @@ function ProductsContent() {
     const { data, isLoading, isError, mutate } = useProducts(urlParamsLoaded ? searchParams : undefined);
     const [isDirectLoading, setIsDirectLoading] = useState(false);
     const [directData, setDirectData] = useState<ProductsApiResponse | null>(null);
-    const { scrollYProgress } = useScroll({ layoutEffect: false });
-    const headerOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.97]);
-    const headerY = useTransform(scrollYProgress, [0, 0.2], [0, -20]);
-    const catalogRef = useRef<HTMLDivElement>(null);
 
     // 在searchParams变化后，明确触发数据刷新
     useEffect(() => {
@@ -1149,18 +1146,20 @@ function ProductsContent() {
             </motion.header>
 
             {/* 商品列表区域 - 响应式布局 */}
-            <section ref={catalogRef} className="max-w-[1800px] mx-auto">
-                <div className="relative flex">
+            <section ref={catalogRef} className="max-w-[1800px] mx-auto overflow-visible">
+                <div ref={mainContentRef} className="flex relative">
                     {/* 桌面端左侧筛选器 */}
-                    <div ref={filterContainerRef} className="hidden lg:block lg:w-[280px] relative scrollbar-hide">
+                    <div className="hidden lg:block w-[280px] flex-shrink-0">
                         <div
-                            ref={filterRef}
-                            className="w-[280px] relative max-h-[calc(100vh-80px)] overflow-auto bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800 scrollbar-hide"
+                            ref={sidebarRef}
+                            className="w-[280px] bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800 overflow-y-auto scrollbar-hide z-[100]"
                             style={{
-                                transition: 'all 0.2s ease-out'
+                                maxHeight: 'calc(100vh - 80px)',
+                                willChange: 'transform',
+                                backfaceVisibility: 'hidden'
                             }}
                         >
-                            <div className="p-4">
+                            <div className="p-4 w-full">
                                 <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">Filter</h2>
                                 <ProductFilter
                                     onFilter={handleFilterChange}
@@ -1170,7 +1169,7 @@ function ProductsContent() {
                     </div>
 
                     {/* 右侧商品列表区域 */}
-                    <main className="flex-1  w-full px-4 py-6 md:py-12">
+                    <main className="flex-1 min-h-screen w-full px-4 py-6 md:py-12">
                         {/* 移动端和平板端筛选器切换按钮 */}
                         <div className="lg:hidden mb-4">
                             <button

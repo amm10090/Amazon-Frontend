@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 import { CategoryNavigation } from "@/components/ui/CategoryNavigation";
 import { CategoryProducts } from "@/components/ui/CategoryProducts";
@@ -35,9 +35,6 @@ const productGroupToCategoryMapping: Record<string, { slug: string, name: string
 export default function Home() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [processed, setProcessed] = useState(false);
-    const [navStyle, setNavStyle] = useState<{ top: string; transform?: string }>({ top: '110px' });
-    const navRef = useRef<HTMLDivElement>(null);
-    const footerRef = useRef<HTMLElement | null>(null);
 
     // 使用useCategoryStats钩子获取分类数据
     const { data: categoryStats, isLoading } = useCategoryStats({
@@ -86,72 +83,22 @@ export default function Home() {
         }
     }, [isLoading, categoryStats, processed]);
 
-    // 添加节流函数
-    const throttle = (func: (...args: unknown[]) => void, limit: number) => {
-        let inThrottle: boolean;
-
-        return function (this: unknown, ...args: unknown[]) {
-            if (!inThrottle) {
-                func.apply(this, args);
-                inThrottle = true;
-                setTimeout(() => (inThrottle = false), limit);
-            }
-        };
-    };
-
-    // 添加滚动监听
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-
-        // 获取 footer 元素
-        footerRef.current = document.querySelector('footer');
-
-        const handleScroll = throttle(() => {
-            if (!navRef.current || !footerRef.current) return;
-
-            const footerTop = footerRef.current.getBoundingClientRect().top;
-            const navHeight = navRef.current.offsetHeight;
-            const windowHeight = window.innerHeight;
-            const bottomOffset = 240; // 距离 footer 的最小距离
-
-            // 如果 footer 接近可视区域底部
-            if (footerTop - windowHeight < bottomOffset) {
-                const diff = footerTop - windowHeight;
-                const newTop = windowHeight - navHeight - bottomOffset + diff;
-
-                setNavStyle({ top: '110px', transform: `translateY(${newTop}px)` });
-            } else {
-                setNavStyle({ top: '110px', transform: 'none' });
-            }
-        }, 100);
-
-        window.addEventListener('scroll', handleScroll);
-        // 初始化时执行一次
-        handleScroll();
-
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
-    }, []);
-
     return (
-        <div className="max-w-[1800px] mx-auto overflow-hidden">
-            <div className="relative flex">
-                {/* 左侧分类导航 */}
-                <div
-                    ref={navRef}
-                    style={navStyle}
-                    className="hidden lg:block w-[240px] fixed h-auto max-h-[calc(100vh-110px)] overflow-auto bg-white pb-4 shadow-sm border-r border-gray-100 transition-transform duration-200"
-                >
-                    <div className="p-4">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Categories</h2>
-                        <CategoryNavigation useAnchorLinks={true} />
+        <div className="relative min-h-screen">
+            <div className="flex max-w-[1800px] mx-auto">
+                {/* 左侧导航 - */}
+                <div className="hidden lg:block w-[240px] relative">
+                    <div className="fixed w-[240px]  top-[110px] bg-white shadow-sm border-r border-gray-100 z-40">
+                        <div className="p-4  overflow-y-auto ">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Categories</h2>
+                            <CategoryNavigation useAnchorLinks={true} />
+                        </div>
                     </div>
                 </div>
 
                 {/* 右侧主内容区域 */}
-                <main className="flex-1 lg:ml-[240px] min-h-screen w-full overflow-hidden">
-                    <div className="px-4 lg:px-6 py-6 space-y-8 overflow-hidden">
+                <main className="flex-1 min-h-screen">
+                    <div className="px-4 lg:px-6 py-6 space-y-8">
                         {/* 顶部英雄区域 */}
                         <HeroSection />
 
