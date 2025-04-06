@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { CategoryNavigation } from "@/components/ui/CategoryNavigation";
 import { CategoryProducts } from "@/components/ui/CategoryProducts";
@@ -35,6 +35,9 @@ const productGroupToCategoryMapping: Record<string, { slug: string, name: string
 export default function Home() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [processed, setProcessed] = useState(false);
+    const catalogRef = useRef<HTMLDivElement>(null);
+    const sidebarRef = useRef<HTMLDivElement>(null);
+    const mainContentRef = useRef<HTMLDivElement>(null);
 
     // 使用useCategoryStats钩子获取分类数据
     const { data: categoryStats, isLoading } = useCategoryStats({
@@ -83,13 +86,106 @@ export default function Home() {
         }
     }, [isLoading, categoryStats, processed]);
 
+    // Add scroll handling effect
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!sidebarRef.current || !mainContentRef.current || !catalogRef.current) return;
+
+            const sidebarElem = sidebarRef.current;
+            const catalogRect = catalogRef.current.getBoundingClientRect();
+            const mainContentRect = mainContentRef.current.getBoundingClientRect();
+            const sidebarRect = sidebarElem.getBoundingClientRect();
+
+            // 固定偏移量（导航栏高度）
+            const topOffset = 110;
+
+            // 计算父容器的位置
+            const containerTop = catalogRect.top + window.scrollY;
+            const containerBottom = mainContentRect.bottom + window.scrollY;
+
+            // 计算侧边栏的高度和当前滚动位置
+            const sidebarHeight = sidebarRect.height;
+            const scrollY = window.scrollY;
+
+            // 计算主内容区域的实际高度
+            const mainContentHeight = mainContentRect.height;
+
+            // 确保侧边栏不会超出主内容区域的底部
+            const maxTop = mainContentHeight - sidebarHeight;
+
+            // 计算当前应该设置的top值
+            let targetTop = scrollY + topOffset - containerTop;
+
+            // 限制top值不超过最大值
+            targetTop = Math.min(targetTop, maxTop);
+            // 限制top值不小于0
+            targetTop = Math.max(0, targetTop);
+
+            // 判断滚动位置并设置样式
+            if (scrollY + topOffset >= containerTop) {
+                // 检查是否到达底部边界
+                if (targetTop >= maxTop) {
+                    // 到达底部边界，使用absolute定位
+                    sidebarElem.style.position = 'absolute';
+                    sidebarElem.style.top = `${maxTop}px`;
+                    sidebarElem.style.bottom = 'auto';
+                    sidebarElem.style.transform = 'none';
+                } else {
+                    // 在可视区域内，使用fixed定位
+                    sidebarElem.style.position = 'fixed';
+                    sidebarElem.style.top = `${topOffset}px`;
+                    sidebarElem.style.bottom = 'auto';
+                    sidebarElem.style.transform = 'none';
+                }
+            } else {
+                // 回到顶部
+                sidebarElem.style.position = 'absolute';
+                sidebarElem.style.top = '0';
+                sidebarElem.style.bottom = 'auto';
+                sidebarElem.style.transform = 'none';
+            }
+        };
+
+        // 添加防抖处理
+        let ticking = false;
+        const scrollHandler = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    handleScroll();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', scrollHandler, { passive: true });
+        window.addEventListener('resize', scrollHandler, { passive: true });
+
+        // 初始化调用一次
+        handleScroll();
+
+        return () => {
+            window.removeEventListener('scroll', scrollHandler);
+            window.removeEventListener('resize', scrollHandler);
+        };
+    }, []);
+
     return (
         <div className="relative min-h-screen">
             <div className="flex max-w-[1800px] mx-auto">
-                {/* 左侧导航 - */}
-                <div className="hidden lg:block w-[240px] relative">
-                    <div className="fixed w-[240px]  top-[110px] bg-white shadow-sm border-r border-gray-100 z-40">
-                        <div className="p-4  overflow-y-auto ">
+                {/* 左侧导航 */}
+                <div className="hidden lg:block w-[240px] relative" ref={catalogRef}>
+                    <div
+                        ref={sidebarRef}
+                        className="w-[240px] bg-white shadow-sm border-r border-gray-100 z-40"
+                        style={{
+                            maxHeight: 'calc(100vh - 110px)',
+                            overflowY: 'auto',
+                            willChange: 'transform, position, top',
+                            transition: 'top 0.1s ease-out'
+                        }}
+                    >
+                        <div className="p-4">
                             <h2 className="text-lg font-semibold text-gray-900 mb-4">Categories</h2>
                             <CategoryNavigation useAnchorLinks={true} />
                         </div>
@@ -97,7 +193,7 @@ export default function Home() {
                 </div>
 
                 {/* 右侧主内容区域 */}
-                <main className="flex-1 min-h-screen">
+                <main ref={mainContentRef} className="flex-1 min-h-screen">
                     <div className="px-4 lg:px-6 py-6 space-y-8">
                         {/* 顶部英雄区域 */}
                         <HeroSection />

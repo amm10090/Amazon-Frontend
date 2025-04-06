@@ -212,7 +212,7 @@ export const Navbar = () => {
 
       <HeroUINavbar
         maxWidth="full"
-        className={`bg-background/80 backdrop-blur-lg border-b border-divider/50 transition-all duration-300 ${isScrolled ? "shadow-md" : ""}`}
+        className={`bg-background/80 backdrop-blur-lg border-b  transition-all duration-300 ${isScrolled ? "shadow-md" : ""}`}
         position="sticky"
         isMenuOpen={isMenuOpen}
         onMenuOpenChange={setIsMenuOpen}
