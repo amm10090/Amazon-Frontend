@@ -101,7 +101,7 @@ export default function Home() {
 
             // 计算父容器的位置
             const containerTop = catalogRect.top + window.scrollY;
-            const containerBottom = mainContentRect.bottom + window.scrollY;
+            const _containerBottom = mainContentRect.bottom + window.scrollY;
 
             // 计算侧边栏的高度和当前滚动位置
             const sidebarHeight = sidebarRect.height;

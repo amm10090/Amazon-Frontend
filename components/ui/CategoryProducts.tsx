@@ -25,13 +25,13 @@ interface CategoryProductsProps {
     id?: string;            // HTML ID，用于锚点链接
 }
 
-export function CategoryProducts({ title, slug, page_size = 6, className = '', id }: CategoryProductsProps) {
+export function CategoryProducts({ title, slug, page_size = 4, className = '', id }: CategoryProductsProps) {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isMobile, setIsMobile] = useState(false);
 
-    // 根据屏幕宽度动态设置商品数量
+    // 根据屏幕宽度动态设置商品数量，使用 page_size 作为初始值
     const [dynamicLimit, setDynamicLimit] = useState(page_size);
 
     useEffect(() => {
@@ -261,7 +261,7 @@ export function CategoryProducts({ title, slug, page_size = 6, className = '', i
         return (
             <div id={id} className={`bg-gray-100 dark:bg-gray-800 rounded-xl p-4 sm:p-6 ${className}`}>
                 <div className="h-8 w-48 bg-gray-300 dark:bg-gray-700 rounded mb-4" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {Array.from({ length: isMobile ? 1 : dynamicLimit }).map(() => {
                         const uniqueId = `placeholder-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -351,7 +351,7 @@ export function CategoryProducts({ title, slug, page_size = 6, className = '', i
             {isMobile ? (
                 <ProductSwiper products={products} />
             ) : (
-                // 大屏幕保持网格布局，lg布局显示3列
+                // 修改网格布局列数
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                     {products.map((product, index) => renderProductCard(product, index)).filter(Boolean)}
                 </div>
