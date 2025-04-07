@@ -1253,6 +1253,90 @@ function ProductsContent() {
                     </main>
                 </div>
             </section>
+            {/* 遮罩层 */}
+            <div
+                id="drawer-overlay"
+                className="fixed inset-0 bg-black opacity-0 pointer-events-none transition-opacity duration-300 z-[998]"
+                onClick={() => {
+                    const drawerElem = document.getElementById('mobile-filter-drawer');
+                    const overlayElem = document.getElementById('drawer-overlay');
+
+                    if (drawerElem && overlayElem) {
+                        drawerElem.classList.add('translate-y-full');
+                        overlayElem.classList.remove('opacity-70');
+                        overlayElem.classList.add('opacity-0');
+                        overlayElem.classList.add('pointer-events-none');
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                }}
+                onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                        const drawerElem = document.getElementById('mobile-filter-drawer');
+                        const overlayElem = document.getElementById('drawer-overlay');
+
+                        if (drawerElem && overlayElem) {
+                            drawerElem.classList.add('translate-y-full');
+                            overlayElem.classList.remove('opacity-70');
+                            overlayElem.classList.add('opacity-0');
+                            overlayElem.classList.add('pointer-events-none');
+                            document.body.classList.remove('overflow-hidden');
+                        }
+                    }
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label="Close filter drawer"
+            />
+            {/* 移动端筛选器抽屉 */}
+            <div
+                id="mobile-filter-drawer"
+                className="fixed bottom-0 inset-x-0 z-[999] bg-white dark:bg-gray-800 rounded-t-2xl shadow-lg transform translate-y-full transition-transform duration-300 max-h-[90vh] overflow-y-auto"
+            >
+                {/* 抽屉头部 */}
+                <div className="sticky top-0 bg-white dark:bg-gray-800 px-4 py-3 border-b dark:border-gray-700 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filters</h3>
+                    <button
+                        onClick={() => {
+                            const drawerElem = document.getElementById('mobile-filter-drawer');
+                            const overlayElem = document.getElementById('drawer-overlay');
+
+                            if (drawerElem && overlayElem) {
+                                drawerElem.classList.add('translate-y-full');
+                                overlayElem.classList.remove('opacity-70');
+                                overlayElem.classList.add('opacity-0');
+                                overlayElem.classList.add('pointer-events-none');
+                                document.body.classList.remove('overflow-hidden');
+                            }
+                        }}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                {/* 抽屉内容 */}
+                <div className="p-4">
+                    <ProductFilter
+                        onFilter={(newFilters) => {
+                            setDrawerFilters(newFilters as DrawerFilters);
+                            handleFilterChange(newFilters as DrawerFilters);
+
+                            // 关闭抽屉
+                            const drawerElem = document.getElementById('mobile-filter-drawer');
+                            const overlayElem = document.getElementById('drawer-overlay');
+
+                            if (drawerElem && overlayElem) {
+                                drawerElem.classList.add('translate-y-full');
+                                overlayElem.classList.remove('opacity-70');
+                                overlayElem.classList.add('opacity-0');
+                                overlayElem.classList.add('pointer-events-none');
+                                document.body.classList.remove('overflow-hidden');
+                            }
+                        }}
+                    />
+                </div>
+            </div>
         </div>
     );
 }

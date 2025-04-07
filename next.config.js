@@ -43,6 +43,10 @@ const nextConfig = {
                 source: '/api/search/products/:path*',
                 destination: 'http://89.116.212.208:5001/api/search/products/:path*',
             },
+            {
+                source: '/api/products/count/:path*',
+                destination: 'http://89.116.212.208:5001/api/products/list/:path*',
+            },
             // 其他 API 路由保持在本地
             {
                 source: '/api/users/:path*',
