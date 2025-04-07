@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Pagination, Navigation } from 'swiper/modules';
+import { Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 import FavoriteButton from '@/components/common/FavoriteButton';
@@ -65,20 +65,20 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
 
                     <Link href={`/product/${productId}`} className="block w-full">
                         <motion.div
-                            className="bg-white dark:bg-gray-900 rounded-lg overflow-hidden h-full flex flex-col w-full"
+                            className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden h-full flex flex-col w-full"
                             transition={{ duration: 0.3 }}
                         >
                             {/* Prime badge */}
                             {isPrime && (
-                                <div className="absolute top-2 left-2 z-10">
-                                    <div className="bg-[#0574F7] text-white px-2 py-0.5 rounded-full text-xs font-medium">
+                                <div className="absolute top-3 left-3 z-10">
+                                    <div className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
                                         Prime
                                     </div>
                                 </div>
                             )}
 
                             {/* Product image */}
-                            <div className="relative w-full aspect-square bg-white dark:bg-gray-800">
+                            <div className="relative w-full aspect-[1/1] bg-white dark:bg-gray-800 pt-0.5 pb-0">
                                 <div className="h-full w-full relative">
                                     {productImage ? (
                                         <Image
@@ -86,7 +86,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                                             alt={title}
                                             fill
                                             sizes="100vw"
-                                            className="object-contain w-full h-full p-1"
+                                            className="object-cover p-2"
                                             priority={index < 2}
                                             loading={index < 2 ? "eager" : "lazy"}
                                             quality={90}
@@ -101,11 +101,11 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                             </div>
 
                             {/* Product information */}
-                            <div className="p-2 flex-grow flex flex-col min-h-[120px]">
+                            <div className="pl-3 pr-3 flex-grow flex flex-col">
                                 {/* Brand and Store */}
-                                <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center justify-between mb-1.5">
                                     {product.brand && (
-                                        <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded">
+                                        <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded inline-block">
                                             {product.brand}
                                         </span>
                                     )}
@@ -115,24 +115,24 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                                     />
                                 </div>
 
-                                <h3 className="text-sm font-medium line-clamp-2 mb-1 flex-grow text-primary-dark dark:text-white">
+                                <h3 className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-white">
                                     {title}
                                 </h3>
 
                                 {/* Price and discount */}
-                                <div className="flex items-center justify-between mt-auto mb-1">
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-base font-semibold text-primary dark:text-primary-light">
+                                <div className="flex items-center justify-between mt-1 mb-2">
+                                    <div className="flex items-baseline min-w-0 overflow-hidden mr-2">
+                                        <span className="text-lg font-semibold text-primary dark:text-primary-light whitespace-nowrap">
                                             {formatPrice(price)}
                                         </span>
                                         {originalPrice > price && (
-                                            <span className="text-xs text-secondary dark:text-gray-400 line-through">
+                                            <span className="text-xs text-secondary dark:text-gray-400 line-through whitespace-nowrap ml-1.5">
                                                 {formatPrice(originalPrice)}
                                             </span>
                                         )}
                                     </div>
                                     {savingsPercentage > 0 && (
-                                        <span className={`text-xs font-bold text-white px-1.5 py-0.5 rounded ${savingsPercentage > 30 ? 'bg-primary-badge' :
+                                        <span className={`text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${savingsPercentage > 30 ? 'bg-primary-badge' :
                                             savingsPercentage > 10 ? 'bg-accent' :
                                                 'bg-secondary'
                                             }`}>
@@ -142,9 +142,11 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                                 </div>
 
                                 {/* Action button */}
-                                <button className="w-full py-1.5 mt-1 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-button-light dark:hover:bg-primary-button text-white text-center rounded-full text-xs font-medium transition-colors">
-                                    View Details
-                                </button>
+                                <div className="mb-3">
+                                    <button className="w-full py-2 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-button-light dark:hover:bg-primary-button text-white text-center rounded-full font-medium transition-colors">
+                                        View Details
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     </Link>
@@ -158,7 +160,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
 
     // 移除 variant 相关的配置,使用统一的配置
     const swiperProps = {
-        modules: [Navigation, Pagination],
+        modules: [Pagination],
         slidesPerView: 1,
         spaceBetween: 20,
         speed: 600,
@@ -181,10 +183,6 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                         return `<span class="${className}"></span>`;
                     },
                 }}
-                navigation={{
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
-                }}
                 className="product-swiper"
             >
                 {products.map((product, index) => (
@@ -192,20 +190,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                         {renderProductCard(product, index)}
                     </SwiperSlide>
                 ))}
-                <div className="swiper-navigation">
-                    <button className="swiper-button-prev" aria-label="Previous slide">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                    </button>
-                    <button className="swiper-button-next" aria-label="Next slide">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <path d="M6 13L11 8L6 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                    </button>
-                </div>
             </Swiper>
-
             <style jsx global>{`
                 .product-swiper-container {
                     width: 100%;
@@ -236,120 +221,31 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                     transform: scale(0.9);
                 }
 
-                /* Navigation Styles */
-                .swiper-navigation {
-                    position: absolute;
-                    top: 50%;
-                    left: 0;
-                    right: 0;
-                    transform: translateY(-50%);
-                    z-index: 10;
-                    display: flex;
-                    justify-content: space-between;
-                    padding: 0 0.5rem;
-                    pointer-events: none;
-                }
-
-                .swiper-button-prev,
-                .swiper-button-next {
-                    width: 28px;
-                    height: 28px;
-                    border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.9);
-                    border: 1px solid rgba(0, 0, 0, 0.1);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: #1d1d1f;
-                    cursor: pointer;
-                    pointer-events: auto;
-                    transition: all 0.3s ease;
-                    opacity: 0;
-                }
-
-                .product-swiper-container:hover .swiper-button-prev,
-                .product-swiper-container:hover .swiper-button-next {
-                    opacity: 1;
-                }
-
-                .swiper-button-prev:hover,
-                .swiper-button-next:hover {
-                    background: #ffffff;
-                    transform: scale(1.1);
-                }
-
-                .swiper-button-prev:after,
-                .swiper-button-next:after {
-                    content: none;
-                }
-
                 /* Pagination Styles */
                 .swiper-pagination {
-                    bottom: 0.5rem !important;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    gap: 4px;
-                    padding: 0;
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    z-index: 10;
+                    bottom: 0rem !important;
                 }
 
                 .swiper-pagination-bullet {
-                    width: 4px !important;
-                    height: 4px !important;
-                    background: #D1D5DB !important;
-                    opacity: 0.5 !important;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    margin: 0 !important;
-                    border-radius: 50%;
+                    width: 8px;
+                    height: 8px;
+                    background-color: #D1D5DB;
+                    opacity: 1;
+                    transition: all 0.3s ease;
                 }
 
                 .swiper-pagination-bullet-active {
-                    background: #9CA3AF !important;
-                    opacity: 1 !important;
-                    transform: scale(1.25);
+                    width: 16px;
+                    background-color: #10B981;
+                    border-radius: 4px;
                 }
 
-                /* Dark Mode Styles */
-                .dark .swiper-pagination-bullet {
-                    background: rgba(209, 213, 219, 0.5) !important;
-                }
-
-                .dark .swiper-pagination-bullet-active {
-                    background: #9CA3AF !important;
-                }
-
-                /* Responsive Styles */
-                @media (max-width: 768px) {
-                    .product-swiper-container {
-                        margin: 0;
-                    }
-
-                    .product-swiper {
-                        padding: 0.5rem 0 2rem;
-                    }
-
-                    .swiper-navigation {
-                        display: none;
-                    }
-
+                @media (max-width: 640px) {
                     .swiper-slide-product {
-                        width: auto;
+                        padding: 0.25rem 0.5rem;
                     }
-
-                    .swiper-pagination {
-                        bottom: 0.5rem !important;
-                    }
-                }
-
-                /* Dark mode container background */
-                .dark .product-swiper-container {
-                    background: transparent;
                 }
             `}</style>
         </div>
     );
-} 
+}

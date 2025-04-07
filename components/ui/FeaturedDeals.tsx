@@ -18,7 +18,7 @@ import { formatPrice, calculateDiscount } from '@/lib/utils';
 import type { Product } from '@/types/api';
 
 type FeaturedDealsProps = {
-    limit?: number;
+    pageSize?: number;
     className?: string;
     hideTitle?: boolean;
     productGroups?: string;
@@ -39,7 +39,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 export function FeaturedDeals({
-    limit = 4,
+    pageSize = 4,
     className = '',
     hideTitle = false,
     productGroups,
@@ -51,21 +51,21 @@ export function FeaturedDeals({
     const [isMobile, setIsMobile] = useState(false);
 
     // 根据屏幕宽度动态设置商品数量
-    const [dynamicLimit, setDynamicLimit] = useState(limit);
+    const [dynamicPageSize, setDynamicPageSize] = useState(pageSize);
 
     useEffect(() => {
         const handleResize = () => {
             const width = window.innerWidth;
-            const defaultLimit = limit || 4; // 使用传入的limit或默认值4
+            const defaultPageSize = pageSize || 4; // 使用传入的pageSize或默认值4
 
             if (width >= 1280) { // xl
-                setDynamicLimit(defaultLimit); // 使用传入的limit或默认值
+                setDynamicPageSize(defaultPageSize); // 使用传入的pageSize或默认值
                 setIsMobile(false);
             } else if (width >= 768) { // md
-                setDynamicLimit(Math.min(defaultLimit, 6)); // 平板最多显示6个
+                setDynamicPageSize(3); // 平板端固定显示3个商品
                 setIsMobile(false);
             } else { // sm及以下使用轮播
-                setDynamicLimit(Math.min(defaultLimit, 9)); // 移动端最多显示9个
+                setDynamicPageSize(Math.min(defaultPageSize, 9)); // 移动端最多显示9个
                 setIsMobile(true);
             }
         };
@@ -77,9 +77,9 @@ export function FeaturedDeals({
         window.addEventListener('resize', handleResize);
 
         return () => window.removeEventListener('resize', handleResize);
-    }, [limit]); // 添加 limit 到依赖数组
+    }, [pageSize]); // 添加 pageSize 到依赖数组
 
-    // 使用动态limit获取商品数据
+    // 使用动态pageSize获取商品数据
     useEffect(() => {
         const fetchDeals = async () => {
             try {
@@ -115,7 +115,7 @@ export function FeaturedDeals({
                     // 第二步：使用随机页码获取商品
                     const params = new URLSearchParams({
                         page: randomPage.toString(),
-                        page_size: pageSize.toString()
+                        page_size: dynamicPageSize.toString()
                     });
 
                     if (productGroups) {
@@ -137,7 +137,7 @@ export function FeaturedDeals({
                             // 随机打乱商品数组
                             products = shuffleArray(products);
                             // 只取需要的数量
-                            products = products.slice(0, dynamicLimit);
+                            products = products.slice(0, dynamicPageSize);
                         }
                         setDeals(products);
                     } else {
@@ -147,7 +147,7 @@ export function FeaturedDeals({
                 } else {
                     // 原有的 featured API 逻辑
                     const params = new URLSearchParams({
-                        limit: dynamicLimit.toString()
+                        page_size: dynamicPageSize.toString()
                     });
 
                     if (productGroups) {
@@ -178,7 +178,7 @@ export function FeaturedDeals({
         };
 
         fetchDeals();
-    }, [dynamicLimit, productGroups, useListApi]);
+    }, [dynamicPageSize, productGroups, useListApi]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
@@ -377,7 +377,7 @@ export function FeaturedDeals({
             <div className={`bg-gray-100 dark:bg-gray-800 rounded-xl p-4 sm:p-6 ${className}`}>
                 <div className="h-8 w-48 bg-gray-300 dark:bg-gray-700 rounded mb-4" />
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {Array.from({ length: isMobile ? 1 : dynamicLimit }).map(() => {
+                    {Array.from({ length: isMobile ? 1 : dynamicPageSize }).map(() => {
                         const uniqueId = `placeholder-${Math.random().toString(36).substring(2, 9)}`;
 
                         return <div key={uniqueId} className="h-[360px] bg-gray-300 dark:bg-gray-700 rounded-lg" />;
@@ -444,13 +444,13 @@ export function FeaturedDeals({
 
             {/* 移动端使用Swiper轮播 */}
             {isMobile ? (
-                <div className="-mx-2.5 sm:-mx-3.5">
+                <div className="-mx-2 sm:-mx-3">
                     <ProductSwiper products={deals} />
                 </div>
             ) : (
                 // 大屏幕使用网格布局
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {deals.slice(0, dynamicLimit).map((deal, index) => renderProductCard(deal, index)).filter(Boolean)}
+                    {deals.slice(0, dynamicPageSize).map((deal, index) => renderProductCard(deal, index)).filter(Boolean)}
                 </div>
             )}
         </motion.div>

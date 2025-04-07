@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import { auth } from '@/auth';
 import { ClientLayout } from "@/components/client-layout";
 import { BackTop } from "@/components/ui/BackTop";
+import { FloatingFavorites } from "@/components/ui/FloatingFavorites";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,6 +37,7 @@ export default async function RootLayout({
         <ClientLayout inter={inter} session={session}>
           {children}
           <BackTop />
+          <FloatingFavorites />
         </ClientLayout>
       </body>
     </html>

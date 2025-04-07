@@ -4,11 +4,10 @@ import {
   Navbar as HeroUINavbar,
   NavbarMenuToggle,
   NavbarBrand,
-  NavbarItem,
 } from "@heroui/navbar";
 import { Input, Button } from "@heroui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, Heart } from "lucide-react";
+import { Menu } from "lucide-react";
 import Image from "next/image";
 import NextLink from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -220,19 +219,18 @@ export const Navbar = () => {
         {/* 外层容器 */}
         <div className="w-full flex justify-center">
           {/* 内容限宽容器 */}
-          <div className="w-full max-w-[1500px] relative z-[9991]">
+          <div className="w-full max-w-[1500px] relative z-[9991] px-4 md:px-6 lg:px-8">
             {/* 导航栏主体 */}
-            <div className="flex items-center justify-between w-full h-16 px-4">
+            <div className="flex items-center justify-between w-full h-16">
               {/* Logo and Search Bar Content - Left Side */}
               <div className="flex items-center gap-4 flex-1 lg:max-w-[800px]">
-                {/* Mobile Menu & Search Buttons */}
-                <div className="flex items-center gap-1 xl:hidden">
+                {/* Mobile Menu */}
+                <div className="flex items-center gap-2 xl:hidden">
                   <NavbarMenuToggle
                     icon={<Menu size={20} />}
                     className="w-8 h-8 p-1.5 text-white bg-gradient-to-r from-[#1B5479] to-[#287EB7] hover:opacity-90 rounded-lg lg:hidden"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   />
-                  <MobileSearchButton toggleSearch={toggleSearch} />
                 </div>
 
                 {/* 移动端居中 Logo */}
@@ -433,13 +431,9 @@ export const Navbar = () => {
                 </div>
               </div>
 
-              {/* Mobile Navigation Icons */}
-              <div className="flex items-center gap-2 lg:hidden">
-                <NavbarItem>
-                  <NextLink href="/favorites" className="w-8 h-8 flex items-center justify-center">
-                    <Heart size={20} className="text-default-500" />
-                  </NextLink>
-                </NavbarItem>
+              {/* Mobile Search Button - Right Side */}
+              <div className="flex items-center lg:hidden">
+                <MobileSearchButton toggleSearch={toggleSearch} />
               </div>
             </div>
           </div>

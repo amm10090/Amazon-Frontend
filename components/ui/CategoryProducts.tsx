@@ -309,7 +309,7 @@ export function CategoryProducts({ title, slug, page_size = 4, className = '', i
     return (
         <motion.div
             id={id}
-            className={`bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 sm:p-4 ${className}`}
+            className={className}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -349,7 +349,7 @@ export function CategoryProducts({ title, slug, page_size = 4, className = '', i
 
             {/* 移动端使用Swiper轮播 */}
             {isMobile ? (
-                <div className="-mx-2.5 sm:-mx-3.5">
+                <div className="-mx-2 sm:-mx-3">
                     <ProductSwiper products={products} />
                 </div>
             ) : (
