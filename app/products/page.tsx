@@ -312,6 +312,7 @@ function ProductsContent() {
         min_discount: undefined as number | undefined,
         product_type: 'all' as 'discount' | 'coupon' | 'all',
         is_prime_only: false,
+        api_provider: undefined as string | undefined,
     });
 
     const [drawerFilters, setDrawerFilters] = useState<DrawerFilters | null>(null);
@@ -432,6 +433,7 @@ function ProductsContent() {
         const is_prime_only = searchParamsFromUrl.get('is_prime_only') === 'true';
         const sort_by = (searchParamsFromUrl.get('sort_by') as typeof searchParams.sort_by) || 'all';
         const sort_order = (searchParamsFromUrl.get('sort_order') as typeof searchParams.sort_order) || 'desc';
+        const api_provider = searchParamsFromUrl.get('api_provider') || undefined;
 
         // 更新searchParams状态，使用合并后的分类参数
         setSearchParams(prev => {
@@ -445,7 +447,8 @@ function ProductsContent() {
                 min_discount,
                 is_prime_only,
                 sort_by,
-                sort_order
+                sort_order,
+                api_provider
             };
 
             return newParams;
@@ -484,6 +487,7 @@ function ProductsContent() {
         if (searchParams.is_prime_only) params.set('is_prime_only', 'true');
         if (searchParams.sort_by !== 'all') params.set('sort_by', searchParams.sort_by);
         if (searchParams.sort_order !== 'desc') params.set('sort_order', searchParams.sort_order);
+        if (searchParams.api_provider) params.set('api_provider', searchParams.api_provider);
 
         // 构建查询字符串
         const queryString = params.toString();
@@ -730,8 +734,8 @@ function ProductsContent() {
 
     // 处理筛选条件变更
     const handleFilterChange = useCallback((filters: FilterParams) => {
-        // 移除不支持的参数
-        const { api_provider: _api_provider, min_commission: _min_commission, min_rating: _min_rating, ...validFilters } = filters;
+        // 移除不支持的参数，但保留api_provider
+        const { min_commission: _min_commission, min_rating: _min_rating, ...validFilters } = filters;
 
         // 创建新的筛选器对象，确保类型兼容
         const newFilters: Partial<typeof searchParams> = {};
@@ -741,6 +745,7 @@ function ProductsContent() {
         if (validFilters.max_price !== undefined) newFilters.max_price = validFilters.max_price;
         if (validFilters.min_discount !== undefined) newFilters.min_discount = validFilters.min_discount;
         if (validFilters.is_prime_only !== undefined) newFilters.is_prime_only = validFilters.is_prime_only;
+        if (validFilters.api_provider !== undefined) newFilters.api_provider = validFilters.api_provider;
 
         // 确保品牌参数为字符串类型
         if (validFilters.brands) {

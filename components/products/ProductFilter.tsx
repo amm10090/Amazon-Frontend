@@ -2,9 +2,11 @@
 
 import { motion } from 'framer-motion';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { useBrandStats } from '@/lib/hooks';
+import { UserRole } from '@/lib/models/UserRole';
 
 // 添加用于隐藏滚动条的全局样式
 const noScrollbarStyle = `
@@ -28,6 +30,7 @@ export type FilterState = {
     discount: number;
     brands: string;
     isPrime: boolean;
+    apiProvider?: string;
 }
 
 const discountOptions = [80, 60, 40, 20, 10];
@@ -306,6 +309,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const pathname = usePathname();
+    const { data: session } = useSession();
     const isInitialMount = useRef(true);
 
     // 价格上限提升到10000美元
@@ -317,13 +321,31 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     const initialDiscount = Number(searchParams.get('min_discount')) || 0;
     const initialBrands = searchParams.get('brands') || '';
     const initialIsPrime = searchParams.get('is_prime_only') === 'true';
+    const initialApiProvider = searchParams.get('api_provider') || '';
 
+    // 当前应用的筛选条件
     const [filter, setFilter] = useState<FilterState>({
-        price: [initialMinPrice, initialMaxPrice],
+        price: [initialMinPrice, initialMaxPrice] as [number, number],
         discount: initialDiscount,
         brands: initialBrands,
-        isPrime: initialIsPrime
+        isPrime: initialIsPrime,
+        apiProvider: initialApiProvider
     });
+
+    // 添加临时筛选条件状态，用于存储用户当前选择但尚未应用的筛选
+    const [tempFilter, setTempFilter] = useState<FilterState>({
+        price: [initialMinPrice, initialMaxPrice] as [number, number],
+        discount: initialDiscount,
+        brands: initialBrands,
+        isPrime: initialIsPrime,
+        apiProvider: initialApiProvider
+    });
+
+    // 添加一个状态表示是否有未应用的变更
+    const [hasUnappliedChanges, setHasUnappliedChanges] = useState(false);
+
+    // 跟踪筛选器是否正在应用中（防止重复点击）
+    const [isApplying, setIsApplying] = useState(false);
 
     const [availableBrands, setAvailableBrands] = useState<string[]>([]);
     const [loading, _setLoading] = useState(false);
@@ -344,15 +366,23 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         const discount = Number(searchParams.get('min_discount')) || 0;
         const brands = searchParams.get('brands') || '';
         const isPrime = searchParams.get('is_prime_only') === 'true';
+        const apiProvider = searchParams.get('api_provider') || '';
 
         // 更新filter状态以反映URL参数
-        setFilter({
-            price: [minPrice, maxPrice],
+        const newFilter: FilterState = {
+            price: [minPrice, maxPrice] as [number, number],
             discount,
             brands,
-            isPrime
-        });
-    }, [searchParams]); // 依赖于searchParams，确保URL变化时会更新
+            isPrime,
+            apiProvider
+        };
+
+        setFilter(newFilter);
+        // 同时更新临时筛选状态，确保它始终反映当前应用的筛选条件
+        setTempFilter(newFilter);
+        // 重置未应用变更状态
+        setHasUnappliedChanges(false);
+    }, [searchParams, MAX_PRICE]); // 依赖于searchParams，确保URL变化时会更新
 
     // 使用品牌统计hook获取真实数据
     const { data: brandStats, isLoading: isBrandStatsLoading } = useBrandStats({
@@ -403,6 +433,18 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         }
     }, [isBrandStatsLoading]);
 
+    // 添加一个辅助函数，检查当前是否有活跃的筛选条件
+    const hasActiveFilters = useCallback((filterState: FilterState) => {
+        return (
+            filterState.price[0] > 0 ||
+            filterState.price[1] < MAX_PRICE ||
+            filterState.discount > 0 ||
+            (filterState.brands && filterState.brands.trim() !== '') ||
+            filterState.isPrime ||
+            !!filterState.apiProvider
+        );
+    }, [MAX_PRICE]);
+
     // Create a function to build URLSearchParams that doesn't depend on filter
     const buildUrlParams = useCallback((currentFilter: FilterState) => {
         // 基于当前URL的searchParams创建新实例，保留所有现有参数
@@ -412,69 +454,105 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         // 以防万一，我们可以确保这些参数一定存在
         const productGroups = searchParams.get('product_groups');
         const category = searchParams.get('category');
+        const page = searchParams.get('page');
 
+        // 先清除所有筛选相关参数
+        params.delete('min_price');
+        params.delete('max_price');
+        params.delete('min_discount');
+        params.delete('brands');
+        params.delete('is_prime_only');
+        params.delete('api_provider');
+        // 也清除时间戳参数，稍后根据条件再添加
+        params.delete('_ts');
+
+        // 保留必要的导航参数
         if (productGroups) params.set('product_groups', productGroups);
         if (category) params.set('category', category);
+        if (page) params.set('page', page);
+
+        // 使用辅助函数检查是否有活跃的筛选条件
+        const hasFilters = hasActiveFilters(currentFilter);
 
         // Only add to URL when value is not default - 使用正确的API参数名称
-        if (currentFilter.price[0] > 0) params.set('min_price', currentFilter.price[0].toString());
-        else params.delete('min_price');
+        if (currentFilter.price[0] > 0) {
+            params.set('min_price', currentFilter.price[0].toString());
+        }
 
-        if (currentFilter.price[1] < MAX_PRICE) params.set('max_price', currentFilter.price[1].toString());
-        else params.delete('max_price');
+        if (currentFilter.price[1] < MAX_PRICE) {
+            params.set('max_price', currentFilter.price[1].toString());
+        }
 
-        if (currentFilter.discount > 0) params.set('min_discount', currentFilter.discount.toString());
-        else params.delete('min_discount');
+        if (currentFilter.discount > 0) {
+            params.set('min_discount', currentFilter.discount.toString());
+        }
 
-        if (currentFilter.brands && currentFilter.brands.trim() !== '') params.set('brands', currentFilter.brands);
-        else params.delete('brands');
+        if (currentFilter.brands && currentFilter.brands.trim() !== '') {
+            params.set('brands', currentFilter.brands);
+        }
 
-        if (currentFilter.isPrime) params.set('is_prime_only', 'true');
-        else params.delete('is_prime_only');
+        if (currentFilter.isPrime) {
+            params.set('is_prime_only', 'true');
+        }
 
-        // 添加时间戳参数，防止缓存问题
-        params.set('_ts', Date.now().toString());
+        if (currentFilter.apiProvider) {
+            params.set('api_provider', currentFilter.apiProvider);
+        }
+
+        // 添加时间戳参数，防止缓存问题 - 只在有实际筛选条件时添加
+        if (hasFilters) {
+            params.set('_ts', Date.now().toString());
+        }
 
         return params;
-    }, [searchParams]); // 添加searchParams依赖
+    }, [searchParams, MAX_PRICE, hasActiveFilters]); // 添加hasActiveFilters依赖
 
-    // Update URL parameters function with dependency check to prevent loops
-    const updateUrlParams = useCallback(() => {
-        const currentFilterSnapshot = filter;
+    // Update URL parameters function - 优化为只在明确应用筛选时调用
+    const applyFilters = useCallback(() => {
+        // 防止重复应用
+        if (isApplying) return;
 
-        // 比较当前过滤器和之前的过滤器
-        if (JSON.stringify(currentFilterSnapshot) !== JSON.stringify(prevFilter.current)) {
-            // 更新上一次的过滤条件引用
-            prevFilter.current = { ...currentFilterSnapshot };
-            // 构建URL参数
-            const params = buildUrlParams(currentFilterSnapshot);
+        setIsApplying(true);
 
-            // eslint-disable-next-line no-console
-            console.log('更新URL参数:', params.toString(), '原有分类参数:', searchParams.get('product_groups') || searchParams.get('category'));
-            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        try {
+            // 检查临时筛选条件是否与当前应用的筛选条件不同
+            if (JSON.stringify(tempFilter) !== JSON.stringify(filter)) {
+                // 将临时筛选条件应用到主筛选条件
+                setFilter(tempFilter);
+                prevFilter.current = { ...tempFilter };
+
+                // 构建URL参数
+                const params = buildUrlParams(tempFilter);
+
+                // 更新URL，一次性应用所有筛选条件
+                router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+
+                // 如果有onFilter回调，调用它
+                if (onFilter) {
+                    const filterParams: Record<string, unknown> = {};
+
+                    if (tempFilter.price[0] > 0) filterParams.min_price = tempFilter.price[0];
+                    if (tempFilter.price[1] < MAX_PRICE) filterParams.max_price = tempFilter.price[1];
+                    if (tempFilter.discount > 0) filterParams.min_discount = tempFilter.discount;
+                    if (tempFilter.brands) filterParams.brands = tempFilter.brands;
+                    if (tempFilter.isPrime) filterParams.is_prime_only = tempFilter.isPrime;
+                    if (tempFilter.apiProvider) filterParams.api_provider = tempFilter.apiProvider;
+
+                    onFilter(filterParams);
+                }
+
+                // 重置未应用变更状态
+                setHasUnappliedChanges(false);
+            }
+        } finally {
+            setIsApplying(false);
         }
-    }, [filter, buildUrlParams, pathname, router, searchParams]);
+    }, [tempFilter, filter, buildUrlParams, onFilter, pathname, router, isApplying, MAX_PRICE]);
 
-    // Listen for filter changes and update URL (skip initial mount)
-    useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-
-            return;
-        }
-
-        // Debounce to reduce URL update frequency
-        const timeoutId = setTimeout(() => {
-            updateUrlParams();
-        }, 300);
-
-        return () => clearTimeout(timeoutId);
-    }, [updateUrlParams]); // 只依赖于updateUrlParams，不直接依赖filter
-
-    // 优化handleBrandChange函数，避免不必要的状态更新
+    // 优化handleBrandChange函数，更新临时状态而非直接更新筛选
     const handleBrandChange = useCallback((brand: string, checked: boolean) => {
         // 将字符串转为数组以便于修改
-        const brandsArray = filter.brands ? filter.brands.split(',').filter(b => b) : [];
+        const brandsArray = tempFilter.brands ? tempFilter.brands.split(',').filter(b => b) : [];
 
         // 检查品牌是否已经在数组中，避免不必要的更新
         const brandExists = brandsArray.includes(brand);
@@ -491,107 +569,112 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         // 将数组转回字符串
         const updatedBrands = updatedBrandsArray.join(',');
 
-        // 先调用onFilter，传递新的筛选条件
-        if (onFilter) {
-            onFilter({ brands: updatedBrands });
-        }
-
-        // 然后更新本地状态
-        setFilter(prev => ({
+        // 更新临时筛选状态
+        setTempFilter(prev => ({
             ...prev,
             brands: updatedBrands
         }));
-    }, [filter.brands, onFilter]);
 
-    // 使用useCallback包装其他处理函数
+        // 标记有未应用的变更
+        setHasUnappliedChanges(true);
+    }, [tempFilter.brands]);
+
+    // 使用useCallback包装其他处理函数，更新临时状态
     const handlePriceChange = useCallback((value: [number, number]) => {
         // 检查值是否变化
-        if (filter.price[0] === value[0] && filter.price[1] === value[1]) {
+        if (tempFilter.price[0] === value[0] && tempFilter.price[1] === value[1]) {
             return; // 不需要更新
         }
 
-        // 先调用onFilter
-        if (onFilter) {
-            onFilter({ min_price: value[0], max_price: value[1] });
-        }
+        // 更新临时筛选状态
+        setTempFilter(prev => ({ ...prev, price: value }));
 
-        // 再更新本地状态
-        setFilter(prev => ({ ...prev, price: value }));
-    }, [filter.price, onFilter]);
+        // 标记有未应用的变更
+        setHasUnappliedChanges(true);
+    }, [tempFilter.price]);
 
     const handleDiscountChange = useCallback((value: number) => {
         // 检查值是否变化
-        if (filter.discount === value) {
+        if (tempFilter.discount === value) {
             return; // 不需要更新
         }
 
-        // 先调用onFilter
-        if (onFilter) {
-            onFilter({ min_discount: value });
-        }
+        // 更新临时筛选状态
+        setTempFilter(prev => ({ ...prev, discount: value }));
 
-        // 再更新本地状态
-        setFilter(prev => ({ ...prev, discount: value }));
-    }, [filter.discount, onFilter]);
+        // 标记有未应用的变更
+        setHasUnappliedChanges(true);
+    }, [tempFilter.discount]);
 
     const handlePrimeChange = useCallback((checked: boolean) => {
         // 检查值是否变化
-        if (filter.isPrime === checked) {
+        if (tempFilter.isPrime === checked) {
             return; // 不需要更新
         }
 
-        // 先调用onFilter
-        if (onFilter) {
-            onFilter({ is_prime_only: checked });
+        // 更新临时筛选状态
+        setTempFilter(prev => ({ ...prev, isPrime: checked }));
+
+        // 标记有未应用的变更
+        setHasUnappliedChanges(true);
+    }, [tempFilter.isPrime]);
+
+    // 添加处理CJ商品筛选的函数
+    const handleApiProviderChange = useCallback((checked: boolean) => {
+        // 检查值是否变化
+        if ((tempFilter.apiProvider === 'cj-api') === checked) {
+            return; // 不需要更新
         }
 
-        // 再更新本地状态
-        setFilter(prev => ({ ...prev, isPrime: checked }));
-    }, [filter.isPrime, onFilter]);
+        // 更新临时筛选状态
+        setTempFilter(prev => ({
+            ...prev,
+            apiProvider: checked ? 'cj-api' : ''
+        }));
 
-    // 清除所有筛选条件
+        // 标记有未应用的变更
+        setHasUnappliedChanges(true);
+    }, [tempFilter.apiProvider]);
+
+    // 更新清除筛选条件函数
     const handleClearFilters = useCallback(() => {
-        // 先调用onFilter
-        if (onFilter) {
-            onFilter({
-                min_price: undefined,
-                max_price: undefined,
-                min_discount: undefined,
-                brands: '',
-                is_prime_only: false
-            });
-        }
+        console.log('Clear filters called, current URL:', window.location.href);
 
-        // 再更新本地状态
-        setFilter({
-            price: [0, MAX_PRICE],
+        // 重置临时筛选条件到默认值
+        const defaultFilter: FilterState = {
+            price: [0, MAX_PRICE] as [number, number],
             discount: 0,
             brands: '',
-            isPrime: false
-        });
+            isPrime: false,
+            apiProvider: ''
+        };
 
-        // 清除URL中的筛选参数，但保留分类参数 - 使用正确的API参数名称
-        const params = new URLSearchParams(searchParams.toString());
+        // 设置临时过滤器为默认值
+        setTempFilter(defaultFilter);
 
-        params.delete('min_price');
-        params.delete('max_price');
-        params.delete('min_discount');
-        params.delete('brands');
-        params.delete('is_prime_only');
+        // 直接应用清除操作，不使用setTimeout
+        setFilter(defaultFilter);
+        const params = buildUrlParams(defaultFilter);
+        console.log('Params after buildUrlParams:', params.toString());
 
-        // 保留分类参数（可选，因为我们已经基于现有searchParams创建了params）
-        const productGroups = searchParams.get('product_groups');
-        const category = searchParams.get('category');
+        // 尝试使用window.location.href直接修改URL
+        const baseUrl = window.location.href.split('?')[0];
+        window.location.href = baseUrl;
 
-        if (productGroups) params.set('product_groups', productGroups);
-        if (category) params.set('category', category);
+        // 如果有onFilter回调，调用它
+        if (onFilter) {
+            onFilter({});
+        }
 
-        // 添加时间戳防止缓存问题
-        params.set('_ts', Date.now().toString());
+        // 重置未应用变更状态
+        setHasUnappliedChanges(false);
+    }, [MAX_PRICE, buildUrlParams, onFilter]);
 
-        // 更新URL
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }, [onFilter, searchParams, router, pathname]);
+    // 添加取消更改函数，恢复到当前应用的筛选条件
+    const handleCancelChanges = useCallback(() => {
+        setTempFilter(filter);
+        setHasUnappliedChanges(false);
+    }, [filter]);
 
     return (
         <div className="space-y-4 w-full overflow-x-hidden">
@@ -635,7 +718,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                         <PriceRangeSlider
                             min={0}
                             max={MAX_PRICE}
-                            value={filter.price}
+                            value={tempFilter.price}
                             onChange={handlePriceChange}
                         />
                     </motion.div>
@@ -680,8 +763,8 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                             <div key={`discount-option-${discount}`} className="flex items-center">
                                 <Checkbox
                                     id={`discount-${discount}`}
-                                    checked={filter.discount >= discount}
-                                    onChange={() => handleDiscountChange(filter.discount === discount ? 0 : discount)}
+                                    checked={tempFilter.discount >= discount}
+                                    onChange={() => handleDiscountChange(tempFilter.discount === discount ? 0 : discount)}
                                     label={`${discount}% or more`}
                                 />
                             </div>
@@ -749,7 +832,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                                             <div className="flex-grow min-w-0 mr-2">
                                                 <Checkbox
                                                     id={`brand-${brand}`}
-                                                    checked={filter.brands.split(',').includes(brand)}
+                                                    checked={tempFilter.brands.split(',').includes(brand)}
                                                     onChange={(checked) => handleBrandChange(brand, checked)}
                                                     label={brand}
                                                 />
@@ -794,12 +877,26 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                 <div className="flex items-center">
                     <Checkbox
                         id="prime-filter"
-                        checked={filter.isPrime}
+                        checked={tempFilter.isPrime}
                         onChange={handlePrimeChange}
                         label="Prime Only"
                     />
                 </div>
             </div>
+
+            {/* CJ商品筛选 - 仅对管理员显示 */}
+            {session?.user?.role && [UserRole.ADMIN, UserRole.SUPER_ADMIN].includes(session.user.role as UserRole) && (
+                <div className="pb-4 border-t pt-4 dark:border-gray-700">
+                    <div className="flex items-center">
+                        <Checkbox
+                            id="cj-filter"
+                            checked={tempFilter.apiProvider === 'cj-api'}
+                            onChange={handleApiProviderChange}
+                            label="CJ Products Only"
+                        />
+                    </div>
+                </div>
+            )}
 
             {/* Action Buttons */}
             {!hideButtons && (
@@ -807,18 +904,26 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="px-4 py-2 bg-gradient-to-r bg-primary-background text-white text-sm font-medium rounded-md flex-grow transition-all shadow-sm"
-                        onClick={updateUrlParams}
+                        className={`px-4 py-2 ${hasUnappliedChanges
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600'
+                            : 'bg-gradient-to-r bg-primary-background'} 
+                            text-white text-sm font-medium rounded-md flex-grow transition-all shadow-sm
+                            ${isApplying ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        onClick={applyFilters}
+                        disabled={isApplying}
                     >
-                        Apply Filters
+                        {isApplying ? 'Applying...' : 'Apply Filters'}
+                        {hasUnappliedChanges && (
+                            <span className="ml-1 inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full"></span>
+                        )}
                     </motion.button>
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-sm font-medium rounded-md transition-all flex-shrink-0 shadow-sm"
-                        onClick={handleClearFilters}
+                        onClick={hasUnappliedChanges ? handleCancelChanges : handleClearFilters}
                     >
-                        Clear
+                        {hasUnappliedChanges ? 'Cancel' : (hasActiveFilters(filter) ? 'Clear All' : 'Clear')}
                     </motion.button>
                 </div>
             )}
