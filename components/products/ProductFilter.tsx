@@ -310,7 +310,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
     const router = useRouter();
     const pathname = usePathname();
     const { data: session } = useSession();
-    const isInitialMount = useRef(true);
+    const _isInitialMount = useRef(true);
 
     // 价格上限提升到10000美元
     const MAX_PRICE = 10000;
@@ -638,7 +638,6 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
 
     // 更新清除筛选条件函数
     const handleClearFilters = useCallback(() => {
-        console.log('Clear filters called, current URL:', window.location.href);
 
         // 重置临时筛选条件到默认值
         const defaultFilter: FilterState = {
@@ -654,11 +653,12 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
 
         // 直接应用清除操作，不使用setTimeout
         setFilter(defaultFilter);
-        const params = buildUrlParams(defaultFilter);
-        console.log('Params after buildUrlParams:', params.toString());
+        const _params = buildUrlParams(defaultFilter);
+
 
         // 尝试使用window.location.href直接修改URL
         const baseUrl = window.location.href.split('?')[0];
+
         window.location.href = baseUrl;
 
         // 如果有onFilter回调，调用它
@@ -914,7 +914,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
                     >
                         {isApplying ? 'Applying...' : 'Apply Filters'}
                         {hasUnappliedChanges && (
-                            <span className="ml-1 inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full"></span>
+                            <span className="ml-1 inline-flex items-center justify-center w-2 h-2 bg-red-500 rounded-full" />
                         )}
                     </motion.button>
                     <motion.button
