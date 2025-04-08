@@ -23,18 +23,19 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 <h3 className="text-gray-500 text-sm font-medium mb-2 mt-1 text-left">Menu</h3>
 
                 <div className="flex flex-col space-y-1 mb-4">
-                    {siteConfig.navMenuItems
-                        .filter(item => !isCurrentPage(item.href))
-                        .map((item) => (
-                            <Link
-                                key={item.label || `menu-item-${item.href}`}
-                                className="w-full px-3 py-2.5 text-base text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-left"
-                                href={item.href}
-                                onClick={handleNavigation}
-                            >
-                                {item.label}
-                            </Link>
-                        ))}
+                    {siteConfig.navMenuItems.map((item) => (
+                        <Link
+                            key={item.label || `menu-item-${item.href}`}
+                            className={`w-full px-3 py-2.5 text-base rounded-lg transition-colors text-left ${isCurrentPage(item.href)
+                                ? "bg-blue-50 text-primary font-semibold"
+                                : "text-gray-800 hover:bg-gray-100"
+                                }`}
+                            href={item.href}
+                            onClick={handleNavigation}
+                        >
+                            {item.label}
+                        </Link>
+                    ))}
                 </div>
 
                 {/* Mobile Auth Status */}

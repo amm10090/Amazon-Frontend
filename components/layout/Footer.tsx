@@ -48,6 +48,11 @@ const Footer = () => {
                                     Affiliate Disclosure
                                 </Link>
                             </li>
+                            <li>
+                                <Link href="/legal/email-subscription-terms" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                    Email Subscription Terms
+                                </Link>
+                            </li>
                         </ul>
                     </div>
                 </div>

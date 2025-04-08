@@ -266,7 +266,19 @@ function Checkbox({ id, checked, onChange, label }: {
     label?: string;
 }) {
     return (
-        <div className="relative inline-flex items-start gap-2 w-full">
+        <div
+            className="relative inline-flex items-start gap-2 w-full cursor-pointer group"
+            onClick={() => onChange(!checked)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onChange(!checked);
+                }
+            }}
+            tabIndex={0}
+            role="checkbox"
+            aria-checked={checked}
+        >
             <div className="flex-shrink-0 mt-0.5">
                 <input
                     type="checkbox"
@@ -275,7 +287,8 @@ function Checkbox({ id, checked, onChange, label }: {
                     onChange={(e) => onChange(e.target.checked)}
                     className="sr-only"
                 />
-                <div className={`w-5 h-5 border-2 rounded transition-all duration-200 flex items-center justify-center ${checked ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                <div className={`w-5 h-5 border-2 rounded transition-all duration-200 flex items-center justify-center cursor-pointer
+                    ${checked ? 'bg-yellow-400 border-yellow-500' : 'border-gray-300 dark:border-gray-600 group-hover:border-blue-400'}`}>
                     {checked && (
                         <motion.svg
                             initial={{ scale: 0 }}
@@ -297,9 +310,9 @@ function Checkbox({ id, checked, onChange, label }: {
                 </div>
             </div>
             {label && (
-                <label htmlFor={id} className="text-sm cursor-pointer text-gray-700 dark:text-gray-200 truncate">
+                <span className="text-sm text-gray-700 dark:text-gray-200 truncate cursor-pointer">
                     {label}
-                </label>
+                </span>
             )}
         </div>
     );

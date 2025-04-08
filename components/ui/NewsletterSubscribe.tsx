@@ -95,7 +95,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                         </div>
                         <button
                             type="submit"
-                            className={`py-3 px-5 ${status === 'loading' ? 'bg-gray-400' : 'bg-[#16A085] hover:bg-[#117A65]'} text-white font-medium
+                            className={`py-3 px-5 ${status === 'loading' ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#16A085] hover:bg-[#117A65] cursor-pointer'} text-white font-medium
                             rounded-lg transition-all duration-200 flex items-center justify-center whitespace-nowrap`}
                             disabled={status === 'loading'}
                         >
@@ -177,7 +177,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                             </div>
                             <button
                                 type="submit"
-                                className={`py-3.5 px-8 ${status === 'loading' ? 'bg-gray-400' : 'bg-[#16A085] hover:bg-[#117A65]'} text-white font-medium
+                                className={`py-3.5 px-8 ${status === 'loading' ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#16A085] hover:bg-[#117A65] cursor-pointer'} text-white font-medium
                                 rounded-lg transition-all duration-200 shadow-sm hover:shadow
                                 flex items-center justify-center whitespace-nowrap`}
                                 disabled={status === 'loading'}

@@ -126,7 +126,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="view-deal-btn flex-grow bg-[#16A085] hover:bg-[#117A65] text-white py-3 px-6 rounded-md font-medium shadow-sm transition-colors flex items-center justify-center"
+                    className="view-deal-btn flex-grow bg-[#16A085] hover:bg-[#117A65] text-white py-3 px-6 rounded-md font-medium shadow-sm transition-colors flex items-center justify-center cursor-pointer"
                     onClick={handleViewDeal}
                 >
                     <span>View Deal on {product.brand === 'amazon' ? 'Amazon' : 'Store'}</span>
@@ -139,7 +139,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className={`wishlist-btn w-12 h-12 rounded-md flex items-center justify-center shadow-sm border-2 ${isWishlisted
+                        className={`wishlist-btn w-12 h-12 rounded-md flex items-center justify-center shadow-sm border-2 cursor-pointer ${isWishlisted
                             ? 'bg-red-500 border-red-500 text-white'
                             : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'
                             }`}
@@ -160,7 +160,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className="share-btn w-12 h-12 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md flex items-center justify-center shadow-sm"
+                        className="share-btn w-12 h-12 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md flex items-center justify-center shadow-sm cursor-pointer"
                         onClick={handleShare}
                         aria-label="Share"
                     >
