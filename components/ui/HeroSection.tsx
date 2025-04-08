@@ -217,7 +217,7 @@ export function HeroSection() {
 
     return (
         // 适应新布局结构，不再全宽显示
-        <div className="relative w-full">
+        <div className="relative w-full rounded-xl">
             {/* SVG过滤器 */}
             {svgFilters}
 
@@ -260,7 +260,7 @@ export function HeroSection() {
                 style={{ zIndex: 3 }}
             >
                 {/* 内容容器，保持居中 */}
-                <div className="px-4 relative z-10">
+                <div className="px-4 md:px-6 lg:px-8 relative z-10">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 items-center">
                         {/* 左侧文本区域 (占7列) */}
                         <motion.div

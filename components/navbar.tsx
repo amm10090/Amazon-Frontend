@@ -219,9 +219,9 @@ export const Navbar = () => {
         {/* 外层容器 */}
         <div className="w-full flex justify-center">
           {/* 内容限宽容器 */}
-          <div className="w-full max-w-[1500px] relative z-[9991] px-4 md:px-6 lg:px-8">
+          <div className="w-full max-w-[1500px] relative z-[9991]">
             {/* 导航栏主体 */}
-            <div className="flex items-center justify-between w-full h-16">
+            <div className="flex items-center justify-between w-full h-16  lg:px-8">
               {/* Logo and Search Bar Content - Left Side */}
               <div className="flex items-center gap-4 flex-1 lg:max-w-[800px]">
                 {/* Mobile Menu */}
