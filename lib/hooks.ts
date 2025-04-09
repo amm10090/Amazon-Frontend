@@ -2,7 +2,7 @@ import type { AxiosResponse } from 'axios';
 import { useEffect } from 'react';
 import useSWR from 'swr';
 
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem, ListResponse } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem, ListResponse, EmailItem } from '@/types/api';
 
 import { productsApi, userApi, systemApi } from './api';
 
@@ -592,6 +592,78 @@ export function useUserList(): SWRHookResponse<UserItem[]> {
 
     return {
         data: response?.data || [],
+        isLoading,
+        isError: error,
+        mutate,
+    };
+}
+
+// 邮箱列表
+export function useEmailList(params?: {
+    page?: number;
+    limit?: number;
+    sort_by?: 'email' | 'subscribedAt';
+    sort_order?: 'asc' | 'desc';
+    search?: string;
+    is_active?: boolean;
+    collection?: string; // 指定集合名称：'email_list' 或 'email_subscription'
+}): SWRHookResponse<{ items: EmailItem[], total: number, page: number, page_size: number }> {
+    const cacheKey = JSON.stringify(['/api/emails/list', params]);
+
+    const { data, error, isLoading, mutate } = useSWR(
+        cacheKey,
+        async () => {
+            // Convert params to Record<string, string> for URLSearchParams
+            const queryParams: Record<string, string> = {};
+
+            if (params) {
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        queryParams[key] = String(value);
+                    }
+                });
+            }
+            const url = `/api/emails/list?${new URLSearchParams(queryParams).toString()}`;
+
+            try {
+                const response = await fetch(url, {
+                    // 添加no-cache和no-store头，避免浏览器缓存
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+
+                    throw new Error(`API错误 ${response.status}: ${errorText}`);
+                }
+
+                return await response.json();
+            } catch (err) {
+                throw err;
+            }
+        },
+        {
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+            dedupingInterval: 30000,
+            shouldRetryOnError: true,
+            errorRetryCount: 3
+        }
+    );
+
+    // 默认返回值
+    const defaultResult = { items: [], total: 0, page: 1, page_size: 10 };
+
+    // 处理API响应
+    const result = data?.data || data || defaultResult;
+
+    return {
+        data: result,
         isLoading,
         isError: error,
         mutate,

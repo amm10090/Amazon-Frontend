@@ -17,10 +17,13 @@ export async function POST(request: Request) {
             );
         }
 
-        // 连接到MongoDB
+        // 连接到MongoDB - 使用环境变量配置的数据库名
         const client = await clientPromise;
-        const db = client.db('email_subscription');
-        const collection = db.collection('email_list');
+        const dbName = process.env.MONGODB_DB || 'oohunt';
+        const db = client.db(dbName);
+
+        // 使用email_subscription作为集合名，与其他API保持一致
+        const collection = db.collection('email_subscription');
 
         // 检查邮箱是否已存在
         const existingSubscriber = await collection.findOne({ email });

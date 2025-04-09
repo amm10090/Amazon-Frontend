@@ -189,4 +189,14 @@ export interface ProductItem {
     createdBy?: string;
     featured?: boolean;
     discount?: number;
+}
+
+/**
+ * 邮箱订阅项接口定义
+ */
+export interface EmailItem {
+    id: string;
+    email: string;
+    subscribedAt: string;
+    isActive: boolean;
 } 
