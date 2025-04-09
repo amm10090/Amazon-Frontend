@@ -5,7 +5,7 @@ import { BellRing } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
-import { NewsletterSubscribe } from '@/components/ui/NewsletterSubscribe';
+import { NewsletterSubscribe } from '@/components/email/NewsletterSubscribe';
 import type { ComponentProduct } from '@/types';
 
 interface ProductImageGalleryProps {

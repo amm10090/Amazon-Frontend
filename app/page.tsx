@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 
+import { NewsletterSubscribe } from "@/components/email/NewsletterSubscribe";
 import { CategoryNavigation } from "@/components/ui/CategoryNavigation";
 import { CategoryProducts } from "@/components/ui/CategoryProducts";
 import { FeaturedDeals } from "@/components/ui/FeaturedDeals";
 import { HeroSection } from "@/components/ui/HeroSection";
-import { NewsletterSubscribe } from "@/components/ui/NewsletterSubscribe";
 import { useCategoryStats } from "@/lib/hooks";
 
 // 定义分类接口

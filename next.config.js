@@ -20,6 +20,32 @@ const nextConfig = {
             },
         ],
     },
+    webpack: (config, { isServer }) => {
+        // 只对客户端构建进行调整，服务器端构建保持不变
+        if (!isServer) {
+            // 防止客户端包含 Node.js 模块和 MongoDB 相关模块
+            // 这解决了 MongoDB 客户端在浏览器环境中尝试加载 Node.js 内置模块的问题
+            config.resolve.fallback = {
+                ...config.resolve.fallback,
+                fs: false,
+                child_process: false,
+                net: false,
+                tls: false,
+                dns: false,
+                os: false,
+                cluster: false,
+                v8: false,
+                // MongoDB 相关模块
+                mongodb: false,
+                'mongodb-client-encryption': false,
+                '@mongodb-js/zstd': false,
+                snappy: false,
+                kerberos: false,
+                aws4: false,
+            };
+        }
+        return config;
+    },
     async rewrites() {
         return [
             // 转发非用户管理的 API 到远程服务器

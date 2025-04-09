@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { BellRing } from 'lucide-react';
 import { useState } from 'react';
 
-import { NewsletterSubscribe } from '@/components/ui/NewsletterSubscribe';
+import { NewsletterSubscribe } from '@/components/email/NewsletterSubscribe';
 import { userApi } from '@/lib/api';
 import { StoreIdentifier } from '@/lib/store';
 import { formatPrice } from '@/lib/utils';

@@ -1,7 +1,7 @@
 'use client';
 
 import { addToast } from '@heroui/react';
-import { Download, Mail, Search, X } from 'lucide-react';
+import { Download, Mail, Search, X, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import { useEmailList } from '@/lib/hooks';
@@ -141,7 +141,7 @@ const EmailsPageContent = () => {
             if (isError instanceof Error) {
                 setApiErrorDetails(isError.message);
             } else {
-                setApiErrorDetails('获取邮箱数据失败，请稍后重试');
+                setApiErrorDetails('Failed to fetch email data, please try again later');
             }
         } else {
             setApiErrorDetails(null);
@@ -255,8 +255,8 @@ const EmailsPageContent = () => {
     const renderError = () => (
         <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="text-center">
-                <div className="text-red-500 text-xl mb-4">加载邮箱数据失败</div>
-                <p className="text-gray-700 mb-6">{apiErrorDetails || '请稍后重试或联系系统管理员'}</p>
+                <div className="text-red-500 text-xl mb-4">Failed to load email data</div>
+                <p className="text-gray-700 mb-6">{apiErrorDetails || 'Please try again later or contact the system administrator'}</p>
                 <div className="flex justify-center">
                     <button
                         onClick={() => {
@@ -265,21 +265,21 @@ const EmailsPageContent = () => {
                         }}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
-                        重试
+                        Retry
                     </button>
                 </div>
             </div>
             <div className="mt-8 pt-6 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                    <h3 className="font-medium mb-2">调试信息:</h3>
+                    <h3 className="font-medium mb-2">Debug Information:</h3>
                     <ul className="list-disc list-inside space-y-1">
-                        <li>集合: {activeTab === 'subscribers' ? 'email_subscription' : 'email_list'}</li>
-                        <li>页码: {page}</li>
-                        <li>每页数量: {pageSize}</li>
-                        <li>排序字段: {sortBy}</li>
-                        <li>排序方向: {sortOrder}</li>
-                        {debouncedSearchTerm && <li>搜索关键词: {debouncedSearchTerm}</li>}
-                        {statusFilter && <li>状态过滤: {statusFilter}</li>}
+                        <li>Collection: {activeTab === 'subscribers' ? 'email_subscription' : 'email_list'}</li>
+                        <li>Page: {page}</li>
+                        <li>Page Size: {pageSize}</li>
+                        <li>Sort Field: {sortBy}</li>
+                        <li>Sort Order: {sortOrder}</li>
+                        {debouncedSearchTerm && <li>Search Keyword: {debouncedSearchTerm}</li>}
+                        {statusFilter && <li>Status Filter: {statusFilter}</li>}
                     </ul>
                 </div>
             </div>
@@ -536,6 +536,13 @@ const EmailsPageContent = () => {
         <div className="space-y-6 max-w-full">
             <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Email Management</h1>
+                <a
+                    href="/dashboard/emails/templates"
+                    className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center"
+                >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Manage Email Templates
+                </a>
             </div>
 
             {/* Tabs */}

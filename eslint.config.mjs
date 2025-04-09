@@ -225,6 +225,7 @@ const eslintConfig = [
             '**/postcss.config.js',
             '**/tailwind.config.js',
             '**/.turbo/**',
+            '**/scripts/**',
         ],
     },
 
