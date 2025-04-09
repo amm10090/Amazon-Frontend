@@ -5,10 +5,10 @@ import clientPromise from '@/lib/mongodb';
 
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: { id: string } }
 ) {
     try {
-        const { id } = params;
+        const { id } = context.params;
         const { isActive } = await request.json();
         const searchParams = request.nextUrl.searchParams;
         const collection = searchParams.get('collection') || 'email_list';
