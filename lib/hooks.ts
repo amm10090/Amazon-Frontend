@@ -50,23 +50,29 @@ export function useProducts(params?: {
     );
 
     // 处理嵌套的API响应结构
-    let processedData = undefined;
+    let processedData;
 
     if (data) {
-        // 类型守卫函数
-        const isApiResponse = (data: unknown): data is ApiResponse<ListResponse<Product>> => {
-            return typeof data === 'object' && data !== null && 'success' in data;
-        };
-
-        const isListResponse = (data: unknown): data is ListResponse<Product> => {
-            return typeof data === 'object' && data !== null && 'items' in data;
-        };
-
-        if (isApiResponse(data) && data.data) {
+        // 简化数据处理逻辑，处理多种可能的响应格式
+        if (data.data?.data?.items) {
+            // 处理双重嵌套 {data: {data: {items: [...]}}}
+            processedData = data.data.data;
+        } else if (data.data?.items) {
+            // 处理单重嵌套 {data: {items: [...]}}
             processedData = data.data;
-        } else if (isListResponse(data)) {
+        } else if ((data as unknown as { items: Product[] }).items) {
+            // 处理直接返回 {items: [...]}
             processedData = data;
+        } else if (typeof data.data === 'object' && data.data && 'success' in data.data && data.data.success && 'data' in data.data) {
+            // 处理 {data: {success: true, data: {items: [...]}}} 格式
+            processedData = data.data.data;
+        } else {
+            // 默认空值
+            processedData = { items: [], total: 0, page: 1, page_size: 10 };
         }
+    } else {
+        // 当无数据时提供默认值
+        processedData = { items: [], total: 0, page: 1, page_size: 10 };
     }
 
     return {
