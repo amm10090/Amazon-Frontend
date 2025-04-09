@@ -3,12 +3,19 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import clientPromise from '@/lib/mongodb';
 
-export async function PUT(
-    request: NextRequest,
-    context: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
     try {
-        const { id } = context.params;
+        // Get ID from URL path
+        const pathParts = request.nextUrl.pathname.split('/');
+        const id = pathParts[pathParts.length - 1];
+
+        if (!id) {
+            return NextResponse.json(
+                { success: false, message: 'Email ID is required' },
+                { status: 400 }
+            );
+        }
+
         const { isActive } = await request.json();
         const searchParams = request.nextUrl.searchParams;
         const collection = searchParams.get('collection') || 'email_list';
