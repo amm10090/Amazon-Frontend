@@ -250,12 +250,12 @@ export const Navbar = () => {
             {/* 导航栏主体 */}
             <div className="flex items-center justify-between w-full h-16 lg:h-16 lg:px-8">
               {/* Logo and Search Bar Content - Left Side */}
-              <div className="flex items-center gap-4 flex-1 lg:max-w-[800px]">
+              <div className="flex items-center gap-4 flex-1 lg:max-w-[35%] xl:max-w-[40%]">
                 {/* Mobile Menu */}
-                <div className="flex items-center gap-2 xl:hidden">
+                <div className="flex items-center gap-2 lg:hidden">
                   <NavbarMenuToggle
                     icon={<Menu size={20} />}
-                    className="w-8 h-8 p-1.5 text-white bg-gradient-to-r from-[#1B5479] to-[#287EB7] hover:opacity-90 rounded-lg lg:hidden"
+                    className="w-8 h-8 p-1.5 text-white bg-gradient-to-r from-[#1B5479] to-[#287EB7] hover:opacity-90 rounded-lg"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                   />
                 </div>
@@ -314,9 +314,9 @@ export const Navbar = () => {
               </div>
 
               {/* Navigation Menu Content - Right Side */}
-              <div className="hidden lg:flex items-center gap-6">
+              <div className="hidden lg:flex items-center justify-end gap-3 lg:gap-4 xl:gap-6 flex-1">
                 {/* 将搜索栏添加到这里 - 导航菜单左侧 */}
-                <div className="hidden lg:block w-[400px]" ref={searchContainerRef}>
+                <div className="hidden lg:block w-full lg:w-[280px] xl:w-[350px] 2xl:w-[400px]" ref={searchContainerRef}>
                   <form onSubmit={handleSearchSubmit} className="w-full relative group">
                     <Input
                       ref={searchInputRef}
@@ -438,12 +438,12 @@ export const Navbar = () => {
                 </div>
 
                 {/* Desktop Navigation */}
-                <nav className="flex items-center gap-4">
+                <nav className="flex items-center gap-2 lg:gap-3 xl:gap-4">
                   {siteConfig.navItems.map((item) => (
                     <NextLink
                       key={item.href}
                       href={item.href}
-                      className={`text-sm font-medium whitespace-nowrap px-2 transition-colors ${isCurrentPage(item.href)
+                      className={`text-xs lg:text-sm font-medium whitespace-nowrap px-1 lg:px-2 transition-colors ${isCurrentPage(item.href)
                         ? "text-primary font-semibold border-b-2 border-primary"
                         : "text-gray-700 hover:text-primary"
                         }`}

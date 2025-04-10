@@ -31,6 +31,10 @@ export const siteConfig = {
       label: "About Us",
       href: "/about",
     },
+    {
+      label: "Contact Us",
+      href: "/legal/contact",
+    },
   ],
   links: {
     github: "https://github.com/your-username/amazon-deals",
