@@ -1184,14 +1184,16 @@ function ProductsContent() {
                     <div className="hidden lg:block w-[280px] flex-shrink-0">
                         <div
                             ref={sidebarRef}
-                            className="w-[280px] bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800 overflow-y-auto scrollbar-hide z-[100]"
+                            className="w-[280px] bg-white dark:bg-gray-900 pb-4 shadow-sm border-r border-gray-100 dark:border-gray-800 scrollbar-hide z-[100] overscroll-contain"
                             style={{
                                 maxHeight: 'calc(100vh - 80px)',
                                 willChange: 'transform',
-                                backfaceVisibility: 'hidden'
+                                backfaceVisibility: 'hidden',
+                                position: 'relative',
+                                overflowAnchor: 'none'
                             }}
                         >
-                            <div className="p-4 w-full">
+                            <div className="p-4 w-full h-full overflow-y-auto overscroll-contain">
                                 <h2 className="text-xl font-bold mb-6 text-gray-800 dark:text-white">Filter</h2>
                                 <ProductFilter
                                     onFilter={handleFilterChange}

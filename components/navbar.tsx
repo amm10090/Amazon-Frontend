@@ -126,6 +126,29 @@ export const Navbar = () => {
     };
   }, []);
 
+  // 监听路由变化，当路由变化时关闭所有面板
+  useEffect(() => {
+    closeAllPanels();
+  }, [pathname]);
+
+  // 监听视窗尺寸变化，当尺寸变化时关闭对应的搜索面板
+  useEffect(() => {
+    const handleResize = () => {
+      // 如果是桌面尺寸且搜索面板打开，则关闭搜索面板
+      if (window.innerWidth >= 1024) { // lg breakpoint in Tailwind is 1024px
+        setIsSearchOpen(false);
+        setIsTabletSearchOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    // 初始检查
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // 处理搜索输入变化
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const keyword = e.target.value;
@@ -327,7 +350,7 @@ export const Navbar = () => {
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        className="absolute z-[9995] w-full mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto"
+                        className="absolute z-[9995] mt-1 bg-white rounded-lg shadow-lg overflow-hidden max-h-[400px] overflow-y-auto left-0 right-0"
                       >
                         {isLoading ? (
                           <div className="p-2 sm:p-3 text-left text-gray-500 text-xs sm:text-sm">

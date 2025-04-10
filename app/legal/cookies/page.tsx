@@ -177,7 +177,7 @@ export default function CookiesPolicyPage() {
                     If you have any questions about our use of cookies or this Cookies Policy, please contact us at:
                 </p>
                 <p className="mt-2">
-                    Email: admin@oohunt.com<br />
+                    Email: <a href="/legal/contact" className="text-blue-600 hover:underline">admin@oohunt.com</a><br />
                     Website: <a href="https://oohunt.com" className="text-blue-600 hover:underline">https://oohunt.com</a>
                 </p>
             </section>

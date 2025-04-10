@@ -154,7 +154,8 @@ const DealsPage = () => {
             >
                 {/* 收藏按钮 */}
                 <div
-                    className="absolute top-3 right-3 z-20"
+                    className="absolute top-5 right-5 sm:top-4 sm:right-4 md:top-3 md:right-3 z-20 m-0 p-0"
+                    style={{ margin: 0, padding: 0 }}
                     onClick={(e) => e.stopPropagation()}
                     onKeyDown={(e) => e.stopPropagation()}
                     role="button"
@@ -168,23 +169,26 @@ const DealsPage = () => {
                     />
                 </div>
 
+                {/* Prime badge - 移到与收藏按钮相同的层级 */}
+                {isPrime && (
+                    <div
+                        className="absolute top-5 left-6 sm:top-4 sm:left-5 md:top-3 md:left-4 z-20 m-0 p-0"
+                        style={{ margin: 0, padding: 0 }}
+                    >
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
+                        >
+                            Prime
+                        </motion.div>
+                    </div>
+                )}
+
                 <Link href={`/product/${productId}`} className="block">
                     <motion.div
                         className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden h-full flex flex-col max-w-[320px] mx-auto w-full"
                     >
-                        {/* Prime badge */}
-                        {isPrime && (
-                            <div className="absolute top-3 left-3 z-10">
-                                <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
-                                >
-                                    Prime
-                                </motion.div>
-                            </div>
-                        )}
-
                         {/* 商品图片 */}
                         <div className="relative w-full aspect-[4/3] bg-white dark:bg-gray-800">
                             <motion.div

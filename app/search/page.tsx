@@ -1,9 +1,11 @@
 "use client";
 
+import { motion } from 'framer-motion';
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 
+import FavoriteButton from '@/components/common/FavoriteButton';
 import { useProductSearch } from "@/lib/hooks";
 import { StoreIdentifier } from "@/lib/store";
 import { adaptProducts, formatPrice } from "@/lib/utils";
@@ -172,105 +174,131 @@ function SearchPageContent() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {adaptedProducts.map((product, index) => (
-                        <div
+                    {adaptedProducts.map((product) => (
+                        <motion.div
                             key={product.id}
-                            className="group rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer"
-                            onClick={() => handleProductClick(product.id)}
-                            onKeyDown={(e) => handleKeyDown(e, product.id)}
-                            tabIndex={0}
-                            role="button"
-                            aria-label={`View details for ${product.title}`}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="relative group h-full"
                         >
-                            <div className="relative p-4 bg-gray-100 aspect-square w-full overflow-hidden">
-                                {product.image && (
-                                    <Image
-                                        src={product.image}
-                                        alt={product.title}
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                                        className="object-contain p-2"
-                                        priority={index < 4}
-                                    />
-                                )}
-
-                                {/* Prime标签 - 左上角 */}
-                                {product.isPrime && (
-                                    <div
-                                        className="absolute top-2 left-2 z-10 cursor-pointer"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleProductClick(product.id);
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.stopPropagation();
-                                                e.preventDefault();
-                                                handleProductClick(product.id);
-                                            }
-                                        }}
-                                        tabIndex={0}
-                                        role="button"
-                                        aria-label="View Prime product details"
-                                    >
-                                        <span className="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-medium">
-                                            Prime
-                                        </span>
-                                    </div>
-                                )}
-
-                                {/* 折扣标识 - 右下角 */}
-                                {product.discount > 0 && (
-                                    <div
-                                        className="absolute bottom-2 right-2 z-10 cursor-pointer"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleProductClick(product.id);
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.stopPropagation();
-                                                e.preventDefault();
-                                                handleProductClick(product.id);
-                                            }
-                                        }}
-                                        tabIndex={0}
-                                        role="button"
-                                        aria-label={`View ${product.discount}% discount product details`}
-                                    >
-                                        <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-medium">
-                                            {product.discount}% OFF
-                                        </span>
-                                    </div>
-                                )}
+                            {/* 收藏按钮 */}
+                            <div
+                                className="absolute top-3 right-3 z-20"
+                                onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => e.stopPropagation()}
+                                role="button"
+                                tabIndex={0}
+                            >
+                                <FavoriteButton
+                                    productId={product.id}
+                                    size="md"
+                                    withAnimation={true}
+                                    className="bg-white/80 dark:bg-gray-800/80 shadow-sm hover:bg-white dark:hover:bg-gray-800"
+                                />
                             </div>
-                            <div className="p-4">
-                                <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-                                    {product.title}
-                                </h3>
-                                <div className="flex items-center justify-between mt-2">
-                                    <div className="flex items-baseline">
-                                        <span className="text-lg font-bold text-green-600">
-                                            {formatPrice(product.price)}
-                                        </span>
-                                        {product.originalPrice > product.price && (
-                                            <span className="ml-2 text-xs text-gray-500 line-through">
-                                                {formatPrice(product.originalPrice)}
-                                            </span>
-                                        )}
+
+                            <div
+                                className="block"
+                                onClick={() => handleProductClick(product.id)}
+                                onKeyDown={(e) => handleKeyDown(e, product.id)}
+                                tabIndex={0}
+                                role="button"
+                                aria-label={`View details for ${product.title}`}
+                            >
+                                <motion.div
+                                    className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden h-full flex flex-col mx-auto w-full"
+                                    whileHover={{ y: -8, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.03)' }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    {/* Prime badge */}
+                                    {product.isPrime && (
+                                        <div className="absolute top-3 left-3 z-10">
+                                            <motion.div
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
+                                            >
+                                                Prime
+                                            </motion.div>
+                                        </div>
+                                    )}
+
+                                    {/* 图片容器固定比例 */}
+                                    <div className="relative w-full aspect-[1/1] bg-white dark:bg-gray-800 pt-0.5 pb-0">
+                                        <motion.div
+                                            whileHover={{ scale: 1.05 }}
+                                            className="h-full w-full relative"
+                                        >
+                                            {product.image && (
+                                                <Image
+                                                    src={product.image}
+                                                    alt={product.title}
+                                                    fill
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                    className="object-cover p-2"
+                                                    loading="lazy"
+                                                    unoptimized={product.image.startsWith('data:')}
+                                                />
+                                            )}
+                                        </motion.div>
                                     </div>
 
-                                    {/* 商品来源标识 - 价格行右侧 */}
-                                    <div className="flex-shrink-0">
-                                        <StoreIdentifier
-                                            url={product.url || ''}
-                                            className="mb-0"
-                                            showName={false}
-                                        />
+                                    {/* 内容区域 */}
+                                    <div className="pl-3 pr-3 flex-grow flex flex-col">
+                                        {/* 品牌信息和StoreIdentifier放在同一行 */}
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            {product.brand ? (
+                                                <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded inline-block">
+                                                    {product.brand}
+                                                </span>
+                                            ) : (
+                                                <div /> /* 占位空元素，确保右对齐 */
+                                            )}
+                                            <StoreIdentifier
+                                                url={product.url || ''}
+                                                align="right"
+                                            />
+                                        </div>
+
+                                        <h3 className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-white">
+                                            {product.title}
+                                        </h3>
+
+                                        {/* 价格和折扣 */}
+                                        <div className="flex items-center justify-between mt-1 mb-2">
+                                            <div className="flex items-baseline min-w-0 overflow-hidden mr-2">
+                                                <span className="text-lg font-semibold text-primary dark:text-primary-light whitespace-nowrap">
+                                                    {formatPrice(product.price)}
+                                                </span>
+                                                {product.originalPrice > product.price && (
+                                                    <span className="text-xs text-secondary dark:text-gray-400 line-through whitespace-nowrap ml-1.5">
+                                                        {formatPrice(product.originalPrice)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {product.discount > 0 && (
+                                                <span className={`text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${product.discount > 30 ? 'bg-primary-badge' : (product.discount > 10 ? 'bg-accent' : 'bg-secondary')}`}>
+                                                    -{Math.round(product.discount)}%
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+
+                                    {/* Action button */}
+                                    <div className="px-3 pb-3">
+                                        <motion.div
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
+                                            className="w-full py-2 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-button-light dark:hover:bg-primary-button text-white text-center rounded-full font-medium shadow-sm transition-colors"
+                                        >
+                                            View Details
+                                        </motion.div>
+                                    </div>
+                                </motion.div>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
                 </div>
             )}

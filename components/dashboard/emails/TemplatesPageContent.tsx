@@ -868,7 +868,7 @@ const TemplatesPageContent = () => {
                                     }}
                                     disabled={!activeQuillInstance.current}
                                 >
-                                    <option value="">插入变量...</option>
+                                    <option value="">Insert variable...</option>
                                     {availableVariables.map((variable) => (
                                         <option key={variable.value} value={variable.value}>
                                             {variable.label}

@@ -76,7 +76,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             </div>
 
             {/* Product title */}
-            <h1 className="product-title text-2xl md:text-3xl font-bold text-[#1A5276] dark:text-white leading-tight">
+            <h1 className="product-title text-xl sm:text-2xl md:text-3xl font-bold text-[#1A5276] dark:text-white leading-tight">
                 {product.title}
             </h1>
 
@@ -122,24 +122,24 @@ export default function ProductInfo({ product }: ProductInfoProps) {
             </div>
 
             {/* Action buttons */}
-            <div className="cta-buttons flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
+            <div className="cta-buttons flex flex-row items-center gap-2 pt-4">
                 <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="view-deal-btn flex-grow bg-[#16A085] hover:bg-[#117A65] text-white py-3 px-6 rounded-md font-medium shadow-sm transition-colors flex items-center justify-center cursor-pointer"
+                    className="view-deal-btn w-[70%] bg-[#16A085] hover:bg-[#117A65] text-white py-2.5 sm:py-3 px-3 sm:px-6 rounded-md font-medium shadow-sm transition-colors flex items-center justify-center cursor-pointer"
                     onClick={handleViewDeal}
                 >
-                    <span>View Deal on {product.brand === 'amazon' ? 'Amazon' : 'Store'}</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <span className="text-sm sm:text-base">View Deal on {product.brand === 'amazon' ? 'Amazon' : 'Store'}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                 </motion.button>
 
-                <div className="flex gap-3 justify-end sm:justify-start">
+                <div className="flex items-center space-x-2 w-[30%]">
                     <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className={`wishlist-btn w-12 h-12 rounded-md flex items-center justify-center shadow-sm border-2 cursor-pointer ${isWishlisted
+                        className={`wishlist-btn w-1/2 h-9 sm:h-11 md:h-12 rounded-md flex items-center justify-center shadow-sm border-2 cursor-pointer ${isWishlisted
                             ? 'bg-red-500 border-red-500 text-white'
                             : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'
                             }`}
@@ -148,7 +148,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6"
+                            className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6"
                             fill={isWishlisted ? 'currentColor' : 'none'}
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -160,11 +160,11 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className="share-btn w-12 h-12 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md flex items-center justify-center shadow-sm cursor-pointer"
+                        className="share-btn w-1/2 h-9 sm:h-11 md:h-12 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md flex items-center justify-center shadow-sm cursor-pointer"
                         onClick={handleShare}
                         aria-label="Share"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                         </svg>
                     </motion.button>

@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @config "../tailwind.config.mjs";
 
-@custom-variant dark (&:is([data-theme="dark"] *));
 
 @theme {
   --color-primary: #3d5a80;

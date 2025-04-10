@@ -73,7 +73,7 @@ export default function AffiliateDisclosurePage() {
                     If you have any questions about our affiliate relationships or how we make money through affiliate programs, please contact us at:
                 </p>
                 <p className="mt-2">
-                    Email: admin@oohunt.com<br />
+                    Email: <a href="/legal/contact" className="text-blue-600 hover:underline">admin@oohunt.com</a><br />
                     Website: <a href="https://oohunt.com" className="text-blue-600 hover:underline">https://oohunt.com</a>
                 </p>
             </section>
