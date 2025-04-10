@@ -5,6 +5,7 @@
 
 import { AlertTriangle, Heart } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface FavoriteToastProps {
     action: 'add' | 'remove';
@@ -88,9 +89,10 @@ const FavoriteToast: React.FC<FavoriteToastProps> = ({
         ? 'border-red-300 dark:border-red-700'
         : (isAdding ? 'border-red-200 dark:border-red-700/50' : 'border-gray-200 dark:border-gray-600');
 
-    return (
+    // 创建Toast内容
+    const toastContent = (
         <div
-            className={`fixed bottom-6 right-6 z-50
+            className={`fixed bottom-20 right-6 z-[999]
                 px-5 py-3 rounded-lg shadow-lg border-2
                 flex items-center space-x-3
                 animate-favorite-success
@@ -108,6 +110,15 @@ const FavoriteToast: React.FC<FavoriteToastProps> = ({
             <span className="text-base font-medium flex-grow">{displayMessage}</span>
         </div>
     );
+
+    // 使用Portal将Toast渲染到body，确保它位于所有元素之上
+    // 仅在客户端渲染时使用Portal
+    if (typeof document !== 'undefined') {
+        return createPortal(toastContent, document.body);
+    }
+
+    // 服务器端渲染时直接返回内容
+    return toastContent;
 };
 
 export default FavoriteToast; 

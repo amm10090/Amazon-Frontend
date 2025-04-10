@@ -163,4 +163,52 @@ export async function PUT(
             { status: 500 }
         );
     }
+}
+
+// 删除模板
+export async function DELETE(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        const { id } = await params;
+
+        // 验证ID格式
+        if (!ObjectId.isValid(id)) {
+            return NextResponse.json(
+                { success: false, message: 'Invalid template ID format' },
+                { status: 400 }
+            );
+        }
+
+        // 连接到MongoDB
+        const client = await clientPromise;
+        const dbName = process.env.MONGODB_DB || 'oohunt';
+        const db = client.db(dbName);
+        const collection = db.collection('email_templates');
+
+        // 删除模板
+        const result = await collection.deleteOne({ _id: new ObjectId(id) });
+
+        if (result.deletedCount === 0) {
+            return NextResponse.json(
+                { success: false, message: 'Email template not found' },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: 'Email template deleted successfully'
+        });
+    } catch (error) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: 'Failed to delete email template, please try again later',
+                error: error instanceof Error ? error.message : 'Unknown error'
+            },
+            { status: 500 }
+        );
+    }
 } 

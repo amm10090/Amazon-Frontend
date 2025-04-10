@@ -1,7 +1,7 @@
 'use client';
 
 import { addToast } from '@heroui/react';
-import { Edit, Eye, PlusCircle, Save, X, Upload, Code } from 'lucide-react';
+import { Edit, Eye, PlusCircle, Save, X, Upload, Code, Trash2, AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type Quill from 'quill';
 import { useEffect, useState, useRef } from 'react';
@@ -238,6 +238,10 @@ const TemplatesPageContent = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     // 添加HTML代码编辑模式状态变量
     const [isHtmlMode, setIsHtmlMode] = useState(false);
+    // 删除功能的状态管理
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [templateToDelete, setTemplateToDelete] = useState<EmailTemplate | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // 变量选择器选项
     const availableVariables = [
@@ -428,6 +432,77 @@ const TemplatesPageContent = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // 处理删除模板
+    const handleDeleteClick = (template: EmailTemplate, e?: React.MouseEvent) => {
+        // 如果是从列表点击，防止冒泡触发选中模板
+        if (e) {
+            e.stopPropagation();
+        }
+
+        // 设置要删除的模板并打开确认对话框
+        setTemplateToDelete(template);
+        setIsDeleteDialogOpen(true);
+    };
+
+    // 确认删除模板
+    const confirmDelete = async () => {
+        if (!templateToDelete) return;
+
+        try {
+            setIsDeleting(true);
+
+            const response = await fetch(`/api/email-templates/${templateToDelete.id}`, {
+                method: 'DELETE',
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Failed to delete template');
+            }
+
+            // 删除成功提示
+            addToast({
+                title: "Delete Successful",
+                description: "Email template has been deleted successfully",
+                color: "success",
+                timeout: 5000,
+            });
+
+            // 刷新模板列表
+            await fetchTemplates();
+
+            // 如果删除的是当前选中的模板，重置选中状态
+            if (selectedTemplate && selectedTemplate.id === templateToDelete.id) {
+                setSelectedTemplate(null);
+                setFormData(EMPTY_TEMPLATE);
+                setEditorContent('');
+            }
+
+            // 关闭对话框
+            setIsDeleteDialogOpen(false);
+            setTemplateToDelete(null);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to delete template, please try again later';
+
+            setError(errorMessage);
+            addToast({
+                title: "Delete Failed",
+                description: errorMessage,
+                color: "danger",
+                timeout: 5000,
+            });
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    // 取消删除
+    const cancelDelete = () => {
+        setIsDeleteDialogOpen(false);
+        setTemplateToDelete(null);
     };
 
     // 处理表单输入
@@ -684,17 +759,25 @@ const TemplatesPageContent = () => {
                                     Last updated: {new Date(template.updatedAt).toLocaleString()}
                                 </p>
                             </div>
-                            <button
-                                className="text-blue-600 hover:text-blue-800"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    fetchTemplateDetails(template.id);
-                                    setIsEditing(true);
-                                    setPreviewMode(false);
-                                }}
-                            >
-                                <Edit className="w-5 h-5" />
-                            </button>
+                            <div className="flex space-x-2">
+                                <button
+                                    className="text-blue-600 hover:text-blue-800"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        fetchTemplateDetails(template.id);
+                                        setIsEditing(true);
+                                        setPreviewMode(false);
+                                    }}
+                                >
+                                    <Edit className="w-5 h-5" />
+                                </button>
+                                <button
+                                    className="text-red-600 hover:text-red-800"
+                                    onClick={(e) => handleDeleteClick(template, e)}
+                                >
+                                    <Trash2 className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -1061,6 +1144,13 @@ const TemplatesPageContent = () => {
                             <Eye className="w-4 h-4 mr-1" />
                             Preview
                         </button>
+                        <button
+                            className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center"
+                            onClick={() => handleDeleteClick(selectedTemplate)}
+                        >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
+                        </button>
                     </div>
                 </div>
 
@@ -1219,6 +1309,49 @@ const TemplatesPageContent = () => {
                     </div>
                 </div>
             </div>
+
+            {/* 删除确认对话框 */}
+            {isDeleteDialogOpen && templateToDelete && (
+                <div className="fixed inset-0 z-50 overflow-auto bg-black/50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+                        <div className="flex items-center mb-4 text-red-600">
+                            <AlertCircle className="w-6 h-6 mr-2" />
+                            <h3 className="text-lg font-medium">Confirm Delete</h3>
+                        </div>
+
+                        <p className="mb-4">
+                            Are you sure you want to delete the template <strong>&ldquo;{templateToDelete.name}&rdquo;</strong>? This action cannot be undone.
+                        </p>
+
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                                onClick={cancelDelete}
+                                disabled={isDeleting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center"
+                                onClick={confirmDelete}
+                                disabled={isDeleting}
+                            >
+                                {isDeleting ? (
+                                    <>
+                                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-4 h-4 mr-1" />
+                                        Delete
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
