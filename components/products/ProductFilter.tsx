@@ -77,12 +77,11 @@ function PriceRangeSlider({ min, max, value, onChange }: {
                 <Slider
                     label="Price Range"
                     size="sm"
-                    step={2000}
+                    step={1}
                     minValue={min}
                     maxValue={max}
                     value={value}
                     showTooltip
-                    showSteps={true}
                     classNames={{
 
                         step: "bg-[#e2e8f0] data-[in-range=true]:bg-[#475569] dark:bg-[#4a5568] dark:data-[in-range=true]:bg-[#cbd5e0]"
