@@ -35,9 +35,11 @@ export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
                             "grow pt-1",
                             pathname?.startsWith('/about')
                                 ? ""
-                                : !isDashboard && pathname?.startsWith('/products')
-                                    ? "container mx-auto max-w-[1800px] px-2 md:px-3 lg:px-4"
-                                    : "container mx-auto max-w-9xl px-2 md:px-3 lg:px-4"
+                                : isDashboard
+                                    ? ""
+                                    : pathname?.startsWith('/products')
+                                        ? "container mx-auto max-w-[1800px] px-2 md:px-3 lg:px-4"
+                                        : "container mx-auto max-w-9xl px-2 md:px-3 lg:px-4"
                         )}>
                             {children}
                         </main>

@@ -1,7 +1,7 @@
 'use client';
 
 import { addToast } from '@heroui/react';
-import { Edit, Eye, PlusCircle, Save, X } from 'lucide-react';
+import { Edit, Eye, PlusCircle, Save, X, Upload, Code } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type Quill from 'quill';
 import { useEffect, useState, useRef } from 'react';
@@ -234,6 +234,10 @@ const TemplatesPageContent = () => {
     const [previewMode, setPreviewMode] = useState(false);
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const activeQuillInstance = useRef<Quill | null>(null);
+    const [uploadLoading, setUploadLoading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    // 添加HTML代码编辑模式状态变量
+    const [isHtmlMode, setIsHtmlMode] = useState(false);
 
     // 变量选择器选项
     const availableVariables = [
@@ -318,12 +322,14 @@ const TemplatesPageContent = () => {
         try {
             setIsLoading(true);
 
-            // 直接从Quill实例获取最新内容
+            // 根据当前编辑模式获取内容
             let htmlContent = editorContent;
 
-            if (activeQuillInstance.current) {
+            // 如果是富文本模式，从Quill实例获取内容
+            if (!isHtmlMode && activeQuillInstance.current) {
                 htmlContent = activeQuillInstance.current.root.innerHTML;
             }
+            // 如果是HTML代码模式，直接使用editorContent
 
             // 验证编辑器内容是否为空
             if (!htmlContent || htmlContent.trim() === '') {
@@ -340,10 +346,10 @@ const TemplatesPageContent = () => {
                 throw new Error('Please select a valid template type');
             }
 
-            // 更新完整表单数据 - 使用直接从编辑器获取的内容
+            // 更新完整表单数据 - 使用最终的HTML内容
             const updatedData = {
                 ...formData,
-                htmlContent: htmlContent // 使用直接获取的HTML
+                htmlContent: htmlContent
             };
 
             let response;
@@ -549,6 +555,79 @@ const TemplatesPageContent = () => {
         setPreviewMode(false);
     };
 
+    // 处理文件上传
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+
+        if (!files || files.length === 0) return;
+
+        const file = files[0];
+
+        // 检查文件类型
+        if (file.type !== 'text/html' && !file.name.endsWith('.html')) {
+            addToast({
+                title: 'just upload html file',
+                description: 'Please upload a .html file',
+                color: "danger",
+                timeout: 5000,
+            });
+
+            return;
+        }
+
+        try {
+            setUploadLoading(true);
+            const formData = new FormData();
+
+            formData.append('file', file);
+
+            const response = await fetch('/api/email-templates/upload-html', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Upload HTML file failed');
+            }
+
+            // 更新编辑器内容和表单数据
+            setEditorContent(result.data.htmlContent);
+            setFormData(prev => ({
+                ...prev,
+                htmlContent: result.data.htmlContent,
+            }));
+
+            addToast({
+                title: 'HTML file uploaded successfully',
+                description: `Successfully loaded ${file.name} file content`,
+                color: "success",
+                timeout: 5000,
+            });
+        } catch (error) {
+            addToast({
+                title: 'Upload Failed',
+                description: error instanceof Error ? error.message : 'Upload HTML file failed, please try again',
+                color: "danger",
+                timeout: 5000,
+            });
+        } finally {
+            setUploadLoading(false);
+            // 重置文件输入，允许再次上传相同文件
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    // 触发文件选择对话框
+    const triggerFileUpload = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
     // 渲染模板列表
     const renderTemplateList = () => {
         if (templates.length === 0) {
@@ -744,7 +823,7 @@ const TemplatesPageContent = () => {
                                 ))}
                             </select>
                             <p className="mt-1 text-xs text-gray-500">
-                                模板类型决定系统如何自动使用此模板
+                                The template type determines how the system automatically uses this template
                             </p>
                         </div>
                         <div>
@@ -766,45 +845,138 @@ const TemplatesPageContent = () => {
                                     <span className="text-sm text-gray-700">Active</span>
                                 </label>
                                 <p className="mt-1 text-xs text-gray-500">
-                                    禁用的模板不会被系统自动使用
+                                    Disabled templates will not be automatically used by the system
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="mb-3">
-                        <div className="flex items-center justify-between mb-1">
-                            <label className="block text-sm font-medium text-gray-700">Email Content</label>
+                    <div className="mt-6">
+                        <div className="flex justify-between items-center mb-3">
+                            <label htmlFor="html-content" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                HTML Content
+                            </label>
                             <div className="flex items-center space-x-2">
-                                <span className="text-xs text-gray-500">Insert Variable:</span>
-                                {availableVariables.map((variable) => (
-                                    <button
-                                        key={variable.value}
-                                        type="button"
-                                        onClick={() => insertVariable(variable.value)}
-                                        className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50"
-                                    >
-                                        {variable.label}
-                                    </button>
-                                ))}
+                                {/* 变量选择器 */}
+                                <select
+                                    className="text-sm border border-gray-300 rounded-md p-1.5 bg-white dark:bg-gray-800 dark:border-gray-600"
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            insertVariable(e.target.value);
+                                            e.target.value = ''; // 重置选择
+                                        }
+                                    }}
+                                    disabled={!activeQuillInstance.current}
+                                >
+                                    <option value="">插入变量...</option>
+                                    {availableVariables.map((variable) => (
+                                        <option key={variable.value} value={variable.value}>
+                                            {variable.label}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                {/* HTML文件上传按钮 */}
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileUpload}
+                                    accept=".html"
+                                    className="hidden"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={triggerFileUpload}
+                                    disabled={uploadLoading}
+                                    className={`flex items-center p-1.5 text-sm rounded-md ${uploadLoading
+                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                        }`}
+                                    title="Upload HTML File"
+                                >
+                                    <Upload className="w-4 h-4" />
+                                    <span className="ml-1.5">{uploadLoading ? 'Uploading...' : 'Upload HTML'}</span>
+                                </button>
+
+                                {/* HTML代码模式切换按钮 */}
+                                <button
+                                    type="button"
+                                    onClick={handleModeToggle}
+                                    className={`flex items-center p-1.5 text-sm rounded-md ${isHtmlMode
+                                        ? 'bg-indigo-500 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                        }`}
+                                    title={isHtmlMode ? "Switch to Rich Text Mode" : "Switch to HTML Code Mode"}
+                                >
+                                    <Code className="w-4 h-4" />
+                                    <span className="ml-1.5">{isHtmlMode ? "Rich Text" : "HTML Code"}</span>
+                                </button>
+
+                                {/* 预览切换按钮 */}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        // 先同步内容
+                                        if (!isHtmlMode && activeQuillInstance.current) {
+                                            // 从富文本编辑器获取内容
+                                            const newContent = activeQuillInstance.current.root.innerHTML;
+
+                                            setEditorContent(newContent);
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                htmlContent: newContent
+                                            }));
+                                        }
+                                        // 切换预览模式
+                                        setPreviewMode(!previewMode);
+                                    }}
+                                    className={`flex items-center p-1.5 text-sm rounded-md ${previewMode
+                                        ? 'bg-blue-500 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                                        }`}
+                                    title={previewMode ? "Back to Edit Mode" : "Preview HTML"}
+                                >
+                                    <Eye className="w-4 h-4" />
+                                    <span className="ml-1.5">{previewMode ? "Back to Edit" : "Preview"}</span>
+                                </button>
                             </div>
                         </div>
+
                         <div className="border rounded-md">
-                            <QuillEditor
-                                theme="snow"
-                                value={editorContent}
-                                onChange={handleEditorChange}
-                                modules={DEFAULT_QUILL_MODULES}
-                                formats={EDITOR_FORMATS}
-                                placeholder="Edit your email HTML content here..."
-                                className="h-96"
-                                onEditorReady={handleEditorReady}
-                                id={`editor-${selectedTemplate?.id || 'new-template'}`}
-                            />
+                            {!isHtmlMode ? (
+                                // 富文本编辑器模式
+                                <QuillEditor
+                                    theme="snow"
+                                    value={editorContent}
+                                    onChange={handleEditorChange}
+                                    modules={DEFAULT_QUILL_MODULES}
+                                    formats={EDITOR_FORMATS}
+                                    placeholder="Edit your email HTML content here..."
+                                    className="h-96"
+                                    onEditorReady={handleEditorReady}
+                                    id={`editor-${selectedTemplate?.id || 'new-template'}`}
+                                />
+                            ) : (
+                                // HTML代码编辑模式
+                                <textarea
+                                    value={editorContent}
+                                    onChange={(e) => handleEditorChange(e.target.value)}
+                                    className="w-full h-96 p-3 font-mono text-sm bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 border-0 resize-none"
+                                    placeholder="<!-- Edit your HTML code here -->"
+                                    spellCheck="false"
+                                    style={{
+                                        lineHeight: '1.5',
+                                        tabSize: 2,
+                                    }}
+                                />
+                            )}
                         </div>
                         <div className="flex justify-between items-center mt-2">
                             <p className="text-xs text-gray-500">
-                                内容会在保存时自动同步。您可以使用变量如 {`{{email}}`} 来动态替换内容。
+                                {isHtmlMode
+                                    ? "You are in HTML code editing mode. Changes will be reflected in the rich text editor when you switch back."
+                                    : "Content will be automatically synchronized when saved. You can use variables like {{email}} to dynamically replace content."
+                                }
                             </p>
                         </div>
                     </div>
@@ -975,6 +1147,24 @@ const TemplatesPageContent = () => {
             quillInstance.off('editor-change');
         };
     }, [isEditing]); // 仅依赖编辑状态，避免使用引用类型导致频繁重新订阅
+
+    // 添加模式切换处理函数
+    const handleModeToggle = () => {
+        // 如果当前是富文本模式，切换到HTML模式前需要同步内容
+        if (!isHtmlMode && activeQuillInstance.current) {
+            // 获取最新的富文本内容
+            const htmlContent = activeQuillInstance.current.root.innerHTML;
+
+            setEditorContent(htmlContent);
+            setFormData(prev => ({
+                ...prev,
+                htmlContent: htmlContent
+            }));
+        }
+
+        // 切换模式
+        setIsHtmlMode(!isHtmlMode);
+    };
 
     // 主要渲染
     return (

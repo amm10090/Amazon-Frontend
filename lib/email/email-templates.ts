@@ -137,7 +137,7 @@ export async function getCompiledEmailTemplate(
         if (!template) {
             return {
                 success: false,
-                error: `模板 ${templateIdOrType} 不存在或未激活`
+                error: `template ${templateIdOrType} not found or not activated`
             };
         }
 
@@ -145,7 +145,7 @@ export async function getCompiledEmailTemplate(
         if (!template.isActive) {
             return {
                 success: false,
-                error: `模板 ${templateIdOrType} 已被禁用`
+                error: `template ${templateIdOrType} is disabled`
             };
         }
 

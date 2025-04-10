@@ -119,7 +119,7 @@ export async function PUT(
 
         if (existingTemplate) {
             return NextResponse.json(
-                { success: false, message: '模板ID已存在，请使用不同的ID' },
+                { success: false, message: 'A template with the same type and activation already exists' },
                 { status: 400 }
             );
         }
@@ -144,20 +144,20 @@ export async function PUT(
 
         if (result.matchedCount === 0) {
             return NextResponse.json(
-                { success: false, message: '未找到邮件模板' },
+                { success: false, message: 'Email template not found' },
                 { status: 404 }
             );
         }
 
         return NextResponse.json({
             success: true,
-            message: '邮件模板更新成功'
+            message: 'Email template updated successfully'
         });
     } catch (error) {
         return NextResponse.json(
             {
                 success: false,
-                message: '更新邮件模板失败，请稍后重试',
+                message: 'Failed to update email template, please try again later',
                 error: error instanceof Error ? error.message : 'Unknown error'
             },
             { status: 500 }

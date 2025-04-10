@@ -35,7 +35,7 @@ export async function GET(_request: Request) {
         return NextResponse.json(
             {
                 success: false,
-                message: '获取邮件模板失败，请稍后重试',
+                message: 'Failed to get email templates, please try again later',
                 error: error instanceof Error ? error.message : 'Unknown error'
             },
             { status: 500 }
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
         if (existingTemplate) {
             return NextResponse.json(
-                { success: false, message: '模板ID已存在，请使用不同的ID' },
+                { success: false, message: 'A template with the same type and activation already exists' },
                 { status: 400 }
             );
         }
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
 
         if (!result.acknowledged) {
             return NextResponse.json(
-                { success: false, message: '创建模板失败，请稍后重试' },
+                { success: false, message: 'Failed to create template, please try again later' },
                 { status: 500 }
             );
         }
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
         // 返回新创建的模板ID
         return NextResponse.json({
             success: true,
-            message: '邮件模板创建成功',
+            message: 'Email template created successfully',
             data: {
                 id: result.insertedId.toString()
             }
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
             {
                 success: false,
-                message: '创建邮件模板失败，请稍后重试',
+                message: 'Failed to create email template, please try again later',
                 error: error instanceof Error ? error.message : 'Unknown error'
             },
             { status: 500 }

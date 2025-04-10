@@ -20,6 +20,13 @@ const nextConfig = {
             },
         ],
     },
+    experimental: {
+        turbo: {
+            // Turbopack配置
+            // 注意：不需要在此处配置Node模块和MongoDB，Turbopack会自动处理
+        }
+    },
+    // 保留webpack配置用于生产构建
     webpack: (config, { isServer }) => {
         // 只对客户端构建进行调整，服务器端构建保持不变
         if (!isServer) {
