@@ -17,6 +17,7 @@ interface FavoriteButtonProps {
     withText?: boolean;
     withAnimation?: boolean;
     withToast?: boolean;
+    productTitle?: string;
 }
 
 /**
@@ -27,6 +28,7 @@ interface FavoriteButtonProps {
  * @param withText 是否显示文本
  * @param withAnimation 是否启用动画效果
  * @param withToast 是否显示操作提示，默认为true
+ * @param productTitle 产品标题，用于在提示中显示
  */
 const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     productId,
@@ -35,6 +37,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     withText = false,
     withAnimation = true,
     withToast = true,
+    productTitle = '',
 }) => {
     // 使用自定义Hook获取商品收藏状态和切换方法
     const { isFavorite, toggleFavorite, isUpdating } = useProductFavorite(productId);
@@ -137,6 +140,7 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
                     onHide={handleHideToast}
                     type={toastType}
                     message={toastMessage}
+                    productTitle={productTitle}
                 />
             )}
         </>

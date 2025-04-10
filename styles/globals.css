@@ -104,13 +104,17 @@
       opacity: 0;
       transform: translateY(10px) scale(0.9);
     }
-    70% {
+    10% {
       opacity: 1;
-      transform: translateY(-5px) scale(1.1);
+      transform: translateY(-5px) scale(1.05);
+    }
+    90% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
     100% {
       opacity: 0;
-      transform: translateY(-20px) scale(1);
+      transform: translateY(-10px) scale(0.95);
     }
   }
   
@@ -118,7 +122,7 @@
   --animate-pulse: pulse 2s ease-in-out infinite;
   --animate-bounce: bounce 1s ease-in-out infinite;
   --animate-heartbeat: heartbeat 1s ease-in-out;
-  --animate-favorite-success: favoriteSuccess 1.5s ease-out forwards;
+  --animate-favorite-success: favoriteSuccess 3s ease-out forwards;
 }
 
 /*

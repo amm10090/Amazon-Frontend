@@ -151,36 +151,36 @@ export function adaptProducts(apiProducts: Product[]): ComponentProduct[] {
             // 获取价格信息
             const price = mainOffer ? mainOffer.price : (p.price || 0);
 
-            // 计算原价和折扣
-            let originalPrice = price;
+            // 直接使用API返回的original_price字段
+            let originalPrice = p.original_price || price;
             let discount = 0;
 
-            if (mainOffer) {
-                // 如果有savings，直接使用
+            // 优先使用API返回的savings_percentage作为折扣率
+            if (mainOffer && mainOffer.savings_percentage) {
+                discount = mainOffer.savings_percentage;
+                // 如果没有原价但有折扣率，根据折扣率计算原价
+                if (originalPrice === price && discount > 0) {
+                    originalPrice = Math.round(price / (1 - discount / 100) * 100) / 100;
+                }
+            }
+            // 如果有original_price，计算折扣
+            else if (p.original_price && p.original_price > price) {
+                discount = calculateDiscount(p.original_price, price);
+            }
+            // 如果没有original_price但有discount_rate，使用discount_rate
+            else if (p.discount_rate) {
+                discount = p.discount_rate;
+                // 如果原价和当前价格相同，根据折扣率计算原价
+                if (originalPrice === price && discount > 0) {
+                    originalPrice = Math.round(price / (1 - discount / 100) * 100) / 100;
+                }
+            }
+            // 如果有优惠信息，但没有原价和折扣率
+            else if (mainOffer) {
                 if (mainOffer.savings) {
                     originalPrice = price + mainOffer.savings;
-                    discount = mainOffer.savings_percentage || Math.round((mainOffer.savings / originalPrice) * 100);
-                }
-                // 如果有savings_percentage但没有savings
-                else if (mainOffer.savings_percentage) {
-                    discount = mainOffer.savings_percentage;
-                    originalPrice = Math.round(price / (1 - discount / 100) * 100) / 100;
-                }
-            }
-
-            // 如果有discount_rate但没有计算过discount
-            if (p.discount_rate && discount === 0) {
-                discount = p.discount_rate;
-                if (discount > 0 && originalPrice === price) {
-                    originalPrice = Math.round(price / (1 - discount / 100) * 100) / 100;
-                }
-            }
-
-            // 如果有original_price但没有计算过originalPrice
-            if (p.original_price && originalPrice === price) {
-                originalPrice = p.original_price;
-                if (discount === 0) {
-                    discount = calculateDiscount(originalPrice, price);
+                    // 计算折扣百分比
+                    discount = Math.round((mainOffer.savings / originalPrice) * 100);
                 }
             }
 

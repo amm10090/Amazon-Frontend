@@ -787,27 +787,16 @@ function ProductsContent() {
         const hasDiscount = product.discount > 0;
         const discountLabel = hasDiscount ? `-${Math.round(product.discount)}%` : '';
         let couponLabel = '';
-        let calculatedOriginalPrice = product.originalPrice || product.price;
+
+        // 直接使用API适配后的originalPrice，不再需要复杂计算
+        const calculatedOriginalPrice = product.originalPrice;
 
         // 处理优惠券标签
         if (hasCoupon) {
             if (product.couponType === 'percentage') {
                 couponLabel = `-${product.couponValue}%`;
-                // 如果是百分比优惠券且没有折扣，计算原价
-                if (!hasDiscount) {
-                    calculatedOriginalPrice = product.price / (1 - Number(product.couponValue) / 100);
-                }
             } else if (product.couponType === 'fixed') {
                 couponLabel = `$${product.couponValue}`;
-                // 如果是固定金额优惠券且没有折扣，计算原价
-                if (!hasDiscount) {
-                    calculatedOriginalPrice = product.price + Number(product.couponValue);
-                }
-            }
-
-            // 确保优惠券情况下显示原价
-            if (calculatedOriginalPrice <= product.price) {
-                calculatedOriginalPrice = product.price * 1.1; // 如果计算失败，至少显示10%的原价差异
             }
         }
 

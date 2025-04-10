@@ -4,8 +4,9 @@ import { motion } from 'framer-motion';
 import { BellRing } from 'lucide-react';
 import { useState } from 'react';
 
+import FavoriteToast from '@/components/common/FavoriteToast';
 import { NewsletterSubscribe } from '@/components/email/NewsletterSubscribe';
-import { userApi } from '@/lib/api';
+import { useProductFavorite } from '@/lib/favorites';
 import { StoreIdentifier } from '@/lib/store';
 import { formatPrice } from '@/lib/utils';
 import type { ComponentProduct } from '@/types';
@@ -15,28 +16,31 @@ interface ProductInfoProps {
 }
 
 export default function ProductInfo({ product }: ProductInfoProps) {
-    const [isWishlisted, setIsWishlisted] = useState(false);
+    const { isFavorite, toggleFavorite, isUpdating } = useProductFavorite(product.id);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastType, setToastType] = useState<'success' | 'error'>('success');
+    const [lastAction, setLastAction] = useState<'add' | 'remove'>('add');
 
     const handleWishlistToggle = async () => {
         try {
-            if (isWishlisted) {
-                // Remove from wishlist
-                await userApi.removeFavorite(product.id);
+            const actionType = isFavorite ? 'remove' : 'add';
 
-            } else {
-                // Add to wishlist
-                await userApi.addFavorite(product.id);
+            setLastAction(actionType);
 
-            }
-            // Update state
-            setIsWishlisted(!isWishlisted);
+            const result = await toggleFavorite();
+
+            setToastType(result.success ? 'success' : 'error');
+            setToastMessage(result.message);
+            setShowToast(true);
         } catch {
-            // Can add user notification here
+            setToastType('error');
+            setToastMessage('Operation failed, please try again later');
+            setShowToast(true);
         }
     };
 
     const handleViewDeal = () => {
-        // 优先使用cj_url，因为佣金更高，如果没有则使用普通url
         const linkUrl = product.cj_url || product.url;
 
         if (linkUrl) {
@@ -45,27 +49,27 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     };
 
     const handleShare = () => {
-        // Implement sharing functionality
         if (navigator.share) {
             navigator.share({
                 title: product.title,
                 text: `Check out this deal: ${product.title}`,
                 url: window.location.href,
             }).catch(() => {
-                // If sharing fails, copy link to clipboard
                 navigator.clipboard.writeText(window.location.href);
                 alert('Link copied to clipboard');
             });
         } else {
-            // If sharing API not supported, copy link directly
             navigator.clipboard.writeText(window.location.href);
             alert('Link copied to clipboard');
         }
     };
 
+    const handleHideToast = () => {
+        setShowToast(false);
+    };
+
     return (
         <div className="product-info space-y-6 relative">
-            {/* Store badge */}
             <div className="store-badge flex items-center space-x-2">
                 <StoreIdentifier
                     url={product.cj_url || product.url || ''}
@@ -75,12 +79,10 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 />
             </div>
 
-            {/* Product title */}
             <h1 className="product-title text-xl sm:text-2xl md:text-3xl font-bold text-[#1A5276] dark:text-white leading-tight">
                 {product.title}
             </h1>
 
-            {/* Price information and discount area */}
             <div className="price-container flex flex-col space-y-2 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="current-price text-3xl md:text-4xl font-bold text-[#1A5276] dark:text-white">
@@ -101,15 +103,12 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </div>
             </div>
 
-            {/* Size information if available */}
             {product.title.includes('Size') && (
                 <div className="size-info text-sm text-gray-600 dark:text-gray-300">
                     <span className="font-medium">Size: </span> {product.title.match(/Size ([^,]+)/)?.[1] || 'Standard'}
                 </div>
             )}
 
-
-            {/* Shipping information */}
             <div className="shipping-info flex flex-wrap gap-4">
                 {product.isFreeShipping && (
                     <div className="badge flex items-center space-x-1 text-sm text-gray-600 dark:text-gray-300">
@@ -121,7 +120,6 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 )}
             </div>
 
-            {/* Action buttons */}
             <div className="cta-buttons flex flex-row items-center gap-2 pt-4">
                 <motion.button
                     whileHover={{ scale: 1.03 }}
@@ -139,17 +137,18 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className={`wishlist-btn w-1/2 h-9 sm:h-11 md:h-12 rounded-md flex items-center justify-center shadow-sm border-2 cursor-pointer ${isWishlisted
+                        className={`wishlist-btn w-1/2 h-9 sm:h-11 md:h-12 rounded-md flex items-center justify-center shadow-sm border-2 cursor-pointer ${isFavorite
                             ? 'bg-red-500 border-red-500 text-white'
                             : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'
                             }`}
                         onClick={handleWishlistToggle}
-                        aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                        disabled={isUpdating}
+                        aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'}
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6"
-                            fill={isWishlisted ? 'currentColor' : 'none'}
+                            fill={isFavorite ? 'currentColor' : 'none'}
                             viewBox="0 0 24 24"
                             stroke="currentColor"
                         >
@@ -171,7 +170,6 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </div>
             </div>
 
-            {/* Newsletter for mobile only */}
             <div className="lg:hidden mt-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -201,13 +199,21 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </motion.div>
             </div>
 
-            {/* Help information box */}
             <div className="help-box bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mt-6">
                 <h3 className="font-bold text-[#1A5276] dark:text-white mb-2">How OOHunt Works</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
                     We verify all deals to ensure they&apos;re valid and offer real savings. When you click &ldquo;View Deal,&rdquo; you&apos;ll be directed to the store&apos;s website where you can complete your purchase. OOHunt may earn a commission at no cost to you.
                 </p>
             </div>
+
+            <FavoriteToast
+                action={lastAction}
+                show={showToast}
+                onHide={handleHideToast}
+                type={toastType}
+                message={toastMessage}
+                productTitle={product.title}
+            />
         </div>
     );
 } 

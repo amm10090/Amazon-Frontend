@@ -47,6 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         productId={id}
                         size="md"
                         className="bg-white/80 dark:bg-gray-800/80 shadow-sm hover:bg-white dark:hover:bg-gray-800"
+                        productTitle={title}
                     />
                 </div>
             )}
@@ -72,7 +73,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
 
                     {/* Product image */}
-                    <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-800">
+                    <div className="relative w-full h-48 bg-white dark:bg-gray-800">
                         <motion.div
                             whileHover={{ scale: 1.05 }}
                             className="h-full w-full relative"
@@ -83,7 +84,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                     alt={title || 'Product Image'}
                                     fill
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                                    className="object-cover"
+                                    className="object-contain"
                                     quality={80}
                                 />
                             ) : (
