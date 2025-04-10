@@ -815,13 +815,13 @@ function ProductsContent() {
         const hasAnyDiscount = hasDiscount || hasCoupon;
 
         // 计算折扣百分比用于标签颜色样式
-        let discountBadgeClass = 'bg-secondary';
+        let discountBadgeClass = 'bg-primary-badge';
 
         if (hasDiscount) {
             if (product.discount > 30) {
                 discountBadgeClass = 'bg-primary-badge';
             } else if (product.discount > 10) {
-                discountBadgeClass = 'bg-accent';
+                discountBadgeClass = 'bg-primary-badge';
             }
         }
 
@@ -919,21 +919,16 @@ function ProductsContent() {
                                         </span>
                                     )}
                                 </div>
-                                {hasDiscount && discountLabel && (
+                                {hasCoupon && couponLabel ? (
+                                    <span className="text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 bg-green-500">
+                                        {couponLabel} Coupon
+                                    </span>
+                                ) : (hasDiscount && discountLabel && (
                                     <span className={`text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${discountBadgeClass}`}>
                                         {discountLabel}
                                     </span>
-                                )}
+                                ))}
                             </div>
-
-                            {/* 优惠券标签 */}
-                            {hasCoupon && couponLabel && (
-                                <div className="mb-2">
-                                    <span className="text-xs font-bold text-white px-2 py-0.5 rounded bg-green-500 inline-block">
-                                        {couponLabel} Coupon
-                                    </span>
-                                </div>
-                            )}
                         </div>
 
                         {/* Action button */}
