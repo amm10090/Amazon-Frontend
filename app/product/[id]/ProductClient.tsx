@@ -47,7 +47,7 @@ export default function ProductClient({ product }: { product: ComponentProduct }
     return (
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
             {/* Breadcrumb navigation with all items clickable */}
-            <div className="mb-6">
+            <div className="mb-4">
                 <Breadcrumb items={breadcrumbItems} allItemsClickable={true} />
             </div>
 
@@ -55,7 +55,7 @@ export default function ProductClient({ product }: { product: ComponentProduct }
             <div className="product-container bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md mb-8 relative">
                 {/* Prime badge - 移至外部容器并设置为绝对定位 */}
                 {product.isPrime && (
-                    <div className="absolute top-4 right-4 z-20">
+                    <div className="absolute top-4 left-4 z-20">
                         <div className="bg-[#0574F7] text-white text-sm font-bold px-3 py-1.5 rounded-md shadow-sm">
                             Prime
                         </div>
@@ -65,12 +65,12 @@ export default function ProductClient({ product }: { product: ComponentProduct }
                 {/* 调整为平板和移动设备使用上下布局 */}
                 <div className="flex flex-col lg:flex-row">
                     {/* Product image gallery - 调整宽度比例 */}
-                    <div className="w-full lg:w-1/2 p-4 sm:p-6 md:p-8 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700">
+                    <div className="w-full lg:w-1/2 p-3 sm:p-4 md:p-6 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700">
                         <ProductImageGallery product={cleanedProduct} />
                     </div>
 
                     {/* Product information - 调整宽度比例 */}
-                    <div className="w-full lg:w-1/2 p-4 sm:p-6 md:p-8">
+                    <div className="w-full lg:w-1/2 p-3 sm:p-4 md:p-6">
                         <ProductInfo product={cleanedProduct} />
                     </div>
                 </div>

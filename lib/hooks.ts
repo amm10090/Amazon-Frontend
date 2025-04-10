@@ -2,7 +2,7 @@ import type { AxiosResponse } from 'axios';
 import { useEffect } from 'react';
 import useSWR from 'swr';
 
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem, ListResponse, EmailItem } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem, ListResponse, EmailItem, ContactMessage } from '@/types/api';
 
 import { productsApi, userApi, systemApi } from './api';
 
@@ -656,14 +656,75 @@ export function useEmailList(params?: {
         }
     );
 
-    // 默认返回值
-    const defaultResult = { items: [], total: 0, page: 1, page_size: 10 };
+    return {
+        data: data?.data || { items: [], total: 0, page: 1, page_size: 10 },
+        isLoading,
+        isError: error,
+        mutate,
+    };
+}
 
-    // 处理API响应
-    const result = data?.data || data || defaultResult;
+/**
+ * 获取联系表单留言列表
+ */
+export function useContactMessages(params?: {
+    page?: number;
+    limit?: number;
+    sort_by?: 'name' | 'email' | 'createdAt';
+    sort_order?: 'asc' | 'desc';
+    search?: string;
+    is_processed?: boolean;
+}): SWRHookResponse<{ items: ContactMessage[], total: number, page: number, page_size: number }> {
+    const cacheKey = JSON.stringify(['/api/contact/list', params]);
+
+    const { data, error, isLoading, mutate } = useSWR(
+        cacheKey,
+        async () => {
+            // 将params转换为URL查询参数
+            const queryParams: Record<string, string> = {};
+
+            if (params) {
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        queryParams[key] = String(value);
+                    }
+                });
+            }
+            const url = `/api/contact/list?${new URLSearchParams(queryParams).toString()}`;
+
+            try {
+                const response = await fetch(url, {
+                    // 添加no-cache和no-store头，避免浏览器缓存
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+
+                // 检查响应状态
+                if (!response.ok) {
+                    const errorText = await response.text();
+
+                    throw new Error(`API错误 ${response.status}: ${errorText}`);
+                }
+
+                return await response.json();
+            } catch (err) {
+                throw err;
+            }
+        },
+        {
+            revalidateOnFocus: false,
+            revalidateOnReconnect: false,
+            dedupingInterval: 30000,
+            shouldRetryOnError: true,
+            errorRetryCount: 3
+        }
+    );
 
     return {
-        data: result,
+        data: data?.data || { items: [], total: 0, page: 1, page_size: 10 },
         isLoading,
         isError: error,
         mutate,

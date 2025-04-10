@@ -1,14 +1,15 @@
 'use client';
 
 import { addToast } from '@heroui/react';
-import { Download, Mail, Search, X, FileText } from 'lucide-react';
+import { Download, Mail, Search, X, FileText, MessageSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-import { useEmailList } from '@/lib/hooks';
+import MessagesPageContent from '@/components/dashboard/emails/MessagesPageContent';
+import { useEmailList, useContactMessages } from '@/lib/hooks';
 import type { EmailItem } from '@/types/api';
 
 // Tab type definition
-type EmailTab = 'subscribers' | 'registered';
+type EmailTab = 'subscribers' | 'registered' | 'messages';
 
 // Email Filter component
 const EmailFilter = ({
@@ -133,6 +134,16 @@ const EmailsPageContent = () => {
         search: debouncedSearchTerm,
         is_active: statusFilter ? statusFilter === 'true' : undefined,
         collection: activeTab === 'subscribers' ? 'email_subscription' : 'email_list'
+    });
+
+    // Get messages list data
+    const { data: messagesData, isLoading: _isMessagesLoading, isError: _isMessagesError } = useContactMessages({
+        page,
+        limit: pageSize,
+        sort_by: 'createdAt',
+        sort_order: sortOrder,
+        search: debouncedSearchTerm,
+        is_processed: statusFilter ? statusFilter === 'true' : undefined
     });
 
     // 在发生错误时设置详细错误信息
@@ -547,42 +558,65 @@ const EmailsPageContent = () => {
 
             {/* Tabs */}
             <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                <nav className="-mb-px flex space-x-8" aria-label="标签页">
                     <button
                         onClick={() => setActiveTab('subscribers')}
                         className={`${activeTab === 'subscribers'
                             ? 'border-blue-500 text-blue-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
                     >
-                        Newsletter Subscribers
+                        <Mail className="w-4 h-4 mr-2" />
+                        Subscribers
                     </button>
                     <button
                         onClick={() => setActiveTab('registered')}
                         className={`${activeTab === 'registered'
                             ? 'border-blue-500 text-blue-600'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
                     >
-                        Registered Emails
+                        <Mail className="w-4 h-4 mr-2" />
+                        Registered Users
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('messages')}
+                        className={`${activeTab === 'messages'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                    >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Message Management
+                        {messagesData?.items.some(item => !item.isProcessed) && (
+                            <span className="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded-full">
+                                New
+                            </span>
+                        )}
                     </button>
                 </nav>
             </div>
 
-            <EmailFilter
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                statusFilter={statusFilter}
-                setStatusFilter={setStatusFilter}
-                onExport={handleExportCSV}
-            />
-
-            {isLoading ? (
-                renderSkeleton()
-            ) : isError ? (
-                renderError()
+            {activeTab === 'messages' ? (
+                <MessagesPageContent />
             ) : (
-                renderEmailsList()
+                <>
+                    <EmailFilter
+                        searchTerm={searchTerm}
+                        setSearchTerm={setSearchTerm}
+                        statusFilter={statusFilter}
+                        setStatusFilter={setStatusFilter}
+                        onExport={handleExportCSV}
+                    />
+
+                    {isLoading ? (
+                        renderSkeleton()
+                    ) : isError ? (
+                        renderError()
+                    ) : (
+                        renderEmailsList()
+                    )}
+                </>
             )}
         </div>
     );

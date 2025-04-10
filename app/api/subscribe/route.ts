@@ -81,6 +81,17 @@ export async function POST(request: Request) {
             isActive: true,
         });
 
+        // 检查是否启用邮件通知功能
+        const enableEmailNotification = process.env.ENABLE_CONTACT_EMAIL_NOTIFICATION === 'true';
+
+        // 如果不启用邮件通知，直接返回成功
+        if (!enableEmailNotification) {
+            return NextResponse.json(
+                { success: true, message: 'Subscription successful! Email notification is disabled.' },
+                { status: 200 }
+            );
+        }
+
         try {
             // 尝试从数据库获取并编译邮件模板，使用模板类型查询
             const templateResult = await getCompiledEmailTemplate(
@@ -120,7 +131,6 @@ export async function POST(request: Request) {
             const { error } = await resend.emails.send(emailConfig);
 
             if (error) {
-
                 return NextResponse.json(
                     { success: false, message: 'Subscription failed, please try again later' },
                     { status: 500 }
@@ -132,14 +142,12 @@ export async function POST(request: Request) {
                 );
             }
         } catch {
-
             return NextResponse.json(
                 { success: false, message: 'Subscription failed, please try again later' },
                 { status: 500 }
             );
         }
     } catch {
-
         return NextResponse.json(
             { success: false, message: 'Subscription failed, please try again later' },
             { status: 500 }

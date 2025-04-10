@@ -26,14 +26,26 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
         setIsFullscreen(false);
     };
 
+    // 处理外部链接点击
+    const handleExternalLink = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const linkUrl = product.cj_url || product.url;
+
+        if (linkUrl) {
+            window.open(linkUrl, '_blank');
+        }
+    };
+
+    // 获取产品链接
+    const getProductLink = () => {
+        return product.cj_url || product.url || '';
+    };
+
     return (
         <div className="product-gallery flex flex-col space-y-4">
             {/* Main image display area */}
-            <div className="main-image-container relative bg-white rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-[350px] sm:h-[280px] md:h-[300px] lg:h-[450px]">
+            <div className="main-image-container relative bg-white rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-[280px] sm:h-[250px] md:h-[280px] lg:h-[400px]">
                 {/* Hot Deal badge */}
-                <div className="absolute top-4 left-4 z-10 bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-md">
-                    HOT DEAL
-                </div>
 
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -41,15 +53,27 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
                     transition={{ duration: 0.3 }}
                     className="w-full h-full relative"
                 >
-                    <Image
-                        src={product.image}
-                        alt={product.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-contain hover:scale-105 transition-transform duration-300 cursor-pointer"
-                        priority
-                        onClick={handleImageClick}
-                    />
+                    <a
+                        href={getProductLink()}
+                        target="_blank"
+                        rel="nofollow noopener noreferrer"
+                        onClick={handleExternalLink}
+                        className="block w-full h-full cursor-pointer"
+                    >
+                        <Image
+                            src={product.image}
+                            alt={product.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-contain hover:scale-105 transition-transform duration-300"
+                            priority
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleImageClick();
+                            }}
+                        />
+                    </a>
                 </motion.div>
             </div>
 

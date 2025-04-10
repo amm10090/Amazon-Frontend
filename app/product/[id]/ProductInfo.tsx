@@ -68,23 +68,39 @@ export default function ProductInfo({ product }: ProductInfoProps) {
         setShowToast(false);
     };
 
+    // 获取产品链接
+    const getProductLink = () => {
+        return product.cj_url || product.url || '';
+    };
+
     return (
-        <div className="product-info space-y-6 relative">
+        <div className="product-info space-y-4 relative">
             <div className="store-badge flex items-center space-x-2">
                 <StoreIdentifier
-                    url={product.cj_url || product.url || ''}
+                    url={getProductLink()}
                     align="left"
                     showName={true}
                     className="flex items-center"
                 />
             </div>
 
-            <h1 className="product-title text-xl sm:text-2xl md:text-3xl font-bold text-[#1A5276] dark:text-white leading-tight">
-                {product.title}
-            </h1>
+            <a
+                href={getProductLink()}
+                target="_blank"
+                rel="nofollow noopener noreferrer"
+                className="block hover:text-primary transition-colors"
+                onClick={(e) => {
+                    e.preventDefault();
+                    handleViewDeal();
+                }}
+            >
+                <h1 className="product-title text-xl sm:text-2xl md:text-3xl font-bold text-[#1A5276] dark:text-white leading-tight">
+                    {product.title}
+                </h1>
+            </a>
 
-            <div className="price-container flex flex-col space-y-2 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
-                <div className="flex flex-wrap items-center gap-4">
+            <div className="price-container flex flex-col space-y-2 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                <div className="flex flex-wrap items-center gap-3">
                     <div className="current-price text-3xl md:text-4xl font-bold text-[#1A5276] dark:text-white">
                         {formatPrice(product.price)}
                     </div>
@@ -109,7 +125,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </div>
             )}
 
-            <div className="shipping-info flex flex-wrap gap-4">
+            <div className="shipping-info flex flex-wrap gap-3">
                 {product.isFreeShipping && (
                     <div className="badge flex items-center space-x-1 text-sm text-gray-600 dark:text-gray-300">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,7 +136,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 )}
             </div>
 
-            <div className="cta-buttons flex flex-row items-center gap-2 pt-4">
+            <div className="cta-buttons flex flex-row items-center gap-2 pt-2">
                 <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
@@ -170,7 +186,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </div>
             </div>
 
-            <div className="lg:hidden mt-8">
+            <div className="lg:hidden mt-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -199,7 +215,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </motion.div>
             </div>
 
-            <div className="help-box bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mt-6">
+            <div className="help-box bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg mt-4">
                 <h3 className="font-bold text-[#1A5276] dark:text-white mb-2">How OOHunt Works</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
                     We verify all deals to ensure they&apos;re valid and offer real savings. When you click &ldquo;View Deal,&rdquo; you&apos;ll be directed to the store&apos;s website where you can complete your purchase. OOHunt may earn a commission at no cost to you.

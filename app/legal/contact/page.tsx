@@ -1,12 +1,75 @@
-import type { Metadata } from "next";
+'use client';
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { FaFacebook, FaInstagram, FaPinterest, FaTwitter, FaYoutube } from "react-icons/fa";
 
-export const metadata: Metadata = {
-    title: "Contact Us - Oohunt",
-    description: "Contact the Oohunt team, we look forward to hearing from you",
+// 表单数据类型
+type ContactFormData = {
+    name: string;
+    email: string;
+    subject: string;
+    message: string;
 };
 
 export default function ContactPage() {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<{
+        type: 'success' | 'error' | null;
+        message: string;
+    }>({ type: null, message: '' });
+
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors }
+    } = useForm<ContactFormData>({
+        defaultValues: {
+            name: '',
+            email: '',
+            subject: '',
+            message: ''
+        }
+    });
+
+    const onSubmit = async (data: ContactFormData) => {
+        setIsSubmitting(true);
+        setSubmitStatus({ type: null, message: '' });
+
+        try {
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setSubmitStatus({
+                    type: 'success',
+                    message: result.message || 'Your message has been sent successfully, we will reply to you as soon as possible!'
+                });
+                reset();
+            } else {
+                setSubmitStatus({
+                    type: 'error',
+                    message: result.message || 'Failed to submit the form'
+                });
+            }
+        } catch {
+            setSubmitStatus({
+                type: 'error',
+                message: 'An error occurred while submitting the form, please try again later'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const socialLinks = [
         {
             name: 'Facebook',
@@ -86,52 +149,146 @@ export default function ContactPage() {
 
                     <div className="border-t border-gray-200 pt-8">
                         <h3 className="text-xl font-semibold mb-4">Send Us A Message</h3>
-                        <form className="space-y-6">
+
+                        {submitStatus.type && (
+                            <div
+                                className={`p-4 mb-4 rounded-md ${submitStatus.type === 'success'
+                                    ? 'bg-green-50 text-green-700 border border-green-200'
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                                    }`}
+                            >
+                                {submitStatus.message}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                             <div>
-                                <label htmlFor="name" className="block text-gray-700 mb-2">Your Name</label>
+                                <label htmlFor="name" className="block text-gray-700 mb-2">
+                                    Your name <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     type="text"
                                     id="name"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Enter your name"
+                                    {...register('name', {
+                                        required: "Name is required",
+                                        minLength: {
+                                            value: 2,
+                                            message: "Name must be at least 2 characters"
+                                        },
+                                        maxLength: {
+                                            value: 50,
+                                            message: "Name cannot exceed 50 characters"
+                                        }
+                                    })}
+                                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                    placeholder="Please enter your name"
+                                    disabled={isSubmitting}
                                 />
+                                {errors.name && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.name.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div>
-                                <label htmlFor="email" className="block text-gray-700 mb-2">Email Address</label>
+                                <label htmlFor="email" className="block text-gray-700 mb-2">
+                                    Email address <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     type="email"
                                     id="email"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Enter your email"
+                                    {...register('email', {
+                                        required: "Email address is required",
+                                        pattern: {
+                                            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                                            message: "Please enter a valid email address"
+                                        }
+                                    })}
+                                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                    placeholder="Please enter your email address"
+                                    disabled={isSubmitting}
                                 />
+                                {errors.email && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.email.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div>
-                                <label htmlFor="subject" className="block text-gray-700 mb-2">Subject</label>
+                                <label htmlFor="subject" className="block text-gray-700 mb-2">
+                                    Subject <span className="text-red-500">*</span>
+                                </label>
                                 <input
                                     type="text"
                                     id="subject"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="What is this regarding?"
+                                    {...register('subject', {
+                                        required: "Subject is required",
+                                        minLength: {
+                                            value: 5,
+                                            message: "Subject must be at least 5 characters"
+                                        },
+                                        maxLength: {
+                                            value: 100,
+                                            message: "Subject cannot exceed 100 characters"
+                                        }
+                                    })}
+                                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.subject ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                    placeholder="What is this about?"
+                                    disabled={isSubmitting}
                                 />
+                                {errors.subject && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.subject.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div>
-                                <label htmlFor="message" className="block text-gray-700 mb-2">Message</label>
+                                <label htmlFor="message" className="block text-gray-700 mb-2">
+                                    Message content <span className="text-red-500">*</span>
+                                </label>
                                 <textarea
                                     id="message"
                                     rows={5}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Please type your message here..."
+                                    {...register('message', {
+                                        required: "Message content is required",
+                                        minLength: {
+                                            value: 20,
+                                            message: "Message content must be at least 20 characters"
+                                        }
+                                    })}
+                                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.message ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                    placeholder="Please enter your message here..."
+                                    disabled={isSubmitting}
                                 />
+                                {errors.message && (
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {errors.message.message}
+                                    </p>
+                                )}
                             </div>
 
                             <button
                                 type="submit"
-                                className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors duration-300"
+                                disabled={isSubmitting}
+                                className={`${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                                    } text-white px-6 py-3 rounded-md transition-colors duration-300 flex items-center justify-center`}
                             >
-                                Send Message
+                                {isSubmitting ? (
+                                    <>
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        Sending...
+                                    </>
+                                ) : 'Send message'}
                             </button>
                         </form>
                     </div>

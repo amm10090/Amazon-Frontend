@@ -194,7 +194,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                                     disabled={status === 'loading'}
                                 />
                                 {status === 'error' && (
-                                    <div className="absolute text-xs bg-red-500/10 border border-red-400/20 text-red-400 px-3 py-1 rounded-md mt-1.5 left-0">
+                                    <div className="absolute text-xs bg-red-500 border border-red-400 text-white px-3 py-1 rounded-md mt-1.5 left-0">
                                         {errorMessage}
                                     </div>
                                 )}

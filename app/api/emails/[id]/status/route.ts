@@ -3,11 +3,10 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import clientPromise from '@/lib/mongodb';
 
-export async function PUT(request: NextRequest) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     try {
-        // Get ID from URL path
-        const pathParts = request.nextUrl.pathname.split('/');
-        const id = pathParts[pathParts.length - 1];
+        // 使用Next.js提供的params获取ID，而不是从路径中解析
+        const id = params.id;
 
         if (!id) {
             return NextResponse.json(

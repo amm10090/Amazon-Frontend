@@ -809,14 +809,8 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                         whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
                     >
                         {useAnchorLinks ? (
-                            <button
-                                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }
-                                }}
+                            <Link
+                                href="/products"
                                 className="block cursor-pointer w-full text-left"
                                 aria-label="查看所有分类"
                             >
@@ -854,7 +848,7 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                         All Categories
                                     </motion.h3>
                                 </motion.div>
-                            </button>
+                            </Link>
                         ) : (
                             <Link
                                 href="/products"

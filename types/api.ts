@@ -199,4 +199,20 @@ export interface EmailItem {
     email: string;
     subscribedAt: string;
     isActive: boolean;
+}
+
+/**
+ * 联系表单留言接口定义
+ */
+export interface ContactMessage {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    subject?: string;
+    phone?: string;
+    createdAt: string;
+    isProcessed: boolean;
+    processedAt?: string;
+    notes?: string;
 } 
