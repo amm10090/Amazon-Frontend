@@ -266,7 +266,7 @@ function CategoriesContent() {
                 <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl flex flex-col items-center justify-center">
                         <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full mb-3" />
-                        <p className="text-lg font-medium text-gray-700 dark:text-gray-200">正在跳转到商品页面...</p>
+                        <p className="text-lg font-medium text-gray-700 dark:text-gray-200">Redirecting to the product page...</p>
                     </div>
                 </div>
             )}

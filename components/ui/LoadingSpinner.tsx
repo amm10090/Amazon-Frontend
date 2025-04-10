@@ -11,7 +11,7 @@ interface LoadingSpinnerProps {
 export default function LoadingSpinner({
     size = 'md',
     className = '',
-    message = '加载中...'
+    message = 'Loading...'
 }: LoadingSpinnerProps) {
     const sizeMap = {
         sm: 'w-6 h-6',
