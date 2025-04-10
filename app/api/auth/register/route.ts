@@ -1,12 +1,19 @@
 import bcryptjs from 'bcryptjs';
 import type { MongoClient } from 'mongodb';
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
 
 // 使用纯JavaScript实现的bcryptjs代替bcrypt，避免原生模块加载问题
 
+import { ensureTemplateExists } from '@/lib/email/email-template-init';
+import { EMAIL_TEMPLATE_TYPES } from '@/lib/email/email-template-types';
+import { getCompiledEmailTemplate } from '@/lib/email/email-templates';
 import type { User } from '@/lib/models/User';
 import { UserRole, isAdminAccount, isSuperAdminAccount } from '@/lib/models/UserRole';
 import clientPromise from '@/lib/mongodb';
+
+// 初始化Resend - 确保API密钥已设置在环境变量中
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
     try {
@@ -86,6 +93,51 @@ export async function POST(request: Request) {
         };
 
         const result = await db.collection('users').insertOne(newUser);
+
+        // 发送注册确认邮件
+        try {
+            // 尝试从数据库获取并编译邮件模板，使用模板类型查询
+            const templateResult = await getCompiledEmailTemplate(
+                EMAIL_TEMPLATE_TYPES.USER_REGISTRATION,
+                {
+                    name,
+                    email,
+                    date: new Date()
+                },
+                true // 标记为按类型查询
+            );
+
+            // 准备发送邮件的配置
+            const emailConfig = {
+                from: 'onboarding@resend.dev', // 默认发件人
+                to: [email],
+                subject: 'Welcome to OOHUNT! Account Registration',
+                html: `<p>Hello ${name}, thank you for registering!</p>` // 默认简单内容
+            };
+
+            // 如果成功获取到模板，则使用模板内容
+            if (templateResult.success) {
+                emailConfig.subject = templateResult.subject || emailConfig.subject;
+                emailConfig.html = templateResult.html || emailConfig.html;
+
+                // 如果模板指定了发件人且环境不是开发环境，则使用模板中的发件人
+                if (templateResult.from && process.env.NODE_ENV !== 'development') {
+                    emailConfig.from = templateResult.from;
+                }
+            } else {
+                // 如果模板不存在或未激活，尝试创建默认模板
+                await ensureTemplateExists(EMAIL_TEMPLATE_TYPES.USER_REGISTRATION);
+            }
+
+            // 使用Resend发送确认邮件
+            await resend.emails.send(emailConfig);
+        } catch (emailError) {
+            return NextResponse.json({
+                success: false,
+                message: 'Failed to send registration email',
+                error: emailError instanceof Error ? emailError.message : 'Unknown error'
+            }, { status: 500 });
+        }
 
         return NextResponse.json({
             success: true,
