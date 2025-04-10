@@ -11,6 +11,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
     const [email, setEmail] = useState('');
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
+    const [acceptTerms, setAcceptTerms] = useState(false);
 
     const validateEmail = (email: string) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,6 +37,14 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
         if (!validateEmail(email)) {
             setStatus('error');
             setErrorMessage('Please enter a valid email address');
+
+            return;
+        }
+
+        // Validate terms acceptance
+        if (!acceptTerms) {
+            setStatus('error');
+            setErrorMessage('Please accept the privacy policy and email terms');
 
             return;
         }
@@ -102,6 +111,21 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                             {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
                             {status !== 'loading' && <ArrowRight className="w-4 h-4 ml-2" />}
                         </button>
+                    </div>
+
+                    {/* Terms agreement checkbox */}
+                    <div className="mt-3">
+                        <label className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={acceptTerms}
+                                onChange={(e) => setAcceptTerms(e.target.checked)}
+                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#16A085] focus:ring-[#16A085]"
+                            />
+                            <span>
+                                I accept the <a href="/legal/privacy" className="text-[#16A085] hover:underline">Privacy Policy</a> and <a href="/legal/email-subscription-terms" className="text-[#16A085] hover:underline">Email Subscription Terms</a>
+                            </span>
+                        </label>
                     </div>
 
                     {/* Error message */}
@@ -185,6 +209,21 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                                 {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
                                 {status !== 'loading' && <ArrowRight className="w-4 h-4 ml-2" />}
                             </button>
+                        </div>
+
+                        {/* Terms agreement checkbox */}
+                        <div className="mt-4 mx-auto text-center">
+                            <label className=" items-start gap-2 text-sm text-white/80 cursor-pointer mx-auto inline-flex">
+                                <input
+                                    type="checkbox"
+                                    checked={acceptTerms}
+                                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#F39C12] focus:ring-[#F39C12]"
+                                />
+                                <span>
+                                    I accept the <a href="/legal/privacy" className="text-[#F39C12] hover:underline">Privacy Policy</a> and <a href="/legal/email-subscription-terms" className="text-[#F39C12] hover:underline">Email Subscription Terms</a>
+                                </span>
+                            </label>
                         </div>
                     </form>
 

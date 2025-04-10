@@ -109,7 +109,7 @@ export default function DisclaimerPage() {
                     If you have any questions about this Disclaimer, you can contact us at:
                 </p>
                 <p className="mt-2">
-                    Email: <a href="/legal/contact" className="text-blue-600 hover:underline">admin@oohunt.com</a><br />
+                    Email: <a href="mailto:admin@oohunt.com" className="text-blue-600 hover:underline">admin@oohunt.com</a><br />
                     Website: <a href="https://oohunt.com" className="text-blue-600 hover:underline">https://oohunt.com</a>
                 </p>
             </section>

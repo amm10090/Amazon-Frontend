@@ -22,8 +22,8 @@ import { formatPrice } from "@/lib/utils";
 
 // Animation variants
 const navbarVariants = {
-  initial: { height: "auto" },
-  scrolled: { height: "64px" }
+  initial: { opacity: 1 },
+  scrolled: { opacity: 1 }
 };
 
 const _searchIconVariants = {
@@ -59,6 +59,11 @@ const searchInputStyles = `
   }
   input[type="search"]::-ms-clear {
     display: none;
+  }
+  
+  /* 为页面内容添加顶部内边距，防止被固定导航栏遮挡 */
+  body {
+    padding-top: 64px;
   }
 `;
 
@@ -226,15 +231,14 @@ export const Navbar = () => {
       animate={shouldAnimate && isScrolled ? "scrolled" : "initial"}
       variants={navbarVariants}
       transition={{ duration: 0.3 }}
-      className="w-full relative z-[9990]"
-      style={{ height: "auto" }}
+      className="w-full fixed top-0 left-0 right-0 z-[9990]"
     >
       {/* 添加全局样式 */}
       <style jsx global>{searchInputStyles}</style>
 
       <HeroUINavbar
         maxWidth="full"
-        className={`bg-background/80 backdrop-blur-lg border-b  transition-all duration-300 ${isScrolled ? "shadow-md" : ""}`}
+        className="bg-background/95 backdrop-blur-lg border-b shadow-md transition-all duration-300"
         position="sticky"
         isMenuOpen={isMenuOpen}
         onMenuOpenChange={setIsMenuOpen}
@@ -244,7 +248,7 @@ export const Navbar = () => {
           {/* 内容限宽容器 */}
           <div className="w-full max-w-[1500px] relative z-[9991]">
             {/* 导航栏主体 */}
-            <div className="flex items-center justify-between w-full h-16  lg:px-8">
+            <div className="flex items-center justify-between w-full h-16 lg:h-16 lg:px-8">
               {/* Logo and Search Bar Content - Left Side */}
               <div className="flex items-center gap-4 flex-1 lg:max-w-[800px]">
                 {/* Mobile Menu */}

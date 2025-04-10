@@ -148,7 +148,7 @@ export default function TermsPage() {
                     This website is operated by Oohunt.
                 </p>
                 <p className="mt-4">
-                    All feedback, comments, requests for technical support and other communications relating to the Site should be directed to our <a href="/legal/contact" className="text-blue-600 hover:underline">admin@oohunt.com</a>.
+                    All feedback, comments, requests for technical support and other communications relating to the Site should be directed to our <a href="mailto:admin@oohunt.com" className="text-blue-600 hover:underline">admin@oohunt.com</a>.
                 </p>
             </section>
 

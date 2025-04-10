@@ -4,25 +4,25 @@ const Footer = () => {
     return (
         <footer className="bg-background border-t border-text/10 pt-12 pb-6">
             <div className="container mx-auto px-6">
-                {/* 主要内容区域 */}
-                <div className="flex flex-col md:flex-row justify-between gap-10">
+                {/* Main content area */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* About Us */}
-                    <div className="md:w-1/3">
-                        <h3 className="text-lg font-bold mb-6 text-primary">About Us</h3>
-                        <div className="pr-8">
+                    <div>
+                        <h3 className="text-lg font-bold mb-4 text-primary">About Us</h3>
+                        <div>
                             <Link href="/about" className="hover:text-primary transition-colors duration-200">
                                 About Oohunt
                             </Link>
-                            <p className="mt-4 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                            <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                                 Oohunt helps you find the best deals on products from Amazon and other retailers. We connect shoppers with the best prices and most trusted products.
                             </p>
                         </div>
                     </div>
 
-                    {/* Legal - 右对齐布局 */}
-                    <div className="md:w-1/3">
-                        <h3 className="text-lg font-bold mb-6 text-primary">Legal</h3>
-                        <ul className="space-y-3">
+                    {/* Legal */}
+                    <div>
+                        <h3 className="text-lg font-bold mb-4 text-primary">Legal</h3>
+                        <ul className="space-y-2">
                             <li>
                                 <Link href="/legal/terms" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
                                     Terms of Use
@@ -48,16 +48,41 @@ const Footer = () => {
                                     Affiliate Disclosure
                                 </Link>
                             </li>
+                        </ul>
+                    </div>
+
+                    {/* Support & Connect */}
+                    <div>
+                        <h3 className="text-lg font-bold mb-4 text-primary">Support</h3>
+                        <ul className="space-y-2 mb-6">
                             <li>
                                 <Link href="/legal/email-subscription-terms" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
                                     Email Subscription Terms
                                 </Link>
                             </li>
+                            <li>
+                                <Link href="/legal/contact" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                    Contact Us
+                                </Link>
+                            </li>
                         </ul>
+
+                        <h3 className="text-lg font-bold mb-4 text-primary">Connect</h3>
+                        <div className="flex space-x-4">
+                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                Twitter
+                            </a>
+                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                Facebook
+                            </a>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                Instagram
+                            </a>
+                        </div>
                     </div>
                 </div>
 
-                {/* 分隔线 */}
+                {/* Divider */}
                 <div className="border-t border-gray-200 dark:border-gray-800 my-8" />
 
                 {/* Copyright */}

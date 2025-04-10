@@ -62,7 +62,7 @@ export default function EmailSubscriptionTerms() {
                     </p>
                     <p className="mb-2">
                         Email:{" "}
-                        <a href="/legal/contact" className="text-primary hover:underline">
+                        <a href="mailto:admin@oohunt.com" className="text-primary hover:underline">
                             admin@oohunt.com
                         </a>
                     </p>

@@ -192,7 +192,7 @@ export default function PrivacyPolicyPage() {
                         <li>We may store your email address for up to 12 months after you unsubscribe to prevent accidentally sending you unwanted emails in the future</li>
                     </ul>
                     <p className="mt-4">
-                        If you wish to be completely removed from our email database, please <a href="/legal/contact" className="text-blue-600 hover:underline">contact us</a> with &quot;EMAIL REMOVAL REQUEST&quot; in the subject line.
+                        If you wish to be completely removed from our email database, please <a href="mailto:admin@oohunt.com" className="text-blue-600 hover:underline">contact us</a> with &quot;EMAIL REMOVAL REQUEST&quot; in the subject line.
                     </p>
                 </section>
 
@@ -223,7 +223,7 @@ export default function PrivacyPolicyPage() {
                         If you have any questions about this Privacy Policy, please contact us:
                     </p>
                     <p className="mt-2">
-                        Email: <a href="/legal/contact" className="text-blue-600 hover:underline">admin@oohunt.com</a><br />
+                        Email: <a href="mailto:admin@oohunt.com" className="text-blue-600 hover:underline">admin@oohunt.com</a><br />
                         Website: <a href="https://oohunt.com" className="text-blue-600 hover:underline">https://oohunt.com</a>
                     </p>
                 </section>
