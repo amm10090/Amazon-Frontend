@@ -226,7 +226,7 @@ export default function AuthStatus({ isMobileMenu = false, onNavigate }: AuthSta
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
                                 transition={{ duration: 0.2, ease: "easeOut" }}
-                                className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 z-50 border border-gray-100"
+                                className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 z-50 border border-gray-100"
                             >
                                 <Link
                                     href="/auth/signin"
@@ -317,7 +317,7 @@ export default function AuthStatus({ isMobileMenu = false, onNavigate }: AuthSta
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
                             transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 z-50 border border-gray-100 overflow-hidden"
+                            className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 z-50 border border-gray-100 overflow-hidden"
                         >
                             <div className="px-4 py-2 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-100">
                                 <p className="font-medium text-gray-800">{user.name || '用户'}</p>
