@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from "next/font/google";
 
 import { auth } from '@/auth';
+import { Analytics } from "@/components/analytics";
 import { ClientLayout } from "@/components/client-layout";
 import { BackTop } from "@/components/ui/BackTop";
 import { FloatingFavorites } from "@/components/ui/FloatingFavorites";
@@ -12,15 +13,21 @@ const inter = Inter({
   adjustFontFallback: false,
 });
 
+// 从环境变量获取Bing Webmaster ID
+const BING_WEBMASTER_ID = process.env.NEXT_PUBLIC_BING_WEBMASTER_ID || '';
+
 export const metadata: Metadata = {
   title: "OOHUNT - Your Ultimate Shopping Companion",
   description: "Find the best deals on Amazon, Walmart, Target and more",
   icons: {
     icon: "/favicon.ico",
   },
+  verification: {
+    other: {
+      'msvalidate.01': BING_WEBMASTER_ID
+    },
+  },
 };
-
-
 
 export default async function RootLayout({
   children,
@@ -39,6 +46,7 @@ export default async function RootLayout({
           <BackTop />
           <FloatingFavorites />
         </ClientLayout>
+        <Analytics />
       </body>
     </html>
   );

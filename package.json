@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS='--no-deprecation' next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build --turbopack",
+    "start": "next start --turbopack",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
     "init:email-templates": "node --experimental-modules scripts/init-email-templates.js"
