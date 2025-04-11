@@ -102,7 +102,7 @@ const EmailsPageContent = () => {
     const [sortBy, setSortBy] = useState<'email' | 'subscribedAt'>('subscribedAt');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-    // 添加错误信息状态
+    // Add error message state
     const [apiErrorDetails, setApiErrorDetails] = useState<string | null>(null);
 
     // Only send request after user finishes typing
@@ -113,7 +113,7 @@ const EmailsPageContent = () => {
         setPage(1);
         setSearchTerm('');
         setStatusFilter('');
-        setApiErrorDetails(null); // 重置错误信息
+        setApiErrorDetails(null); // Reset error message
     }, [activeTab]);
 
     // Debounce search input
@@ -146,7 +146,7 @@ const EmailsPageContent = () => {
         is_processed: statusFilter ? statusFilter === 'true' : undefined
     });
 
-    // 在发生错误时设置详细错误信息
+    // Set detailed error information when an error occurs
     useEffect(() => {
         if (isError) {
             if (isError instanceof Error) {
@@ -262,7 +262,7 @@ const EmailsPageContent = () => {
         </div>
     );
 
-    // 渲染详细的错误信息
+    // Render detailed error message
     const renderError = () => (
         <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="text-center">
@@ -558,7 +558,7 @@ const EmailsPageContent = () => {
 
             {/* Tabs */}
             <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8" aria-label="标签页">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     <button
                         onClick={() => setActiveTab('subscribers')}
                         className={`${activeTab === 'subscribers'

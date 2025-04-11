@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { useContactMessages } from '@/lib/hooks';
 import type { ContactMessage } from '@/types/api';
 
-// 标签页类型定义
+// Tab type definition
 type MessageTab = 'all' | 'pending';
 
 // Message Detail Dialog component
@@ -297,7 +297,7 @@ const MessageFilter = ({
 
 // Main content component
 const MessagesPageContent = () => {
-    // 添加标签页状态
+    // Add tab state
     const [activeTab, setActiveTab] = useState<MessageTab>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
@@ -528,7 +528,7 @@ const MessagesPageContent = () => {
                                             {item.email}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {new Date(item.createdAt).toLocaleString('zh-CN', {
+                                            {new Date(item.createdAt).toLocaleString('en-US', {
                                                 year: 'numeric',
                                                 month: 'short',
                                                 day: 'numeric',
@@ -606,7 +606,7 @@ const MessagesPageContent = () => {
                                             Email: {item.email}
                                         </div>
                                         <div className="text-sm text-gray-500">
-                                            时间：{new Date(item.createdAt).toLocaleString('zh-CN', {
+                                            Date: {new Date(item.createdAt).toLocaleString('en-US', {
                                                 year: 'numeric',
                                                 month: 'short',
                                                 day: 'numeric',
@@ -821,9 +821,9 @@ const MessagesPageContent = () => {
     return (
         <div className="space-y-6 max-w-full">
 
-            {/* 标签页 */}
+            {/* Tabs */}
             <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8" aria-label="标签页">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     <button
                         onClick={() => setActiveTab('all')}
                         className={`${activeTab === 'all'
