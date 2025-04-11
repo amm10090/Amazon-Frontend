@@ -1,5 +1,5 @@
 export const metadata = {
-    title: 'Privacy Policy - Oohunt',
+    title: 'Oohunt-Privacy Policy',
     description: 'Privacy policy and data protection information',
 };
 

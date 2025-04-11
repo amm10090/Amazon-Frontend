@@ -1,5 +1,7 @@
-export const metadata = {
-    title: 'Disclaimer - Oohunt',
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Oohunt-Disclaimer',
     description: 'Legal disclaimer for Oohunt website',
 };
 

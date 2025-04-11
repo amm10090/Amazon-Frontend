@@ -1,5 +1,5 @@
 export const metadata = {
-    title: 'Terms of Use - Oohunt',
+    title: 'Oohunt-Terms of Use',
     description: 'Terms of Use for Oohunt website and services',
 };
 

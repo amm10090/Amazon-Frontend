@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Email Subscription Terms - Oohunt",
+    title: "Oohunt-Email Subscription Terms",
     description: "Email subscription terms and conditions for Oohunt users.",
 };
 
