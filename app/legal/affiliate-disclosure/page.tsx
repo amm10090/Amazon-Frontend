@@ -1,5 +1,5 @@
 export const metadata = {
-    title: 'Affiliate Disclosure - Oohunt',
+    title: 'Oohunt-Affiliate Disclosure',
     description: 'Information about our affiliate relationships',
 };
 
