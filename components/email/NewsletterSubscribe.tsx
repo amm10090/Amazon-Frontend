@@ -44,7 +44,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
         // Validate terms acceptance
         if (!acceptTerms) {
             setStatus('error');
-            setErrorMessage('Please accept the privacy policy and email terms');
+            setErrorMessage('Please agree to the email subscription terms and privacy policy');
 
             return;
         }
@@ -113,6 +113,13 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                         </button>
                     </div>
 
+                    {/* Error message */}
+                    {status === 'error' && (
+                        <div className="mt-3 text-sm text-red-500 font-medium text-center">
+                            {errorMessage}
+                        </div>
+                    )}
+
                     {/* Terms agreement checkbox */}
                     <div className="mt-3">
                         <label className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
@@ -123,21 +130,14 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                                 className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#16A085] focus:ring-[#16A085]"
                             />
                             <span>
-                                I accept the <a href="/legal/privacy" className="text-[#16A085] hover:underline">Privacy Policy</a> and <a href="/legal/email-subscription-terms" className="text-[#16A085] hover:underline">Email Subscription Terms</a>
+                                I agree to receive email communications from Oohunt as described in the <a href="/legal/email-subscription-terms" className="text-[#16A085] hover:underline" target="_blank" rel="noopener noreferrer">Email Subscription Terms</a> and <a href="/legal/privacy" className="text-[#16A085] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
                             </span>
                         </label>
                     </div>
 
-                    {/* Error message */}
-                    {status === 'error' && (
-                        <div className="mt-2 text-sm text-red-500">
-                            {errorMessage}
-                        </div>
-                    )}
-
                     {/* Success message */}
                     {status === 'success' && (
-                        <div className="mt-2 text-sm text-green-500 flex items-center">
+                        <div className="mt-2 text-sm text-green-500 flex items-center justify-center">
                             <CheckCircle2 className="w-4 h-4 mr-2 flex-shrink-0" />
                             <span>Subscription successful! Thank you for subscribing.</span>
                         </div>
@@ -193,11 +193,6 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                                     aria-label="Email address"
                                     disabled={status === 'loading'}
                                 />
-                                {status === 'error' && (
-                                    <div className="absolute text-xs bg-red-500 border border-red-400 text-white px-3 py-1 rounded-md mt-1.5 left-0">
-                                        {errorMessage}
-                                    </div>
-                                )}
                             </div>
                             <button
                                 type="submit"
@@ -211,9 +206,16 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                             </button>
                         </div>
 
+                        {/* Error message */}
+                        {status === 'error' && (
+                            <div className="mt-4 mb-2 text-sm text-red-500 px-4 py-2 rounded-md mx-auto max-w-md font-medium text-center">
+                                {errorMessage}
+                            </div>
+                        )}
+
                         {/* Terms agreement checkbox */}
                         <div className="mt-4 mx-auto text-center">
-                            <label className=" items-start gap-2 text-sm text-white/80 cursor-pointer mx-auto inline-flex">
+                            <label className="flex items-start gap-2 text-sm text-white/80 cursor-pointer text-left mx-auto max-w-md">
                                 <input
                                     type="checkbox"
                                     checked={acceptTerms}
@@ -221,7 +223,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                                     className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#F39C12] focus:ring-[#F39C12]"
                                 />
                                 <span>
-                                    I accept the <a href="/legal/privacy" className="text-[#F39C12] hover:underline">Privacy Policy</a> and <a href="/legal/email-subscription-terms" className="text-[#F39C12] hover:underline">Email Subscription Terms</a>
+                                    I agree to receive email communications from Oohunt as described in the <a href="/legal/email-subscription-terms" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Email Subscription Terms</a> and <a href="/legal/privacy" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
                                 </span>
                             </label>
                         </div>
@@ -236,12 +238,6 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                         </div>
                     )}
 
-                    {/* Privacy notice */}
-                    <div className="mt-6 text-center">
-                        <p className="text-xs text-white/60">
-                            We respect your privacy and will never share your email with third parties.
-                        </p>
-                    </div>
                 </div>
             </div>
         </div>

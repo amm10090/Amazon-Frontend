@@ -137,9 +137,7 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
 
                         <div className="mt-1">
                             <NewsletterSubscribe compact={true} />
-                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                We respect your privacy and will never share your email with third parties.
-                            </p>
+
                         </div>
                     </div>
                 </motion.div>
