@@ -2,39 +2,12 @@
 
 import { useMemo } from 'react';
 
-import Breadcrumb, { type BreadcrumbItem } from '@/components/ui/Breadcrumb';
 import type { ComponentProduct } from '@/types';
 
 import ProductImageGallery from './ProductImageGallery';
 import ProductInfo from './ProductInfo';
 
 export default function ProductClient({ product }: { product: ComponentProduct }) {
-    // Generate breadcrumb navigation based on product data
-    const breadcrumbItems = useMemo(() => {
-        const items: BreadcrumbItem[] = [
-            { label: 'Home', href: '/' },
-            { label: 'Products', href: '/products' },
-        ];
-
-        // Parse product.category with fallback handling
-        const category = product.category || '';
-        const categoryName = category ||
-            (product.title?.includes('Digital') ? 'Digital Devices & Accessories' : '');
-
-        // Only add category if we have a valid name
-        if (categoryName) {
-            // 先将空格替换为+号，然后使用encodeURIComponent但保留+号
-            const productGroup = encodeURIComponent(categoryName).replace(/%20/g, '+');
-
-            items.push({
-                label: categoryName,
-                href: `/products?product_groups=${productGroup}`
-            });
-        }
-
-        return items;
-    }, [product]);
-
     // Ensure no extra rendering
     const cleanedProduct = useMemo(() => {
         // Create a new object to avoid directly modifying original data
@@ -45,23 +18,18 @@ export default function ProductClient({ product }: { product: ComponentProduct }
     }, [product]);
 
     return (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            {/* Breadcrumb navigation with all items clickable */}
-            <div className="mb-4">
-                <Breadcrumb items={breadcrumbItems} allItemsClickable={true} />
-            </div>
-
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl pt-0 sm:pt-2">
             {/* Product detail card */}
-            <div className="product-container bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md mb-8 relative">
+            <div className="product-container bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md mb-6 relative">
                 {/* 调整为平板和移动设备使用上下布局 */}
                 <div className="flex flex-col lg:flex-row">
                     {/* Product image gallery - 调整宽度比例 */}
-                    <div className="w-full lg:w-1/2 p-3 sm:p-4 md:p-6 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700">
+                    <div className="w-full lg:w-1/2 p-2 sm:p-3 md:p-4 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700">
                         <ProductImageGallery product={cleanedProduct} />
                     </div>
 
                     {/* Product information - 调整宽度比例 */}
-                    <div className="w-full lg:w-1/2 p-3 sm:p-4 md:p-6">
+                    <div className="w-full lg:w-1/2 p-2 sm:p-3 md:p-4">
                         <ProductInfo product={cleanedProduct} />
                     </div>
                 </div>

@@ -42,11 +42,11 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
     };
 
     return (
-        <div className="product-gallery flex flex-col space-y-4">
+        <div className="product-gallery flex flex-col space-y-3">
             {/* Main image display area */}
-            <div className="main-image-container relative bg-white rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-[280px] sm:h-[250px] md:h-[280px] lg:h-[400px]">
+            <div className="main-image-container relative bg-white rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-[240px] sm:h-[220px] md:h-[260px] lg:h-[380px]">
                 {/* Hot Deal badge */}
-                <div className="absolute top-4 left-4 z-10 bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-md">
+                <div className="absolute top-3 left-3 z-10 bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-md">
                     HOT DEAL
                 </div>
                 <motion.div
@@ -123,7 +123,7 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="newsletter-section bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/80 dark:to-gray-800/60 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
                 >
-                    <div className="flex flex-col space-y-3">
+                    <div className="flex flex-col space-y-2">
                         <div className="flex items-center space-x-3">
                             <div className="bg-[#16A085]/10 p-2 rounded-lg">
                                 <BellRing className="w-5 h-5 text-[#16A085]" />
@@ -137,7 +137,6 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
 
                         <div className="mt-1">
                             <NewsletterSubscribe compact={true} />
-
                         </div>
                     </div>
                 </motion.div>

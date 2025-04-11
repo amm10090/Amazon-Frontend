@@ -113,12 +113,12 @@ export default async function ProductPage(props: ProductPageProps) {
     return (
         <div className="w-full">
             {/* Product details main content */}
-            <div className="bg-gray-50 dark:bg-gray-900 py-8">
+            <div className="bg-gray-50 dark:bg-gray-900 py-4 sm:py-6">
                 <ProductClient product={adaptedProduct} />
             </div>
 
             {/* Similar products and Today's Best Deals sections */}
-            <div className="container mx-auto px-4 space-y-12 py-12">
+            <div className="container mx-auto px-4 space-y-8 sm:space-y-12 py-8 sm:py-12">
                 {/* Similar products section */}
                 <section>
                     <div className="flex items-center justify-between mb-6">

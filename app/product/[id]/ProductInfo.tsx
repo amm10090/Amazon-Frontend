@@ -74,7 +74,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     };
 
     return (
-        <div className="product-info space-y-4 relative">
+        <div className="product-info space-y-3 relative">
             <div className="store-badge flex items-center flex-wrap justify-between">
                 <StoreIdentifier
                     url={getProductLink()}
@@ -116,11 +116,11 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
                     {product.discount > 0 && (
                         <>
-                            <div className="original-price text-xl text-gray-500 line-through">
+                            <div className="original-price text-lg sm:text-xl text-gray-500 line-through">
                                 {formatPrice(product.originalPrice)}
                             </div>
 
-                            <div className="discount-tag bg-[#F39C12] text-white text-sm font-bold px-3 py-1 rounded-md">
+                            <div className="discount-tag bg-[#F39C12] text-white text-sm font-bold px-2 py-1 rounded-md">
                                 {Math.round(product.discount)}% OFF
                             </div>
                         </>
@@ -145,11 +145,11 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 )}
             </div>
 
-            <div className="cta-buttons flex flex-row items-center gap-2 pt-2">
+            <div className="cta-buttons flex flex-row items-center gap-2 pt-1">
                 <motion.button
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="view-deal-btn w-[70%] bg-[#16A085] hover:bg-[#117A65] text-white py-2.5 sm:py-3 px-3 sm:px-6 rounded-md font-medium shadow-sm transition-colors flex items-center justify-center cursor-pointer"
+                    className="view-deal-btn w-[70%] bg-[#16A085] hover:bg-[#117A65] text-white py-2 sm:py-2.5 px-3 sm:px-6 rounded-md font-medium shadow-sm transition-colors flex items-center justify-center cursor-pointer"
                     onClick={handleViewDeal}
                 >
                     <span className="text-sm sm:text-base">View Deal on {product.brand === 'amazon' ? 'Amazon' : 'Store'}</span>
@@ -162,7 +162,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className={`wishlist-btn w-1/2 h-9 sm:h-11 md:h-12 rounded-md flex items-center justify-center shadow-sm border-2 cursor-pointer ${isFavorite
+                        className={`wishlist-btn w-1/2 h-9 sm:h-10 md:h-11 rounded-md flex items-center justify-center shadow-sm border-2 cursor-pointer ${isFavorite
                             ? 'bg-red-500 border-red-500 text-white'
                             : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300'
                             }`}
@@ -184,7 +184,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     <motion.button
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        className="share-btn w-1/2 h-9 sm:h-11 md:h-12 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md flex items-center justify-center shadow-sm cursor-pointer"
+                        className="share-btn w-1/2 h-9 sm:h-10 md:h-11 bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-md flex items-center justify-center shadow-sm cursor-pointer"
                         onClick={handleShare}
                         aria-label="Share"
                     >
@@ -195,14 +195,14 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 </div>
             </div>
 
-            <div className="lg:hidden mt-6">
+            <div className="lg:hidden mt-4">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="newsletter-section bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/80 dark:to-gray-800/60 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
+                    className="newsletter-section bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/80 dark:to-gray-800/60 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm"
                 >
-                    <div className="flex flex-col space-y-3">
+                    <div className="flex flex-col space-y-2">
                         <div className="flex items-center space-x-3">
                             <div className="bg-[#16A085]/10 p-2 rounded-lg">
                                 <BellRing className="w-5 h-5 text-[#16A085]" />
@@ -216,14 +216,13 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
                         <div className="mt-1">
                             <NewsletterSubscribe compact={true} />
-
                         </div>
                     </div>
                 </motion.div>
             </div>
 
-            <div className="help-box bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg mt-4">
-                <h3 className="font-bold text-[#1A5276] dark:text-white mb-2">How OOHunt Works</h3>
+            <div className="help-box bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg mt-3">
+                <h3 className="font-bold text-[#1A5276] dark:text-white mb-1">How OOHunt Works</h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
                     We verify all deals to ensure they&apos;re valid and offer real savings. When you click &ldquo;View Deal,&rdquo; you&apos;ll be directed to the store&apos;s website where you can complete your purchase. OOHunt may earn a commission at no cost to you.
                 </p>
