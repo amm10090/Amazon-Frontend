@@ -220,7 +220,7 @@ function SearchPageContent() {
                                                 animate={{ scale: 1 }}
                                                 className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
                                             >
-                                                Prime
+                                                PRIME
                                             </motion.div>
                                         </div>
                                     )}
@@ -251,7 +251,7 @@ function SearchPageContent() {
                                         <div className="flex items-center justify-between mb-1.5">
                                             {product.brand ? (
                                                 <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded inline-block">
-                                                    {product.brand}
+                                                    {product.brand.toUpperCase()}
                                                 </span>
                                             ) : (
                                                 <div /> /* 占位空元素，确保右对齐 */
@@ -263,7 +263,7 @@ function SearchPageContent() {
                                         </div>
 
                                         <h3 className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-white">
-                                            {product.title}
+                                            {product.title.toUpperCase()}
                                         </h3>
 
                                         {/* 价格和折扣 */}

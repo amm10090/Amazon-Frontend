@@ -395,7 +395,7 @@ export const Navbar = () => {
                                   )}
                                   <div className="flex-1 min-w-0">
                                     <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
-                                      {product.title}
+                                      {product.title.toUpperCase()}
                                     </p>
                                     <div className="flex items-center mt-0.5">
                                       {product.offers && product.offers[0] && (

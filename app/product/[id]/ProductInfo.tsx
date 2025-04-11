@@ -87,7 +87,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 {product.isPrime && (
                     <div className="flex items-center">
                         <div className="bg-[#0574F7] text-white text-sm font-bold px-3 py-1.5 rounded-md shadow-sm">
-                            Prime
+                            PRIME
                         </div>
                     </div>
                 )}
@@ -104,7 +104,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 }}
             >
                 <h1 className="product-title text-xl sm:text-2xl md:text-3xl font-bold text-[#1A5276] dark:text-white leading-tight">
-                    {product.title}
+                    {product.title.toUpperCase()}
                 </h1>
             </a>
 
