@@ -152,16 +152,19 @@ export const Navbar = () => {
   // 添加ResizeObserver逻辑
   useEffect(() => {
     const navbar = document.querySelector('.navbar-container');
+
     if (!navbar) return;
 
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
         const height = entry.borderBoxSize[0].blockSize;
+
         document.documentElement.style.setProperty('--navbar-height', `${height}px`);
       }
     });
 
     resizeObserver.observe(navbar);
+
     return () => resizeObserver.disconnect();
   }, []);
 
@@ -279,19 +282,13 @@ export const Navbar = () => {
                       transition={{ type: "spring", stiffness: 400, damping: 10 }}
                     >
                       <NextLink className="flex justify-start items-center gap-1" href="/">
-                        <motion.span
-                          className="font-bold text-lg md:text-xl bg-linear-to-r from-[#81D8F7] via-[#62B6D9] to-[#81D8F7] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
-                          animate={{
-                            backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
-                          }}
-                          transition={{
-                            duration: 8,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                        >
-                          OOHUNT
-                        </motion.span>
+                        <Image
+                          src="/logo.svg"
+                          alt="Oohunt Logo"
+                          width={80}
+                          height={32}
+                          className="object-contain inline-block"
+                        />
                       </NextLink>
                     </motion.div>
                   </NavbarBrand>
@@ -305,19 +302,13 @@ export const Navbar = () => {
                       transition={{ type: "spring", stiffness: 400, damping: 10 }}
                     >
                       <NextLink className="flex justify-start items-center gap-1" href="/">
-                        <motion.span
-                          className="font-bold text-lg md:text-xl bg-linear-to-r from-[#81D8F7] via-[#62B6D9] to-[#81D8F7] bg-clip-text text-transparent whitespace-nowrap bg-[length:200%_100%]"
-                          animate={{
-                            backgroundPosition: ["0% 0%", "100% 0%", "0% 0%"],
-                          }}
-                          transition={{
-                            duration: 8,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                        >
-                          OOHUNT
-                        </motion.span>
+                        <Image
+                          src="/logo.svg"
+                          alt="Oohunt Logo"
+                          width={80}
+                          height={32}
+                          className="object-contain inline-block"
+                        />
                       </NextLink>
                     </motion.div>
                   </NavbarBrand>
