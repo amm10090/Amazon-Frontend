@@ -31,6 +31,7 @@ const ProductsPageContent = () => {
     const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
     const [minDiscount, setMinDiscount] = useState<number | undefined>(undefined);
     const [isPrimeOnly, setIsPrimeOnly] = useState<boolean | undefined>(undefined);
+    const [apiProvider, setApiProvider] = useState<string | undefined>(undefined);
     const [searchParams, setSearchParams] = useState({
         keyword: '',
         page: 1,
@@ -43,7 +44,7 @@ const ProductsPageContent = () => {
         is_prime_only: undefined as boolean | undefined,
         product_groups: undefined as string | undefined,
         brands: undefined as string | undefined,
-        api_provider: undefined as string | undefined,
+        api_provider: apiProvider,
     });
 
     // 创建一个防抖搜索函数
@@ -68,7 +69,8 @@ const ProductsPageContent = () => {
     // 浏览模式 - 使用原有的useProducts hook
     const { data: productsData, isLoading: browseLoading, mutate: mutateBrowseData } = useProducts({
         page: currentPage,
-        limit: itemsPerPage
+        limit: itemsPerPage,
+        api_provider: apiProvider
     });
 
     // 搜索模式 - 使用新的useProductSearch hook
@@ -151,14 +153,32 @@ const ProductsPageContent = () => {
 
     // 应用高级搜索
     const applyAdvancedSearch = () => {
-        if (searchTerm.trim()) {
+        // 如果有搜索词或API来源筛选，则应用筛选
+        if (searchTerm.trim() || apiProvider !== undefined) {
             setSearchParams(prev => ({
                 ...prev,
                 min_price: minPrice,
                 max_price: maxPrice,
                 min_discount: minDiscount,
-                is_prime_only: isPrimeOnly
+                is_prime_only: isPrimeOnly,
+                api_provider: apiProvider
             }));
+
+            // 有搜索词，切换到搜索模式
+            if (searchTerm.trim()) {
+                setSearchMode('search');
+            } else if (searchMode === 'browse') {
+                // 如果没有搜索词但有筛选条件，在浏览模式下刷新数据
+                if (mutateBrowseData && (minPrice !== undefined || maxPrice !== undefined ||
+                    minDiscount !== undefined || isPrimeOnly !== undefined || apiProvider !== undefined)) {
+                    mutateBrowseData();
+                }
+            } else {
+                // 在搜索模式下刷新数据
+                if (mutateSearchData) {
+                    mutateSearchData();
+                }
+            }
         }
     };
 
@@ -208,6 +228,7 @@ const ProductsPageContent = () => {
         setMaxPrice(undefined);
         setMinDiscount(undefined);
         setIsPrimeOnly(undefined);
+        setApiProvider(undefined);
     };
 
     // 处理搜索输入变化
@@ -216,6 +237,33 @@ const ProductsPageContent = () => {
 
         setSearchTerm(term);
         handleSearch(term);
+    };
+
+    // 处理API来源变更
+    const handleApiProviderChange = (provider: string | undefined) => {
+        setApiProvider(provider);
+
+        // 更新搜索参数
+        setSearchParams(prev => ({
+            ...prev,
+            api_provider: provider
+        }));
+
+        // 如果当前在搜索模式，立即应用筛选；如果在浏览模式，直接刷新数据
+        if (searchMode === 'browse') {
+            if (provider !== undefined) {
+                // 选择了特定的API提供商，但保持在浏览模式
+                // 使用useProducts的mutate函数强制刷新数据
+                if (mutateBrowseData) {
+                    mutateBrowseData();
+                }
+            }
+        } else {
+            // 已经在搜索模式下，刷新搜索结果
+            if (mutateSearchData) {
+                mutateSearchData();
+            }
+        }
     };
 
     // 更新产品过滤逻辑，仅在浏览模式下使用
@@ -511,7 +559,7 @@ const ProductsPageContent = () => {
     const renderAdvancedSearch = () => (
         <div className="mb-4">
             <button
-                className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                className="text-sm text-blue-600 hover:text-blue-800 flex items-center cursor-pointer"
                 onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
             >
                 {showAdvancedSearch ? <FaChevronUp className="mr-1" /> : <FaChevronDown className="mr-1" />}
@@ -573,6 +621,40 @@ const ProductsPageContent = () => {
                         </label>
                     </div>
 
+                    {/* API来源选择 */}
+                    <div>
+                        <label className="block text-xs text-gray-600 mb-1">API Source</label>
+                        <div className="flex space-x-4">
+                            <label className="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    className="form-radio h-4 w-4 text-blue-600"
+                                    checked={apiProvider === undefined}
+                                    onChange={() => setApiProvider(undefined)}
+                                />
+                                <span className="ml-2 text-sm text-gray-700">All Sources</span>
+                            </label>
+                            <label className="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    className="form-radio h-4 w-4 text-blue-600"
+                                    checked={apiProvider === 'pa-api'}
+                                    onChange={() => setApiProvider('pa-api')}
+                                />
+                                <span className="ml-2 text-sm text-gray-700">Amazon API</span>
+                            </label>
+                            <label className="inline-flex items-center">
+                                <input
+                                    type="radio"
+                                    className="form-radio h-4 w-4 text-blue-600"
+                                    checked={apiProvider === 'cj-api'}
+                                    onChange={() => setApiProvider('cj-api')}
+                                />
+                                <span className="ml-2 text-sm text-gray-700">CJ API</span>
+                            </label>
+                        </div>
+                    </div>
+
                     {/* 应用按钮 */}
                     <div className="col-span-full flex justify-end mt-2">
                         <button
@@ -586,6 +668,55 @@ const ProductsPageContent = () => {
             )}
         </div>
     );
+
+    // 渲染API来源快速筛选按钮
+    const renderApiProviderFilters = () => (
+        <div className="flex flex-wrap gap-2 mb-4">
+            <button
+                onClick={() => handleApiProviderChange(undefined)}
+                className={`px-3 py-1 text-sm rounded-full ${apiProvider === undefined
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+                All Sources
+            </button>
+            <button
+                onClick={() => handleApiProviderChange('pa-api')}
+                className={`px-3 py-1 text-sm rounded-full ${apiProvider === 'pa-api'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+                Amazon API
+            </button>
+            <button
+                onClick={() => handleApiProviderChange('cj-api')}
+                className={`px-3 py-1 text-sm rounded-full ${apiProvider === 'cj-api'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+            >
+                CJ API
+            </button>
+        </div>
+    );
+
+    // 渲染API来源筛选状态指示器
+    const renderApiProviderStatus = () => {
+        if (!apiProvider) return null;
+
+        return (
+            <div className="bg-blue-50 border border-blue-100 text-blue-800 rounded-lg p-2 mb-4 flex justify-between items-center">
+                <div>
+                    {searchMode === 'browse' ? 'Browsing' : 'Searching'} products from: <span className="font-medium">{apiProvider === 'pa-api' ? 'Amazon API' : 'CJ API'}</span>
+                </div>
+                <button
+                    onClick={() => handleApiProviderChange(undefined)}
+                    className="text-sm bg-white border border-blue-200 rounded px-2 py-1 hover:bg-blue-100"
+                >
+                    Clear Filter
+                </button>
+            </div>
+        );
+    };
 
     // 渲染空状态
     const renderEmptyState = () => (
@@ -651,7 +782,7 @@ const ProductsPageContent = () => {
                                     layout
                                     key={product.asin}
                                     variants={itemAnimation}
-                                    className="bg-white rounded-lg shadow-sm p-3 border border-gray-200 hover:shadow-md transition-shadow duration-300"
+                                    className="bg-white rounded-lg shadow-sm p-3 border border-gray-200 hover:shadow-md transition-shadow duration-300 relative cursor-pointer"
                                 >
                                     <div className="flex items-start space-x-2">
                                         <div className="flex-shrink-0">
@@ -696,6 +827,19 @@ const ProductsPageContent = () => {
                                                 </div>
                                             </div>
                                         </div>
+                                        {product.api_provider && (
+                                            <div className="absolute top-1 right-1">
+                                                {product.api_provider === 'pa-api' ? (
+                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-xs font-medium bg-blue-100 text-blue-800">
+                                                        Amazon
+                                                    </span>
+                                                ) : product.api_provider === 'cj-api' ? (
+                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-sm text-xs font-medium bg-green-100 text-green-800">
+                                                        CJ
+                                                    </span>
+                                                ) : null}
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             ))}
@@ -754,6 +898,12 @@ const ProductsPageContent = () => {
                                                     {getSortIcon('price')}
                                                 </div>
                                             </th>
+                                            <th
+                                                scope="col"
+                                                className="py-3 px-2 text-center text-xs font-medium text-gray-500 uppercase w-16"
+                                            >
+                                                Source
+                                            </th>
                                             <th scope="col" className="py-3 pl-2 pr-4 text-right text-xs font-medium text-gray-500 uppercase w-20">
                                                 Action
                                             </th>
@@ -789,7 +939,7 @@ const ProductsPageContent = () => {
                                                             )}
                                                         </div>
                                                         <div className="min-w-0 max-w-[120px]">
-                                                            <div className="font-medium text-xs text-gray-900 line-clamp-1">{product.title}</div>
+                                                            <div className="font-medium text-xs text-gray-900 line-clamp-1 cursor-pointer">{product.title}</div>
                                                             <div className="text-xs text-gray-500 truncate">{product.asin}</div>
                                                         </div>
                                                     </div>
@@ -800,6 +950,19 @@ const ProductsPageContent = () => {
                                                     </div>
                                                     {product.offers?.[0]?.savings_percentage && (
                                                         <div className="text-xs text-green-600">-{product.offers[0].savings_percentage}%</div>
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-2 text-center">
+                                                    {product.api_provider === 'pa-api' ? (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                            Amazon
+                                                        </span>
+                                                    ) : product.api_provider === 'cj-api' ? (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                            CJ
+                                                        </span>
+                                                    ) : (
+                                                        '-'
                                                     )}
                                                 </td>
                                                 <td className="py-3 pl-2 pr-4 text-right">
@@ -831,14 +994,20 @@ const ProductsPageContent = () => {
                             <table className="min-w-full divide-y divide-gray-300">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th scope="col" className="sticky top-0 z-10 py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 bg-gray-50">
+                                        <th scope="col" className="sticky top-0 z-10 py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-gray-900 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                                            onClick={() => handleSort('title')}>
                                             Product
                                         </th>
-                                        <th scope="col" className="sticky top-0 z-10 px-3 py-3.5 text-left text-xs font-semibold text-gray-900 bg-gray-50">
+                                        <th scope="col" className="sticky top-0 z-10 px-3 py-3.5 text-left text-xs font-semibold text-gray-900 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                                            onClick={() => handleSort('asin')}>
                                             ASIN
                                         </th>
-                                        <th scope="col" className="sticky top-0 z-10 px-3 py-3.5 text-right text-xs font-semibold text-gray-900 bg-gray-50">
+                                        <th scope="col" className="sticky top-0 z-10 px-3 py-3.5 text-right text-xs font-semibold text-gray-900 bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                                            onClick={() => handleSort('price')}>
                                             Price
+                                        </th>
+                                        <th scope="col" className="sticky top-0 z-10 px-3 py-3.5 text-center text-xs font-semibold text-gray-900 bg-gray-50">
+                                            Source
                                         </th>
                                         <th scope="col" className="sticky top-0 z-10 px-3 py-3.5 text-right text-xs font-semibold text-gray-900 bg-gray-50">
                                             Actions
@@ -866,7 +1035,7 @@ const ProductsPageContent = () => {
                                                         )}
                                                     </div>
                                                     <div className="ml-3 max-w-[300px]">
-                                                        <div className="font-medium text-gray-900 line-clamp-1">{product.title}</div>
+                                                        <div className="font-medium text-gray-900 line-clamp-1 cursor-pointer">{product.title}</div>
                                                         {product.brand && (
                                                             <div className="text-xs text-gray-500 truncate">
                                                                 {product.brand}
@@ -884,6 +1053,19 @@ const ProductsPageContent = () => {
                                                 </div>
                                                 {product.offers?.[0]?.savings_percentage && (
                                                     <div className="text-xs text-green-600">-{product.offers[0].savings_percentage}%</div>
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-4 text-sm text-center">
+                                                {product.api_provider === 'pa-api' ? (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                        Amazon
+                                                    </span>
+                                                ) : product.api_provider === 'cj-api' ? (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                        CJ
+                                                    </span>
+                                                ) : (
+                                                    '-'
                                                 )}
                                             </td>
                                             <td className="px-3 py-4 text-sm text-right">
@@ -955,7 +1137,7 @@ const ProductsPageContent = () => {
                                             </th>
                                             <th
                                                 scope="col"
-                                                className="sticky top-0 z-10 px-3 py-3.5 text-left text-xs font-semibold text-gray-900 bg-gray-50 w-[15%] cursor-pointer hover:bg-gray-100 transition-colors"
+                                                className="sticky top-0 z-10 px-3 py-3.5 text-left text-xs font-semibold text-gray-900 bg-gray-50 w-[10%] cursor-pointer hover:bg-gray-100 transition-colors"
                                                 onClick={() => handleSort('price')}
                                             >
                                                 <div className="flex items-center">
@@ -965,13 +1147,19 @@ const ProductsPageContent = () => {
                                             </th>
                                             <th
                                                 scope="col"
-                                                className="sticky top-0 z-10 px-3 py-3.5 text-left text-xs font-semibold text-gray-900 bg-gray-50 w-[15%] cursor-pointer hover:bg-gray-100 transition-colors"
+                                                className="sticky top-0 z-10 px-3 py-3.5 text-left text-xs font-semibold text-gray-900 bg-gray-50 w-[10%] cursor-pointer hover:bg-gray-100 transition-colors"
                                                 onClick={() => handleSort('discount')}
                                             >
                                                 <div className="flex items-center">
                                                     Discount
                                                     {getSortIcon('discount')}
                                                 </div>
+                                            </th>
+                                            <th
+                                                scope="col"
+                                                className="sticky top-0 z-10 px-3 py-3.5 text-left text-xs font-semibold text-gray-900 bg-gray-50 w-[10%]"
+                                            >
+                                                Source
                                             </th>
                                             <th scope="col" className="sticky top-0 z-10 px-3 py-3.5 text-right text-xs font-semibold text-gray-900 bg-gray-50 w-[15%]">
                                                 Actions
@@ -1008,7 +1196,7 @@ const ProductsPageContent = () => {
                                                             )}
                                                         </div>
                                                         <div className="ml-3 min-w-0 max-w-[400px]">
-                                                            <div className="font-medium text-gray-900 line-clamp-1 hover:text-blue-600 transition-colors duration-200">{product.title}</div>
+                                                            <div className="font-medium text-gray-900 line-clamp-1 hover:text-blue-600 transition-colors duration-200 cursor-pointer">{product.title}</div>
                                                             {product.brand && (
                                                                 <div className="text-sm text-gray-500 truncate">
                                                                     {product.brand}
@@ -1027,6 +1215,19 @@ const ProductsPageContent = () => {
                                                     {product.offers?.[0]?.savings_percentage ? (
                                                         <span className="text-green-600">-{product.offers[0].savings_percentage}%</span>
                                                     ) : '-'}
+                                                </td>
+                                                <td className="px-3 py-4 text-sm text-gray-500">
+                                                    {product.api_provider === 'pa-api' ? (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                                            Amazon
+                                                        </span>
+                                                    ) : product.api_provider === 'cj-api' ? (
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                            CJ
+                                                        </span>
+                                                    ) : (
+                                                        '-'
+                                                    )}
                                                 </td>
                                                 <td className="px-3 py-4 text-sm text-right">
                                                     <button
@@ -1103,6 +1304,9 @@ const ProductsPageContent = () => {
             {/* 高级搜索选项 */}
             {renderAdvancedSearch()}
 
+            {/* API来源快速筛选按钮 */}
+            {renderApiProviderFilters()}
+
             {/* 搜索结果状态 */}
             <AnimatePresence>
                 {searchMode === 'search' && searchParams.keyword && (
@@ -1112,6 +1316,19 @@ const ProductsPageContent = () => {
                         exit={{ opacity: 0, height: 0 }}
                     >
                         {renderSearchStatus()}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* API来源筛选状态指示器 */}
+            <AnimatePresence>
+                {apiProvider && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                    >
+                        {renderApiProviderStatus()}
                     </motion.div>
                 )}
             </AnimatePresence>

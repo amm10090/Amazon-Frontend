@@ -127,7 +127,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                         </div>
                         <button
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
+                            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 cursor-pointer"
                             aria-label={isSidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
                         >
                             {isSidebarOpen
@@ -166,7 +166,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     </div>
 
                     {/* 底部用户信息 */}
-                    <div className={`mt-auto border-t border-gray-200 p-4 ${(!isSidebarOpen && !isMobile) ? 'hidden' : 'block'}`}>
+                    <div className={`mt-auto border-t border-gray-200 p-4 ${(!isSidebarOpen && !isMobile) ? 'hidden' : 'block'} cursor-pointer`}>
                         <div className="flex items-center">
                             <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center">
                                 {session.user.name?.charAt(0) || 'U'}
@@ -194,7 +194,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                             {isMobile && (
                                 <button
                                     onClick={() => setIsSidebarOpen(true)}
-                                    className="p-2 rounded-lg hover:bg-gray-100 mr-2 text-gray-600"
+                                    className="p-2 rounded-lg hover:bg-gray-100 mr-2 text-gray-600 cursor-pointer"
                                     aria-label="Open Menu"
                                 >
                                     <Menu size={20} />
