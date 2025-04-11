@@ -7,7 +7,7 @@ import clsx from "clsx";
 import { useTheme } from "next-themes";
 import type { FC } from "react";
 
-import { SunFilledIcon, MoonFilledIcon } from "@/components/icons";
+import { SunFilledIcon, MoonFilledIcon } from "@/lib/icons";
 
 export interface ThemeSwitchProps {
   className?: string;

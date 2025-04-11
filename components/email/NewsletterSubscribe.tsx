@@ -215,7 +215,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
 
                         {/* Terms agreement checkbox */}
                         <div className="mt-4 mx-auto text-center">
-                            <label className="flex items-start gap-2 text-sm text-white/80 cursor-pointer text-left mx-auto max-w-md">
+                            <label className="flex items-start gap-2 text-sm text-white/80 cursor-pointer text-left mx-auto max-w-ld">
                                 <input
                                     type="checkbox"
                                     checked={acceptTerms}
