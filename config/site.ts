@@ -6,7 +6,7 @@ export const siteConfig = {
   navItems: [
     {
       label: "All Products",
-      href: "/products",
+      href: "/product",
     },
     {
       label: "Limited Time Deals",
@@ -14,14 +14,14 @@ export const siteConfig = {
     },
     {
       label: "About Us",
-      href: "/about",
+      href: "/about-us",
     },
   ],
   navMenuItems: [
 
     {
       label: "All Products",
-      href: "/products",
+      href: "/product",
     },
     {
       label: "Limited Time Deals",
@@ -29,11 +29,11 @@ export const siteConfig = {
     },
     {
       label: "About Us",
-      href: "/about",
+      href: "/about-us",
     },
     {
       label: "Contact Us",
-      href: "/legal/contact",
+      href: "/contact-us",
     },
   ],
   links: {

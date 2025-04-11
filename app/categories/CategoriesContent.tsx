@@ -130,7 +130,7 @@ function CategoriesContent() {
         setIsNavigating(true);
 
         // 获取存储的原始路径（使用 try-catch 防止服务器端错误）
-        let prevPath = '/products'; // 默认导航到商品页面
+        let prevPath = '/product'; // 默认导航到商品页面
 
         try {
             const storedPath = sessionStorage.getItem('prevPath');
@@ -143,7 +143,7 @@ function CategoriesContent() {
         }
 
         // 检查是否是产品页面路径
-        const _isProductPage = prevPath.startsWith('/products');
+        const _isProductPage = prevPath.startsWith('/product');
 
         // 构建URL对象更可靠地处理参数
         let url;
@@ -151,7 +151,7 @@ function CategoriesContent() {
         try {
             url = new URL(prevPath, window.location.origin);
         } catch {
-            url = new URL('/products', window.location.origin);
+            url = new URL('/product', window.location.origin);
         }
 
         // 清除旧的分类参数（同时清除category和product_groups）
@@ -214,7 +214,7 @@ function CategoriesContent() {
 
         // 如果直接访问了分类页面且没有存储过路径，设置默认路径为产品页面
         if (currentPath === '/categories' && !existingPath) {
-            sessionStorage.setItem('prevPath', '/products');
+            sessionStorage.setItem('prevPath', '/product');
         }
     }, []);
 

@@ -78,6 +78,9 @@ const Header = () => {
                         <Link href="/favorites" className="nav-link">
                             收藏夹
                         </Link>
+                        <Link href="/about-us" className="nav-link">
+                            关于我们
+                        </Link>
                     </div>
 
                     {/* Theme Toggle & Mobile Menu */}
@@ -119,6 +122,9 @@ const Header = () => {
                                 </Link>
                                 <Link href="/favorites" className="nav-link">
                                     收藏夹
+                                </Link>
+                                <Link href="/about-us" className="nav-link">
+                                    关于我们
                                 </Link>
                                 <div className="border-t border-text/10 pt-4">
                                     <div className="font-medium mb-2">分类</div>

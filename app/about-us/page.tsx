@@ -1,3 +1,6 @@
+
+import Link from "next/link";
+
 import { title } from "@/components/primitives";
 
 export default function AboutPage() {
@@ -181,12 +184,12 @@ export default function AboutPage() {
           <p className="text-[#1A5276] mb-8 leading-relaxed">
             Become part of the growing community of smart shoppers who rely on OOHUNT to enhance their online shopping experience.
           </p>
-          <a
-            href="mailto:oohuntofficial@gmail.com"
+          <Link
+            href="/contact-us"
             className="inline-block px-8 py-4 bg-gradient-to-r from-[#F39C12] to-[#E67E22] hover:from-[#E67E22] hover:to-[#D35400] text-white font-medium rounded-full transition-all hover:shadow-lg transform hover:-translate-y-1"
           >
             Contact Support
-          </a>
+          </Link>
           <p className="mt-6 text-[#1A5276] italic">OOHUNT – Shop smarter, not harder.</p>
         </div>
       </div>

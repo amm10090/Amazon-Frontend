@@ -10,7 +10,7 @@ const Footer = () => {
                     <div>
                         <h3 className="text-lg font-bold mb-4 text-primary">About Us</h3>
                         <div>
-                            <Link href="/about" className="hover:text-primary transition-colors duration-200">
+                            <Link href="/about-us" className="hover:text-primary transition-colors duration-200">
                                 About Oohunt
                             </Link>
                             <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -24,27 +24,27 @@ const Footer = () => {
                         <h3 className="text-lg font-bold mb-4 text-primary">Legal</h3>
                         <ul className="space-y-2">
                             <li>
-                                <Link href="/legal/terms" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                <Link href="/terms-of-use" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
                                     Terms of Use
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/legal/privacy" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                <Link href="/privacy-policy" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
                                     Privacy Policy
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/legal/cookies" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                <Link href="/cookies-policy" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
                                     Cookies Policy
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/legal/disclaimer" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                <Link href="/disclaimer" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
                                     Disclaimer
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/legal/affiliate-disclosure" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                <Link href="/affiliate-disclosure" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
                                     Affiliate Disclosure
                                 </Link>
                             </li>
@@ -56,12 +56,12 @@ const Footer = () => {
                         <h3 className="text-lg font-bold mb-4 text-primary">Support</h3>
                         <ul className="space-y-2 mb-6">
                             <li>
-                                <Link href="/legal/email-subscription-terms" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                <Link href="/email-subscription-terms" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
                                     Email Subscription Terms
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/legal/contact" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
+                                <Link href="/contact-us" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
                                     Contact Us
                                 </Link>
                             </li>

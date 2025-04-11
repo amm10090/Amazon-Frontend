@@ -1,8 +1,3 @@
-export const metadata = {
-    title: 'Cookies Policy - Oohunt',
-    description: 'Information about how we use cookies on our website',
-};
-
 export default function CookiesPolicyPage() {
     return (
         <>

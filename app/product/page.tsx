@@ -470,7 +470,7 @@ function ProductsContent() {
 
     // 引入useRouter和usePathname
     const router = useRouter();
-    const pathname = '/products'; // 当前页面路径
+    const pathname = '/product'; // 当前页面路径
 
     // 添加useEffect，当searchParams变化时更新URL
     useEffect(() => {

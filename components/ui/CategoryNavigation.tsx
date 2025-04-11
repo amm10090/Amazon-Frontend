@@ -496,7 +496,7 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
             }
 
             return false;
-        } else if (pathname.startsWith('/products')) {
+        } else if (pathname.startsWith('/product')) {
             // 在产品页面上，检查 URL 参数
             try {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -558,7 +558,7 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
             }
         } else {
             // 原有行为：构建产品页面URL，使用原始分类名称作为product_groups参数
-            const productPageUrl = `/products?product_groups=${encodeURIComponent(slug)}`;
+            const productPageUrl = `/product?product_groups=${encodeURIComponent(slug)}`;
 
             // 使用window.location导航
             window.location.href = productPageUrl;
@@ -810,7 +810,7 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                     >
                         {useAnchorLinks ? (
                             <Link
-                                href="/products"
+                                href="/product"
                                 className="block cursor-pointer w-full text-left"
                                 aria-label="查看所有分类"
                             >
@@ -851,7 +851,7 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                             </Link>
                         ) : (
                             <Link
-                                href="/products"
+                                href="/product"
                                 className={`block ${isActiveCategory('all') ? 'pointer-events-none' : ''}`}
                             >
                                 <motion.div
@@ -995,7 +995,7 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                 </button>
                             ) : (
                                 <Link
-                                    href={`/products?product_groups=${encodeURIComponent(category.slug)}`}
+                                    href={`/product?product_groups=${encodeURIComponent(category.slug)}`}
                                     className={`block ${isActiveCategory(category.slug) ? 'pointer-events-none' : ''}`}
                                 >
                                     <motion.div
