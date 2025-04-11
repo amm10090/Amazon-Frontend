@@ -76,7 +76,7 @@ export async function generateMetadata(
     }
 
     return {
-        title: `OOHUNT - ${product.title}`,
+        title: `Oohunt - ${product.title}`,
         description: product.description || `View details and pricing for ${product.title}`,
     };
 }
