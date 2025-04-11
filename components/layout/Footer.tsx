@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 const Footer = () => {
@@ -10,8 +11,14 @@ const Footer = () => {
                     <div>
                         <h3 className="text-lg font-bold mb-4 text-primary">About Us</h3>
                         <div>
-                            <Link href="/about-us" className="hover:text-primary transition-colors duration-200">
-                                About Oohunt
+                            <Link href="/about-us" className="hover:text-primary transition-colors duration-200 inline-flex items-center gap-1">
+                                About <Image
+                                    src="/logo.svg"
+                                    alt="Oohunt Logo"
+                                    width={80}
+                                    height={32}
+                                    className="object-contain inline-block"
+                                />
                             </Link>
                             <p className="mt-3 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                                 Oohunt helps you find the best deals on products from Amazon and other retailers. We connect shoppers with the best prices and most trusted products.
@@ -89,8 +96,14 @@ const Footer = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                     <p>© {new Date().getFullYear()} Oohunt. All rights reserved.</p>
                     <p className="mt-2 md:mt-0">
-                        <Link href="/" className="hover:text-primary transition-colors duration-200">
-                            Oohunt
+                        <Link href="/" className="hover:text-primary transition-colors duration-200 inline-flex items-center">
+                            <Image
+                                src="/logo.svg"
+                                alt="Oohunt Logo"
+                                width={80}
+                                height={32}
+                                className="object-contain"
+                            />
                         </Link> - Finding the best deals for you
                     </p>
                 </div>

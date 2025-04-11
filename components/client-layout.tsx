@@ -32,7 +32,7 @@ export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
                     )}>
                         <Navbar />
                         <main className={clsx(
-                            "grow pt-1",
+                            "grow",
                             pathname?.startsWith('/about')
                                 ? ""
                                 : isDashboard

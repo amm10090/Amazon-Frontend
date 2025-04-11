@@ -60,11 +60,6 @@ const searchInputStyles = `
   input[type="search"]::-ms-clear {
     display: none;
   }
-  
-  /* 为页面内容添加顶部内边距，防止被固定导航栏遮挡 */
-  body {
-    padding-top: 64px;
-  }
 `;
 
 export const Navbar = () => {
@@ -154,6 +149,22 @@ export const Navbar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // 添加ResizeObserver逻辑
+  useEffect(() => {
+    const navbar = document.querySelector('.navbar-container');
+    if (!navbar) return;
+
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const height = entry.borderBoxSize[0].blockSize;
+        document.documentElement.style.setProperty('--navbar-height', `${height}px`);
+      }
+    });
+
+    resizeObserver.observe(navbar);
+    return () => resizeObserver.disconnect();
+  }, []);
+
   // 处理搜索输入变化
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const keyword = e.target.value;
@@ -231,7 +242,7 @@ export const Navbar = () => {
       animate={shouldAnimate && isScrolled ? "scrolled" : "initial"}
       variants={navbarVariants}
       transition={{ duration: 0.3 }}
-      className="w-full fixed top-0 left-0 right-0 z-[9990]"
+      className="w-full fixed top-0 left-0 right-0 z-[9990] navbar-container"
     >
       {/* 添加全局样式 */}
       <style jsx global>{searchInputStyles}</style>

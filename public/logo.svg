@@ -1,0 +1,19 @@
+<svg width="500" height="200" xmlns="http://www.w3.org/2000/svg" clip-rule="evenodd" xml:space="preserve" version="1.1">
+ <defs>
+  <linearGradient y2="0.61157" x2="0.97781" y1="0.61157" x1="0" id="_Linear1">
+   <stop stop-color="rgb(39,123,179)" offset="0"/>
+   <stop stop-color="rgb(28,86,123)" offset="1"/>
+  </linearGradient>
+ </defs>
+ <g>
+  <title>Layer 1</title>
+  <g transform="matrix(1 0 0 0.170084 0 78.3955)" id="Artboard1">
+   <rect id="svg_1" fill="none" height="500" width="500" y="17.63838" x="1"/>
+   <g id="svg_2" transform="matrix(0.981604 0 0 4.41715 -59.5458 -679.131)">
+    <g id="svg_3" transform="matrix(185.107 0 0 185.107 559.431 261.796)"/>
+    <text id="svg_4" fill="url(#_Linear1)" font-size="185.107px" font-family="'Margin-DEMO-Regular', 'Margin DEMO'" y="265.78916" x="71.02674">Oo
+     <tspan id="svg_5" y="261.796px 261.796px 261.796px 261.796px " x="238.641px 325.086px 413.567px 500.752px ">hunt</tspan></text>
+   </g>
+  </g>
+ </g>
+</svg>

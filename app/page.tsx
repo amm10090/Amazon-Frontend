@@ -32,6 +32,15 @@ const productGroupToCategoryMapping: Record<string, { slug: string, name: string
     'Automotive Parts and Accessories': { slug: 'Automotive Parts and Accessories', name: 'Automotive' }
 };
 
+// 添加获取导航栏高度的函数
+const getNavbarHeight = () => {
+    return parseInt(
+        getComputedStyle(document.documentElement)
+            .getPropertyValue('--navbar-height')
+            .slice(0, -2)
+    );
+};
+
 export default function Home() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [processed, setProcessed] = useState(false);
@@ -100,8 +109,8 @@ export default function Home() {
             const newsletterRect = newsletterRef.current?.getBoundingClientRect();
             const paginationRect = paginationRef.current?.getBoundingClientRect();
 
-            // 固定偏移量（导航栏高度）
-            const topOffset = 110;
+            // 使用CSS变量获取导航栏高度
+            const topOffset = getNavbarHeight();
 
             // 计算父容器的位置
             const containerTop = catalogRect.top + window.scrollY;
@@ -186,7 +195,7 @@ export default function Home() {
                         ref={sidebarRef}
                         className="w-[240px] bg-white shadow-sm border-r border-gray-100 z-40"
                         style={{
-                            minHeight: 'calc(100vh - 110px)',
+                            minHeight: 'calc(100vh - 64px)',
                             willChange: 'transform'
                         }}
                     >
