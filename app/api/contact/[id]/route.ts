@@ -4,11 +4,10 @@ import { type NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 
 // 查看留言详情
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-        // 从URL路径中获取ID
-        const pathParts = request.nextUrl.pathname.split('/');
-        const id = pathParts[pathParts.length - 1];
+        // 从params获取ID
+        const { id } = await params;
 
         if (!id) {
             return NextResponse.json(
@@ -73,11 +72,10 @@ export async function GET(request: NextRequest) {
 }
 
 // 删除留言
-export async function DELETE(request: NextRequest) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-        // 从URL路径中获取ID
-        const pathParts = request.nextUrl.pathname.split('/');
-        const id = pathParts[pathParts.length - 1];
+        // 从params获取ID
+        const { id } = await params;
 
         if (!id) {
             return NextResponse.json(

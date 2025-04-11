@@ -75,13 +75,22 @@ export default function ProductInfo({ product }: ProductInfoProps) {
 
     return (
         <div className="product-info space-y-4 relative">
-            <div className="store-badge flex items-center space-x-2">
+            <div className="store-badge flex items-center flex-wrap justify-between">
                 <StoreIdentifier
                     url={getProductLink()}
                     align="left"
                     showName={true}
                     className="flex items-center"
                 />
+
+                {/* Prime badge - 放置在右侧 */}
+                {product.isPrime && (
+                    <div className="flex items-center">
+                        <div className="bg-[#0574F7] text-white text-sm font-bold px-3 py-1.5 rounded-md shadow-sm">
+                            Prime
+                        </div>
+                    </div>
+                )}
             </div>
 
             <a

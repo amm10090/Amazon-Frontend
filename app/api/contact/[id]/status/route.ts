@@ -10,11 +10,10 @@ interface UpdateData {
     notes?: string; // 可选属性
 }
 
-export async function PUT(request: NextRequest) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-        // 从URL路径中获取ID
-        const pathParts = request.nextUrl.pathname.split('/');
-        const id = pathParts[pathParts.length - 2]; // 获取状态API路径中的ID
+        // 从params获取ID
+        const { id } = await params;
 
         if (!id) {
             return NextResponse.json(

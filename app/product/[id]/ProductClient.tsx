@@ -53,15 +53,6 @@ export default function ProductClient({ product }: { product: ComponentProduct }
 
             {/* Product detail card */}
             <div className="product-container bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md mb-8 relative">
-                {/* Prime badge - 移至外部容器并设置为绝对定位 */}
-                {product.isPrime && (
-                    <div className="absolute top-4 left-4 z-20">
-                        <div className="bg-[#0574F7] text-white text-sm font-bold px-3 py-1.5 rounded-md shadow-sm">
-                            Prime
-                        </div>
-                    </div>
-                )}
-
                 {/* 调整为平板和移动设备使用上下布局 */}
                 <div className="flex flex-col lg:flex-row">
                     {/* Product image gallery - 调整宽度比例 */}

@@ -46,7 +46,9 @@ export default function ProductImageGallery({ product }: ProductImageGalleryProp
             {/* Main image display area */}
             <div className="main-image-container relative bg-white rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 h-[280px] sm:h-[250px] md:h-[280px] lg:h-[400px]">
                 {/* Hot Deal badge */}
-
+                <div className="absolute top-4 left-4 z-10 bg-orange-500 text-white text-sm font-bold px-3 py-1 rounded-md">
+                    HOT DEAL
+                </div>
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
