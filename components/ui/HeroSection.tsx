@@ -467,7 +467,7 @@ export function HeroSection() {
                                                                 <div className="w-6 h-6 rounded-full flex-shrink-0 bg-white/20 flex items-center justify-center">
                                                                     {card.brand ? (
                                                                         <span className="text-xs font-bold text-white">
-                                                                            {card.brand.substring(0, 1).toUpperCase()}
+                                                                            {card.brand.substring(0, 1).split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                                                                         </span>
                                                                     ) : (
                                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -109,13 +109,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
                         {brand && (
                             <div className="mb-2">
                                 <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-1 rounded inline-block">
-                                    {brand.toUpperCase()}
+                                    {brand.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                                 </span>
                             </div>
                         )}
 
                         <h3 className="text-lg font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
-                            {(title || `Product ${id}`).toUpperCase()}
+                            {(title || `Product ${id}`).split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                         </h3>
 
                         {/* Price information */}

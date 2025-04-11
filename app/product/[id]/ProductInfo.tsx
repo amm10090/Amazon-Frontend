@@ -104,7 +104,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                 }}
             >
                 <h1 className="product-title text-xl sm:text-2xl md:text-3xl font-bold text-[#1A5276] dark:text-white leading-tight">
-                    {product.title.toUpperCase()}
+                    {product.title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                 </h1>
             </a>
 

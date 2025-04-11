@@ -72,7 +72,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                             {isPrime && (
                                 <div className="absolute top-3 left-3 z-10">
                                     <div className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
-                                        Prime
+                                        PRIME
                                     </div>
                                 </div>
                             )}
@@ -106,7 +106,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                                 <div className="flex items-center justify-between mb-1.5">
                                     {product.brand && (
                                         <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded inline-block">
-                                            {product.brand.toUpperCase()}
+                                            {product.brand.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                                         </span>
                                     )}
                                     <StoreIdentifier
@@ -116,7 +116,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                                 </div>
 
                                 <h3 className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-white">
-                                    {title.toUpperCase()}
+                                    {title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                                 </h3>
 
                                 {/* Price and discount */}

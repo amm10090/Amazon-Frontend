@@ -203,7 +203,7 @@ export function CategoryProducts({ title, slug, page_size = 4, className = '', i
                                 <div className="flex items-center justify-between mb-1.5">
                                     {product.brand ? (
                                         <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded inline-block">
-                                            {product.brand.toUpperCase()}
+                                            {product.brand.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                                         </span>
                                     ) : (
                                         <div /> /* 占位空元素，确保右对齐 */
@@ -215,7 +215,7 @@ export function CategoryProducts({ title, slug, page_size = 4, className = '', i
                                 </div>
 
                                 <h3 className="text-sm sm:text-base font-medium line-clamp-2 mb-1 flex-grow text-primary-dark dark:text-white">
-                                    {title.toUpperCase()}
+                                    {title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                                 </h3>
 
                                 {/* Price and discount */}
