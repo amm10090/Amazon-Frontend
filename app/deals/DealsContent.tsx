@@ -200,7 +200,6 @@ const DealsPage = () => {
                                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
                                     className="object-contain"
                                     loading="lazy"
-                                    quality={90}
                                     unoptimized={product.main_image?.startsWith('data:')}
                                 />
                             </motion.div>

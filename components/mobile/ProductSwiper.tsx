@@ -89,7 +89,6 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                                             className="object-cover p-2"
                                             priority={index < 2}
                                             loading={index < 2 ? "eager" : "lazy"}
-                                            quality={90}
                                             unoptimized={productImage.startsWith('data:')}
                                         />
                                     ) : (

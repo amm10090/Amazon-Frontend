@@ -12,7 +12,7 @@ const Footer = () => {
                         <h3 className="text-lg font-bold mb-4 text-primary">About Us</h3>
                         <div>
                             <Link href="/about-us" className="hover:text-primary transition-colors duration-200 inline-flex items-center gap-1">
-                                About <Image
+                                <Image
                                     src="/logo.svg"
                                     alt="Oohunt Logo"
                                     width={80}
@@ -97,13 +97,7 @@ const Footer = () => {
                     <p>© {new Date().getFullYear()} Oohunt. All rights reserved.</p>
                     <p className="mt-2 md:mt-0">
                         <Link href="/" className="hover:text-primary transition-colors duration-200 inline-flex items-center">
-                            <Image
-                                src="/logo.svg"
-                                alt="Oohunt Logo"
-                                width={80}
-                                height={32}
-                                className="object-contain"
-                            />
+                            Oohunt
                         </Link> - Finding the best deals for you
                     </p>
                 </div>

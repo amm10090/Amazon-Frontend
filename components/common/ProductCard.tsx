@@ -85,7 +85,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
                                     fill
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                                     className="object-contain"
-                                    quality={80}
                                 />
                             ) : (
                                 <div className="h-full w-full flex items-center justify-center text-gray-400">

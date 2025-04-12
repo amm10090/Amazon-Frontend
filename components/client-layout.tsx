@@ -2,7 +2,6 @@
 
 import { ToastProvider } from "@heroui/react";
 import clsx from "clsx";
-import type { NextFont } from 'next/dist/compiled/@next/font';
 import { usePathname } from 'next/navigation';
 import type { Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
@@ -14,11 +13,10 @@ import { FavoritesProvider } from '@/lib/favorites';
 
 interface ClientLayoutProps {
     children: React.ReactNode;
-    inter: NextFont;
     session: Session | null;
 }
 
-export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
+export function ClientLayout({ children, session }: ClientLayoutProps) {
     const pathname = usePathname();
     const isDashboard = pathname?.startsWith('/dashboard');
 
@@ -28,7 +26,6 @@ export function ClientLayout({ children, inter, session }: ClientLayoutProps) {
                 <Providers>
                     <div className={clsx(
                         "min-h-screen bg-background font-sans antialiased",
-                        inter.className
                     )}>
                         <Navbar />
                         <main className={clsx(

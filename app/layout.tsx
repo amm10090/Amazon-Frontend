@@ -1,6 +1,6 @@
 import "@/styles/globals.css";
 import type { Metadata } from 'next';
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 
 import { auth } from '@/auth';
 import { Analytics } from "@/components/analytics";
@@ -8,9 +8,9 @@ import { ClientLayout } from "@/components/client-layout";
 import { BackTop } from "@/components/ui/BackTop";
 import { FloatingFavorites } from "@/components/ui/FloatingFavorites";
 
-const inter = Inter({
+const geist = Geist({
   subsets: ["latin"],
-  adjustFontFallback: false,
+
 });
 
 // 从环境变量获取Bing Webmaster ID
@@ -38,10 +38,10 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={geist.className}>
       <head />
       <body>
-        <ClientLayout inter={inter} session={session}>
+        <ClientLayout session={session}>
           {children}
           <BackTop />
           <FloatingFavorites />

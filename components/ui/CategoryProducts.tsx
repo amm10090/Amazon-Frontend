@@ -186,7 +186,6 @@ export function CategoryProducts({ title, slug, page_size = 4, className = '', i
                                             className="object-cover w-full h-full p-2"
                                             priority={index < 2}
                                             loading={index < 2 ? "eager" : "lazy"}
-                                            quality={90}
                                             unoptimized={productImage.startsWith('data:')}
                                         />
                                     ) : (

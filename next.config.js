@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
+        minimumCacheTTL: 2678400,
+        formats: ['image/webp'],
+        qualities: [75],
+
         remotePatterns: [
             {
                 protocol: 'https',
@@ -20,11 +24,24 @@ const nextConfig = {
             },
         ],
     },
-    experimental: {
-        turbo: {
-            // Turbopack配置
-            // 注意：不需要在此处配置Node模块和MongoDB，Turbopack会自动处理
-        }
+    turbopack: {
+        rules: {
+            fs: false,
+            child_process: false,
+            net: false,
+            tls: false,
+            dns: false,
+            os: false,
+            cluster: false,
+            v8: false,
+            // MongoDB 相关模块
+            mongodb: false,
+            'mongodb-client-encryption': false,
+            '@mongodb-js/zstd': false,
+            snappy: false,
+            kerberos: false,
+            aws4: false,
+        },
     },
     // 保留webpack配置用于生产构建
     webpack: (config, { isServer }) => {
