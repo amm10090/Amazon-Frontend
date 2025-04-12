@@ -305,7 +305,7 @@ export const Navbar = () => {
                         <Image
                           src="/logo.svg"
                           alt="Oohunt Logo"
-                          width={80}
+                          width={120}
                           height={32}
                           className="object-contain inline-block"
                         />

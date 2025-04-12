@@ -18,7 +18,7 @@ const geist = Geist({
 const BING_WEBMASTER_ID = process.env.NEXT_PUBLIC_BING_WEBMASTER_ID || '';
 
 export const metadata: Metadata = {
-  title: "OOHUNT - Your Ultimate Shopping Companion",
+  title: "Oohunt - Your Ultimate Shopping Companion",
   description: "Find the best deals on Amazon, Walmart, Target and more",
   icons: {
     icon: "/favicon.ico",

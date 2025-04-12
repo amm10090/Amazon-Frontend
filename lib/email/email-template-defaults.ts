@@ -20,16 +20,16 @@ export interface DefaultTemplateConfig {
 const subscriptionConfirmationTemplate: DefaultTemplateConfig = {
     templateId: 'subscription_confirmation',
     name: '订阅确认邮件',
-    subject: 'Welcome to OOHUNT!',
-    fromName: 'OOHUNT Team',
-    fromEmail: 'noreply@oohunt.com',
+    subject: 'Welcome to Oohunt!',
+    fromName: 'Oohunt Team',
+    fromEmail: 'noreply@Oohunt.com',
     type: EMAIL_TEMPLATE_TYPES.SUBSCRIPTION_CONFIRMATION,
     isActive: true,
     htmlContent: `
 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 30px; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #16A085; margin: 0 0 10px;">Welcome to OOHUNT!</h1>
+            <h1 style="color: #16A085; margin: 0 0 10px;">Welcome to Oohunt!</h1>
             <p style="font-size: 16px; color: #666;">Thank you for subscribing.</p>
         </div>
         
@@ -51,7 +51,7 @@ const subscriptionConfirmationTemplate: DefaultTemplateConfig = {
         <div style="margin-top: 30px; font-size: 12px; color: #999; text-align: center;">
             <p>If you didn't subscribe to our newsletter, you can ignore this email.</p>
             <p>
-                © ${new Date().getFullYear()} OOHUNT. All rights reserved.<br />
+                © ${new Date().getFullYear()} Oohunt. All rights reserved.<br />
                 Our company address, City, Country
             </p>
         </div>
@@ -66,16 +66,16 @@ const subscriptionConfirmationTemplate: DefaultTemplateConfig = {
 const userRegistrationTemplate: DefaultTemplateConfig = {
     templateId: 'user_registration',
     name: '用户注册确认邮件',
-    subject: 'Welcome to OOHUNT! Account Registration',
-    fromName: 'OOHUNT Team',
-    fromEmail: 'noreply@oohunt.com',
+    subject: 'Welcome to Oohunt! Account Registration',
+    fromName: 'Oohunt Team',
+    fromEmail: 'noreply@Oohunt.com',
     type: EMAIL_TEMPLATE_TYPES.USER_REGISTRATION,
     isActive: true,
     htmlContent: `
 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 30px; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #16A085; margin: 0 0 10px;">Welcome to OOHUNT!</h1>
+            <h1 style="color: #16A085; margin: 0 0 10px;">Welcome to Oohunt!</h1>
             <p style="font-size: 16px; color: #666;">Your account has been created successfully</p>
         </div>
         
@@ -97,7 +97,7 @@ const userRegistrationTemplate: DefaultTemplateConfig = {
         <div style="margin-top: 30px; font-size: 12px; color: #999; text-align: center;">
             <p>If you didn't create this account, please contact our support team.</p>
             <p>
-                © ${new Date().getFullYear()} OOHUNT. All rights reserved.<br />
+                © ${new Date().getFullYear()} Oohunt. All rights reserved.<br />
                 Our company address, City, Country
             </p>
         </div>
@@ -112,9 +112,9 @@ const userRegistrationTemplate: DefaultTemplateConfig = {
 const passwordResetTemplate: DefaultTemplateConfig = {
     templateId: 'password_reset',
     name: '密码重置邮件',
-    subject: 'Reset Your OOHUNT Password',
-    fromName: 'OOHUNT Team',
-    fromEmail: 'noreply@oohunt.com',
+    subject: 'Reset Your Oohunt Password',
+    fromName: 'Oohunt Team',
+    fromEmail: 'noreply@Oohunt.com',
     type: EMAIL_TEMPLATE_TYPES.PASSWORD_RESET,
     isActive: true,
     htmlContent: `
@@ -148,7 +148,7 @@ const passwordResetTemplate: DefaultTemplateConfig = {
         
         <div style="margin-top: 30px; font-size: 12px; color: #999; text-align: center;">
             <p>
-                © ${new Date().getFullYear()} OOHUNT. All rights reserved.<br />
+                © ${new Date().getFullYear()} Oohunt. All rights reserved.<br />
                 Our company address, City, Country
             </p>
         </div>
@@ -163,9 +163,9 @@ const passwordResetTemplate: DefaultTemplateConfig = {
 const orderConfirmationTemplate: DefaultTemplateConfig = {
     templateId: 'order_confirmation',
     name: '订单确认邮件',
-    subject: 'Your OOHUNT Order Confirmation',
-    fromName: 'OOHUNT Team',
-    fromEmail: 'orders@oohunt.com',
+    subject: 'Your Oohunt Order Confirmation',
+    fromName: 'Oohunt Team',
+    fromEmail: 'orders@Oohunt.com',
     type: EMAIL_TEMPLATE_TYPES.ORDER_CONFIRMATION,
     isActive: true,
     htmlContent: `
@@ -215,7 +215,7 @@ const orderConfirmationTemplate: DefaultTemplateConfig = {
         <div style="margin-top: 30px; font-size: 12px; color: #999; text-align: center;">
             <p>If you have any questions about your order, please contact our customer service.</p>
             <p>
-                © ${new Date().getFullYear()} OOHUNT. All rights reserved.<br />
+                © ${new Date().getFullYear()} Oohunt. All rights reserved.<br />
                 Our company address, City, Country
             </p>
         </div>

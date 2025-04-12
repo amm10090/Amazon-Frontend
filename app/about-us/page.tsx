@@ -78,7 +78,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 flex items-center justify-center opacity-10">
           <div className="w-64 h-64 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-3xl" />
         </div>
-        <h1 className={`${title()} text-[#2C3E50] mb-6 relative z-10`}>About OOHUNT</h1>
+        <h1 className={`${title()} text-[#2C3E50] mb-6 relative z-10`}>About Oohunt</h1>
         <p className="text-xl text-[#1A5276] max-w-2xl mx-auto leading-relaxed relative z-10">
           Uncovering the Best Deals Online - Your one-stop shopping experience
         </p>
@@ -117,7 +117,7 @@ export default function AboutPage() {
 
         {/* Features Section */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-[#2C3E50] mb-8 text-center">How OOHUNT Works</h2>
+          <h2 className="text-3xl font-bold text-[#2C3E50] mb-8 text-center">How Oohunt Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature) => (
               <div key={feature.id} className="group bg-white p-8 rounded-3xl text-center shadow-lg border border-[#E5E7E9] transition-all hover:shadow-xl">
@@ -180,9 +180,9 @@ export default function AboutPage() {
 
         {/* Contact/CTA Section */}
         <div className="bg-white p-10 rounded-3xl shadow-lg text-center border border-[#E5E7E9]">
-          <h2 className="text-3xl font-bold text-[#2C3E50] mb-6">Join the OOHUNT Community</h2>
+          <h2 className="text-3xl font-bold text-[#2C3E50] mb-6">Join the Oohunt Community</h2>
           <p className="text-[#1A5276] mb-8 leading-relaxed">
-            Become part of the growing community of smart shoppers who rely on OOHUNT to enhance their online shopping experience.
+            Become part of the growing community of smart shoppers who rely on Oohunt to enhance their online shopping experience.
           </p>
           <Link
             href="/contact-us"
@@ -190,7 +190,7 @@ export default function AboutPage() {
           >
             Contact Support
           </Link>
-          <p className="mt-6 text-[#1A5276] italic">OOHUNT – Shop smarter, not harder.</p>
+          <p className="mt-6 text-[#1A5276] italic">Oohunt – Shop smarter, not harder.</p>
         </div>
       </div>
     </div>
