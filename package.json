@@ -27,6 +27,8 @@
     "@types/formidable": "^3.4.5",
     "@types/three": "^0.175.0",
     "@typescript-eslint/utils": "^8.29.1",
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
