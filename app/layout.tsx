@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { Geist } from "next/font/google";
 
 import { auth } from '@/auth';
-import { Analytics } from "@/components/analytics";
+import { Analytics, GoogleTagManager } from "@/components/analytics";
 import { ClientLayout } from "@/components/client-layout";
 import { BackTop } from "@/components/ui/BackTop";
 import { FloatingFavorites } from "@/components/ui/FloatingFavorites";
@@ -42,6 +42,7 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning className={geist.className}>
       <head />
       <body>
+        <GoogleTagManager />
         <ClientLayout session={session}>
           {children}
           <BackTop />

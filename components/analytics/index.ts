@@ -1,1 +1,2 @@
-export { Analytics } from './Analytics'; 
+export { Analytics } from './Analytics';
+export { GoogleTagManager } from './GoogleTagManager'; 
