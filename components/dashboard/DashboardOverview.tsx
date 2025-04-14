@@ -175,7 +175,13 @@ const DashboardOverview: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
                 <div className="text-sm text-gray-500 mt-2 sm:mt-0">
-                    Last Updated: {stats.last_update ? formatDate(new Date(stats.last_update)) : 'Loading...'}
+                    Last Updated: {stats.last_update ? new Date(stats.last_update).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : 'Loading...'}
                 </div>
             </div>
 

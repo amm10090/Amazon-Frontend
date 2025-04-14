@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, Menu } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -121,9 +122,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <div className="flex flex-col h-full bg-white shadow-lg">
                     {/* 侧边栏头部 */}
                     <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 bg-white flex-shrink-0">
-                        <div className={`font-bold text-blue-600 text-xl transition-opacity duration-200 
+                        <div className={`transition-opacity duration-200 
                             ${(!isSidebarOpen && !isMobile) ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'}`}>
-                            OOHUNT
+                            <Image src="/logo.svg" alt="OOHUNT Logo" width={120} height={32} className="h-8 w-auto" />
                         </div>
                         <button
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -231,11 +232,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                         {children}
                     </div>
                 </main>
-
-                {/* 页脚 */}
-                <footer className="bg-white border-t border-gray-200 py-4 px-6 text-center text-sm text-gray-500 flex-shrink-0">
-                    <p>© {new Date().getFullYear()} OOHUNT Admin Dashboard. All rights reserved.</p>
-                </footer>
             </div>
         </div>
     );

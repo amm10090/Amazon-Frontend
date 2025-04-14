@@ -40,7 +40,7 @@ export function ClientLayout({ children, session }: ClientLayoutProps) {
                         )}>
                             {children}
                         </main>
-                        <Footer />
+                        {!isDashboard && <Footer />}
                     </div>
                     <ToastProvider placement="bottom-right" />
                 </Providers>
