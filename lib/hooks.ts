@@ -1,3 +1,5 @@
+"use client";
+
 import type { AxiosResponse } from 'axios';
 import { useEffect } from 'react';
 import useSWR from 'swr';
