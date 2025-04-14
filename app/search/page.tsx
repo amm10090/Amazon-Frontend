@@ -220,7 +220,7 @@ function SearchPageContent() {
                                                 animate={{ scale: 1 }}
                                                 className="bg-[#0574F7] text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm flex items-center"
                                             >
-                                                PRIME
+                                                Prime
                                             </motion.div>
                                         </div>
                                     )}
@@ -278,11 +278,17 @@ function SearchPageContent() {
                                                     </span>
                                                 )}
                                             </div>
-                                            {product.discount > 0 && (
-                                                <span className={`text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${product.discount > 30 ? 'bg-primary-badge' : (product.discount > 10 ? 'bg-accent' : 'bg-secondary')}`}>
+                                            {product.discount > 0 ? (
+                                                <span className="text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 bg-primary-badge">
                                                     -{Math.round(product.discount)}%
                                                 </span>
-                                            )}
+                                            ) : (product.couponValue && product.couponType && (
+                                                <span className="text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 bg-green-500">
+                                                    {product.couponType === 'percentage'
+                                                        ? `${product.couponValue}%`
+                                                        : `$${product.couponValue}`} Coupon
+                                                </span>
+                                            ))}
                                         </div>
                                     </div>
 
