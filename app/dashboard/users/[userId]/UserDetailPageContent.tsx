@@ -1,6 +1,5 @@
 'use client';
 
-import { addToast } from '@heroui/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -9,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { FaGoogle } from 'react-icons/fa';
 
 import { UserRole, isSuperAdmin } from '@/lib/models/UserRole';
+import { showSuccessToast, showErrorToast } from '@/lib/toast';
 import type { UserItem } from '@/types/api';
 
 export function UserDetailPageContent({ userId }: { userId: string }) {
@@ -74,36 +74,18 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
             }
 
             // 添加删除成功吐司提示
-            addToast({
+            showSuccessToast({
                 title: "User Deleted",
                 description: "The user has been successfully deleted.",
-                timeout: 5000,
-                classNames: {
-                    base: 'bg-green-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                }
-
             });
 
             // 删除成功后返回用户列表页
             router.push('/dashboard/users');
         } catch (err) {
             // 添加错误吐司提示
-            addToast({
+            showErrorToast({
                 title: "Error",
                 description: err instanceof Error ? err.message : 'Failed to delete user',
-                color: "danger",
-                timeout: 8000,
-                classNames: {
-                    base: 'bg-red-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                }
             });
 
             setError(err instanceof Error ? err.message : '删除用户出错');
@@ -131,17 +113,9 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
             }
 
             // 添加角色更新成功吐司提示
-            addToast({
+            showSuccessToast({
                 title: "Role Updated",
                 description: `User role has been changed to ${selectedRole}.`,
-                timeout: 5000,
-                classNames: {
-                    base: 'bg-green-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                }
             });
 
             // 更新本地用户数据
@@ -149,17 +123,9 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
             setShowRoleModal(false);
         } catch (err) {
             // 添加错误吐司提示
-            addToast({
+            showErrorToast({
                 title: "Error",
                 description: err instanceof Error ? err.message : 'Failed to update user role',
-                timeout: 8000,
-                classNames: {
-                    base: 'bg-red-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                }
             });
             setError(err instanceof Error ? err.message : '更新用户角色出错');
         }

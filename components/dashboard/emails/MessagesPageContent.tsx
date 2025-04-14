@@ -1,10 +1,10 @@
 'use client';
 
-import { addToast } from '@heroui/react';
 import { Download, MessageSquare, Search, X, Trash2, Eye, CheckCircle, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import { useContactMessages } from '@/lib/hooks';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { ContactMessage } from '@/types/api';
 
 // Tab type definition
@@ -387,17 +387,9 @@ const MessagesPageContent = () => {
         // Open export link
         window.open(exportUrl, '_blank');
 
-        addToast({
+        showSuccessToast({
             title: "Export Started",
             description: "CSV file download has started",
-            timeout: 5000,
-            classNames: {
-                base: 'bg-green-500 rounded-lg shadow-md',
-                title: 'text-white font-semibold',
-                description: 'text-white opacity-90',
-                content: 'flex items-center gap-2 py-2',
-                icon: 'text-white h-5 w-5',
-            }
         });
     };
 
@@ -772,31 +764,15 @@ const MessagesPageContent = () => {
                 throw new Error('Delete failed');
             }
 
-            addToast({
+            showSuccessToast({
                 title: "Delete Successful",
                 description: "The message has been deleted",
-                timeout: 5000,
-                classNames: {
-                    base: 'bg-green-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                }
             });
             mutate();
         } catch (error) {
-            addToast({
+            showErrorToast({
                 title: "Delete Failed",
                 description: error instanceof Error ? error.message : 'Failed to delete message, please try again later',
-                timeout: 5000,
-                classNames: {
-                    base: 'bg-red-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                }
             });
         }
     };
@@ -816,34 +792,17 @@ const MessagesPageContent = () => {
                 throw new Error('Update failed');
             }
 
-            addToast({
+            showSuccessToast({
                 title: "Update Success",
                 description: `Message status has been updated to ${isProcessed ? 'Processed' : 'Pending'}`,
-                timeout: 5000,
-                classNames: {
-                    base: 'bg-green-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                }
             });
 
             mutate();
         } catch (error) {
-            addToast({
+            showErrorToast({
                 title: "Update Failed",
                 description: error instanceof Error ? error.message : 'Failed to update status, please try again later',
-                timeout: 5000,
-                classNames: {
-                    base: 'bg-red-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                }
             });
-            throw error;
         }
     };
 

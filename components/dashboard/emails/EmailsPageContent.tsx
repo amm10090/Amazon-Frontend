@@ -1,11 +1,11 @@
-'use client';
 
-import { addToast } from '@heroui/react';
+
 import { Download, Mail, Search, X, FileText, MessageSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import MessagesPageContent from '@/components/dashboard/emails/MessagesPageContent';
 import { useEmailList, useContactMessages } from '@/lib/hooks';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { EmailItem } from '@/types/api';
 
 // Tab type definition
@@ -195,11 +195,9 @@ const EmailsPageContent = () => {
         // Open export link
         window.open(exportUrl, '_blank');
 
-        addToast({
+        showSuccessToast({
             title: "Export Started",
             description: "CSV file download has started",
-            color: "success",
-            timeout: 5000,
         });
     };
 
@@ -219,39 +217,18 @@ const EmailsPageContent = () => {
             }
 
             // Show success message
-            addToast({
+            showSuccessToast({
                 title: "Status Updated",
                 description: `Email status has been ${isActive ? 'activated' : 'deactivated'}`,
-                timeout: 5000,
-                classNames: {
-                    base: 'bg-green-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                    closeButton: 'text-white/80 hover:text-white',
-                    closeIcon: 'h-4 w-4',
-                    progressTrack: 'bg-white/20',
-                    progressIndicator: 'bg-white'
-                }
             });
 
             // Refresh data
             mutate();
         } catch (error) {
             // Show error message
-            addToast({
+            showErrorToast({
                 title: "Update Failed",
                 description: error instanceof Error ? error.message : 'Failed to update status, please try again later',
-                color: "danger",
-                timeout: 5000,
-                classNames: {
-                    base: 'bg-red-500 rounded-lg shadow-md',
-                    title: 'text-white font-semibold',
-                    description: 'text-white opacity-90',
-                    content: 'flex items-center gap-2 py-2',
-                    icon: 'text-white h-5 w-5',
-                }
             });
         }
     };

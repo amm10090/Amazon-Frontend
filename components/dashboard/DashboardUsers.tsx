@@ -1,6 +1,5 @@
 'use client';
 
-import { addToast } from '@heroui/react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -9,6 +8,7 @@ import { FaGoogle } from 'react-icons/fa';
 
 import { useUserList } from '@/lib/hooks';
 import { UserRole, isSuperAdmin } from '@/lib/models/UserRole';
+import { showSuccessToast, showErrorToast, showWarningToast } from '@/lib/toast';
 import type { UserItem } from '@/types/api';
 
 interface UserFilterProps {
@@ -142,11 +142,9 @@ const DashboardUsers: React.FC = () => {
     const handleUpdateRole = async (userId: string, newRole: UserRole) => {
         // 检查是否正在修改自己的角色
         if (userId === session?.user?.id) {
-            addToast({
-                title: "Action Not Allowed",
-                description: "You cannot change your own role.",
-                color: "warning",
-                timeout: 5000,
+            showWarningToast({
+                title: "Cannot Delete",
+                description: "You cannot delete your own account.",
             });
 
             return;
@@ -159,11 +157,9 @@ const DashboardUsers: React.FC = () => {
         if (targetUser &&
             session?.user?.role === UserRole.ADMIN &&
             (targetUser.role === UserRole.SUPER_ADMIN || targetUser.role === UserRole.ADMIN)) {
-            addToast({
+            showErrorToast({
                 title: "Permission Denied",
                 description: "You don't have permission to change this user's role.",
-                color: "danger",
-                timeout: 5000,
             });
 
             return;
@@ -185,21 +181,17 @@ const DashboardUsers: React.FC = () => {
             }
 
             // 添加成功吐司提示
-            addToast({
+            showSuccessToast({
                 title: "Role Updated",
                 description: `User role has been changed to ${newRole}.`,
-                color: "success",
-                timeout: 5000,
             });
 
             mutate(); // 刷新用户列表
         } catch (error) {
             // 添加错误吐司提示
-            addToast({
+            showErrorToast({
                 title: "Error",
                 description: error instanceof Error ? error.message : 'Failed to update user role',
-                color: "danger",
-                timeout: 8000,
             });
 
         }
@@ -209,11 +201,9 @@ const DashboardUsers: React.FC = () => {
     const handleDeleteUser = (userId: string) => {
         // 检查是否尝试删除自己
         if (userId === session?.user?.id) {
-            addToast({
-                title: "Action Not Allowed",
+            showWarningToast({
+                title: "Cannot Delete",
                 description: "You cannot delete your own account.",
-                color: "warning",
-                timeout: 5000,
             });
 
             return;
@@ -226,11 +216,9 @@ const DashboardUsers: React.FC = () => {
         if (targetUser &&
             session?.user?.role === UserRole.ADMIN &&
             (targetUser.role === UserRole.SUPER_ADMIN || targetUser.role === UserRole.ADMIN)) {
-            addToast({
+            showErrorToast({
                 title: "Permission Denied",
                 description: "You don't have permission to delete this user.",
-                color: "danger",
-                timeout: 5000,
             });
 
             return;
@@ -254,22 +242,18 @@ const DashboardUsers: React.FC = () => {
                 setErrorMessage(data.error || '删除用户失败');
 
                 // 添加删除失败吐司提示
-                addToast({
+                showErrorToast({
                     title: "Error",
                     description: data.error || 'Failed to delete user',
-                    color: "danger",
-                    timeout: 8000,
                 });
 
                 return;
             }
 
             // 添加删除成功吐司提示
-            addToast({
+            showSuccessToast({
                 title: "User Deleted",
-                description: "The user has been successfully deleted.",
-                color: "success",
-                timeout: 5000,
+                description: "User has been successfully deleted.",
             });
 
             setConfirmDelete(null);
@@ -278,11 +262,9 @@ const DashboardUsers: React.FC = () => {
             setErrorMessage('删除用户失败，请检查网络连接');
 
             // 添加错误吐司提示
-            addToast({
+            showErrorToast({
                 title: "Error",
                 description: 'Failed to delete user. Please check your network connection.',
-                color: "danger",
-                timeout: 8000,
             });
         }
     };

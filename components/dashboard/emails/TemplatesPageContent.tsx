@@ -1,12 +1,13 @@
 'use client';
 
-import { addToast } from '@heroui/react';
 import { Edit, Eye, PlusCircle, Save, X, Upload, Code, Trash2, AlertCircle } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import type Quill from 'quill';
 import { useEffect, useState, useRef } from 'react';
 
 import { EMAIL_TEMPLATE_TYPES, type EmailTemplateType } from '@/lib/email/email-template-types';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
+
 
 // 引入CSS - 确保在编辑和预览中都能正确显示样式
 import "quill/dist/quill.core.css";
@@ -310,11 +311,10 @@ const TemplatesPageContent = () => {
             setEditorContent(data.data.htmlContent);
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Failed to fetch template details, please try again later');
-            addToast({
+            showErrorToast({
                 title: "Fetch Failed",
                 description: error instanceof Error ? error.message : 'Failed to fetch template details, please try again later',
-                color: "danger",
-                timeout: 5000,
+
             });
         } finally {
             setIsLoading(false);
@@ -390,11 +390,9 @@ const TemplatesPageContent = () => {
             }
 
             // 更新成功提示
-            addToast({
+            showSuccessToast({
                 title: "Save Successful",
                 description: successMessage,
-                color: "success",
-                timeout: 5000,
             });
 
             // 刷新数据
@@ -423,11 +421,9 @@ const TemplatesPageContent = () => {
             }
 
             setError(errorMessage);
-            addToast({
+            showErrorToast({
                 title: "Save Failed",
                 description: errorMessage,
-                color: "danger",
-                timeout: 5000,
             });
         } finally {
             setIsLoading(false);
@@ -464,11 +460,9 @@ const TemplatesPageContent = () => {
             }
 
             // 删除成功提示
-            addToast({
+            showSuccessToast({
                 title: "Delete Successful",
                 description: "Email template has been deleted successfully",
-                color: "success",
-                timeout: 5000,
             });
 
             // 刷新模板列表
@@ -488,11 +482,9 @@ const TemplatesPageContent = () => {
             const errorMessage = error instanceof Error ? error.message : 'Failed to delete template, please try again later';
 
             setError(errorMessage);
-            addToast({
+            showErrorToast({
                 title: "Delete Failed",
                 description: errorMessage,
-                color: "danger",
-                timeout: 5000,
             });
         } finally {
             setIsDeleting(false);
@@ -538,11 +530,9 @@ const TemplatesPageContent = () => {
         try {
             // 使用保存的Quill实例直接操作
             if (!activeQuillInstance.current) {
-                addToast({
+                showErrorToast({
                     title: "Operation Failed",
                     description: "Editor not ready, please try again later",
-                    color: "danger",
-                    timeout: 3000,
                 });
 
                 return;
@@ -558,11 +548,9 @@ const TemplatesPageContent = () => {
                 activeQuillInstance.current.setSelection(range.index + variable.length);
 
                 // 给用户反馈
-                addToast({
+                showSuccessToast({
                     title: "Variable Inserted",
                     description: `${variable} has been inserted into the editor`,
-                    color: "success",
-                    timeout: 2000,
                 });
             } else {
                 // 如果没有选区，则在编辑器末尾插入
@@ -571,19 +559,15 @@ const TemplatesPageContent = () => {
                 activeQuillInstance.current.insertText(length - 1, variable);
                 activeQuillInstance.current.setSelection(length - 1 + variable.length);
 
-                addToast({
+                showSuccessToast({
                     title: "Variable Inserted",
                     description: `${variable} has been inserted at the end of the editor`,
-                    color: "success",
-                    timeout: 2000,
                 });
             }
         } catch {
-            addToast({
+            showErrorToast({
                 title: "Variable Insertion Failed",
                 description: "Error occurred while inserting variable, please try again",
-                color: "danger",
-                timeout: 3000,
             });
         }
     };
@@ -640,11 +624,9 @@ const TemplatesPageContent = () => {
 
         // 检查文件类型
         if (file.type !== 'text/html' && !file.name.endsWith('.html')) {
-            addToast({
+            showErrorToast({
                 title: 'just upload html file',
                 description: 'Please upload a .html file',
-                color: "danger",
-                timeout: 5000,
             });
 
             return;
@@ -674,18 +656,14 @@ const TemplatesPageContent = () => {
                 htmlContent: result.data.htmlContent,
             }));
 
-            addToast({
+            showSuccessToast({
                 title: 'HTML file uploaded successfully',
                 description: `Successfully loaded ${file.name} file content`,
-                color: "success",
-                timeout: 5000,
             });
         } catch (error) {
-            addToast({
+            showErrorToast({
                 title: 'Upload Failed',
                 description: error instanceof Error ? error.message : 'Upload HTML file failed, please try again',
-                color: "danger",
-                timeout: 5000,
             });
         } finally {
             setUploadLoading(false);

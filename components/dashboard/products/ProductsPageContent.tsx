@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { FaTrash, FaSearch, FaSort, FaSortUp, FaSortDown, FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 import { productsApi } from '@/lib/api';
@@ -93,9 +93,11 @@ const ProductsPageContent = () => {
 
     // 确定使用哪种数据源
     const loading = searchMode === 'search' ? searchLoading : browseLoading;
-    const initialProducts = searchMode === 'search'
-        ? (searchData?.items || [])
-        : (productsData?.items || []);
+    const initialProducts = useMemo(() =>
+        searchMode === 'search'
+            ? (searchData?.items || [])
+            : (productsData?.items || [])
+        , [searchMode, searchData?.items, productsData?.items]);
     const products = batchedProducts.length > 0
         ? batchedProducts
         : initialProducts;
@@ -157,8 +159,8 @@ const ProductsPageContent = () => {
                             newItems = response.data.data;
                         }
                     }
-                } catch (err) {
-                    console.error('Error loading search batch:', err);
+                } catch {
+                    return;
                 }
             } else {
                 // 浏览模式下使用getProducts API
@@ -181,14 +183,13 @@ const ProductsPageContent = () => {
                             newItems = response.data.data;
                         }
                     }
-                } catch (err) {
-                    console.error('Error loading browse batch:', err);
+                } catch {
+                    return;
                 }
             }
 
             // 合并新数据到已加载的产品列表中
             if (newItems.length > 0) {
-                console.log(`成功加载 ${newItems.length} 条新商品数据`);
 
                 // 更新已加载的商品列表
                 setBatchedProducts(prev => {
@@ -200,16 +201,13 @@ const ProductsPageContent = () => {
 
                 // 检查是否已经加载了足够的数据
                 if (batchedProducts.length + newItems.length >= itemsPerPage) {
-                    console.log('已加载足够的商品数据，设置allBatchesLoaded为true');
                     setAllBatchesLoaded(true);
                 }
             } else {
                 // 如果没有获取到新数据，表示已经没有更多数据可加载
-                console.log('没有更多商品数据可加载，设置allBatchesLoaded为true');
                 setAllBatchesLoaded(true);
             }
-        } catch (err) {
-            console.error('Error in loadNextBatch:', err);
+        } catch {
             setError('Failed to load more products. Please try again later.');
         } finally {
             setBatchLoading(false);
@@ -290,7 +288,6 @@ const ProductsPageContent = () => {
     useEffect(() => {
         // 如果是分批加载模式(itemsPerPage > 100)，且初始数据已加载完成(不在加载状态)
         if (itemsPerPage > 100 && !loading && !batchLoading && batchedProducts.length === 0 && initialProducts.length > 0) {
-            console.log(`初始化batchedProducts，加载了 ${initialProducts.length} 条商品`);
             setBatchedProducts(initialProducts);
 
             // 如果初始加载的数据量已经达到了要显示的数量，设置allBatchesLoaded为true
@@ -528,7 +525,6 @@ const ProductsPageContent = () => {
         if (sortedProducts.length > 0) {
             // 增加初始渲染行数，确保显示更多行
             if (renderedRowCount === 0 || renderedRowCount < Math.min(100, sortedProducts.length)) {
-                console.log(`设置渲染行数: 从${renderedRowCount}增加到${Math.min(100, sortedProducts.length)}`);
                 setRenderedRowCount(Math.min(100, sortedProducts.length));
             }
 
@@ -536,20 +532,16 @@ const ProductsPageContent = () => {
             const observer = new IntersectionObserver(
                 (entries) => {
                     if (entries[0]?.isIntersecting) {
-                        console.log(`检测到底部可见，当前渲染行数:${renderedRowCount}，总行数:${sortedProducts.length}`);
 
                         if (renderedRowCount < sortedProducts.length) {
                             // 当最后一行可见时，增加渲染行数
                             const newRowCount = Math.min(renderedRowCount + 20, sortedProducts.length);
 
-                            console.log(`增加渲染行数到 ${newRowCount}`);
                             setRenderedRowCount(newRowCount);
                         } else if (!allBatchesLoaded && itemsPerPage > 100 && batchedProducts.length < itemsPerPage) {
                             // 如果已经渲染了所有当前加载的产品，但还有更多批次要加载
-                            console.log(`所有当前数据已渲染，尝试加载下一批，当前已加载:${batchedProducts.length}/${itemsPerPage}`);
                             loadNextBatch();
                         } else {
-                            console.log(`所有数据已渲染完毕，无需加载更多`);
                         }
                     }
                 },
@@ -563,7 +555,6 @@ const ProductsPageContent = () => {
 
             // 确保观察最后一行，触发加载
             if (lastRowRef.current) {
-                console.log('设置观察最后一行');
                 rowObserverRef.current.observe(lastRowRef.current);
             }
 
@@ -1048,7 +1039,6 @@ const ProductsPageContent = () => {
 
     // Handle different view layouts based on screen size
     const renderProductsList = () => {
-        console.log(`渲染产品列表: 总产品数:${sortedProducts.length}, 当前渲染数:${renderedRowCount}, 批次加载状态:${batchLoading}`);
 
         if (loading && !batchLoading) {
             return (
@@ -1773,4 +1763,4 @@ const ProductsPageContent = () => {
     );
 };
 
-export default ProductsPageContent; 
+export default ProductsPageContent;
