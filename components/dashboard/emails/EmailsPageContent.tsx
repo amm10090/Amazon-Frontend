@@ -1,4 +1,4 @@
-
+"use client";
 
 import { Download, Mail, Search, X, FileText, MessageSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
