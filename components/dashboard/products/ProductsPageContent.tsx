@@ -17,12 +17,15 @@ const ProductsPageContent = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(10);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [renderedRowCount, setRenderedRowCount] = useState(20); // 初始渲染行数
     const [error, setError] = useState<string | null>(null);
     const [screenSize, setScreenSize] = useState<'xs' | 'sm' | 'md' | 'lg' | 'xl'>('xl');
     const [sortField, setSortField] = useState<string | null>(null);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const tableRef = useRef<HTMLDivElement>(null);
+    const rowObserverRef = useRef<IntersectionObserver | null>(null);
+    const lastRowRef = useRef<HTMLTableRowElement | null>(null);
 
     // 新增状态变量
     const [searchMode, setSearchMode] = useState<'browse' | 'search'>('browse');
@@ -130,6 +133,31 @@ const ProductsPageContent = () => {
         };
     }, []);
 
+    // 使用 useEffect 从 localStorage 加载数据
+    useEffect(() => {
+        // 只在客户端执行
+        if (typeof window !== 'undefined') {
+            const savedValue = localStorage.getItem('itemsPerPage');
+
+            if (savedValue) {
+                setItemsPerPage(parseInt(savedValue, 10));
+            }
+        }
+    }, []);
+
+    // 当 itemsPerPage 变化时保存到 localStorage
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('itemsPerPage', itemsPerPage.toString());
+
+            // 更新搜索参数
+            setSearchParams(prev => ({
+                ...prev,
+                page_size: itemsPerPage
+            }));
+        }
+    }, [itemsPerPage]);
+
     // Animation variants for Framer Motion
     const listAnimation = {
         hidden: { opacity: 0 },
@@ -191,6 +219,29 @@ const ProductsPageContent = () => {
             setSearchParams(prev => ({
                 ...prev,
                 page: newPage
+            }));
+        }
+
+        // 滚动到顶部
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // 处理每页显示数量变化
+    const handleItemsPerPageChange = (newValue: number) => {
+        // 计算当前页在新的分页大小下的位置
+        const firstItemIndex = (currentPage - 1) * itemsPerPage;
+        const newPage = Math.floor(firstItemIndex / newValue) + 1;
+
+        setItemsPerPage(newValue);
+        setCurrentPage(newPage);
+        setRenderedRowCount(Math.min(20, sortedProducts.length)); // 重置渲染行数
+
+        // 在搜索模式下，更新搜索参数
+        if (searchMode === 'search') {
+            setSearchParams(prev => ({
+                ...prev,
+                page: newPage,
+                page_size: newValue
             }));
         }
 
@@ -309,6 +360,47 @@ const ProductsPageContent = () => {
 
             return 0;
         });
+
+    // 实现懒加载的效果 - 在 sortedProducts 定义之后
+    useEffect(() => {
+        if (sortedProducts.length > 0) {
+            // 设置初始渲染行数
+            if (renderedRowCount === 0 || renderedRowCount > sortedProducts.length) {
+                setRenderedRowCount(Math.min(20, sortedProducts.length));
+            }
+
+            // 创建 Intersection Observer 实例
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    if (entries[0]?.isIntersecting && renderedRowCount < sortedProducts.length) {
+                        // 当最后一行可见时，增加渲染行数
+                        setRenderedRowCount(prev => Math.min(prev + 10, sortedProducts.length));
+                    }
+                },
+                {
+                    threshold: 0.1,
+                    rootMargin: '100px'  // 提前100px开始观察，提高用户体验
+                }
+            );
+
+            rowObserverRef.current = observer;
+
+            // 当列表或观察器变化时清理和重新设置
+            return () => {
+                if (rowObserverRef.current) {
+                    rowObserverRef.current.disconnect();
+                }
+            };
+        }
+    }, [sortedProducts.length, renderedRowCount]);
+
+    // 更新观察的最后一行元素
+    useEffect(() => {
+        if (lastRowRef.current && rowObserverRef.current && renderedRowCount < sortedProducts.length) {
+            rowObserverRef.current.disconnect();
+            rowObserverRef.current.observe(lastRowRef.current);
+        }
+    }, [renderedRowCount, sortedProducts.length]);
 
     // Get sort icon based on field and current sort state
     const getSortIcon = (field: string) => {
@@ -477,6 +569,48 @@ const ProductsPageContent = () => {
                         Next
                     </button>
                 </nav>
+            </div>
+        );
+    };
+
+    // 渲染"每页显示"下拉选择组件
+    const renderItemsPerPageSelect = () => {
+        const options = [10, 50, 100, 500, 1000];
+
+        // 为不同屏幕尺寸设计不同样式
+        if (screenSize === 'xs' || screenSize === 'sm') {
+            return (
+                <div className="flex items-center space-x-1 text-xs">
+                    <span>Show:</span>
+                    <select
+                        value={itemsPerPage}
+                        onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                        className="border border-gray-300 rounded py-1 px-1 bg-white text-xs"
+                    >
+                        {options.map(option => (
+                            <option key={option} value={option}>
+                                {option}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            );
+        }
+
+        return (
+            <div className="flex items-center space-x-2 text-sm">
+                <span className="text-gray-500">Show:</span>
+                <select
+                    value={itemsPerPage}
+                    onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                    className="border border-gray-300 rounded py-1 px-2 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                >
+                    {options.map(option => (
+                        <option key={option} value={option}>
+                            {option} per page
+                        </option>
+                    ))}
+                </select>
             </div>
         );
     };
@@ -754,6 +888,11 @@ const ProductsPageContent = () => {
             return renderEmptyState();
         }
 
+        return renderScreenSizeTable();
+    };
+
+    // 根据屏幕尺寸渲染对应的表格
+    const renderScreenSizeTable = () => {
         // Card view for XS and SM screens with animations
         if (screenSize === 'xs' || screenSize === 'sm') {
             return (
@@ -777,12 +916,13 @@ const ProductsPageContent = () => {
                             variants={listAnimation}
                             className="grid grid-cols-1 gap-4 p-4"
                         >
-                            {sortedProducts.map((product) => (
+                            {sortedProducts.slice(0, renderedRowCount).map((product, index) => (
                                 <motion.div
                                     layout
                                     key={product.asin}
                                     variants={itemAnimation}
                                     className="bg-white rounded-lg shadow-sm p-3 border border-gray-200 hover:shadow-md transition-shadow duration-300 relative cursor-pointer"
+                                    ref={index === renderedRowCount - 1 ? lastRowRef : null}
                                 >
                                     <div className="flex items-start space-x-2">
                                         <div className="flex-shrink-0">
@@ -843,6 +983,12 @@ const ProductsPageContent = () => {
                                     </div>
                                 </motion.div>
                             ))}
+                            {renderedRowCount < sortedProducts.length && (
+                                <div className="flex justify-center items-center space-x-2 text-xs text-gray-500 py-3 bg-gray-50 rounded-lg border border-gray-200">
+                                    <div className="w-4 h-4 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin" />
+                                    <span>Loading more products...</span>
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -910,7 +1056,7 @@ const ProductsPageContent = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 bg-white">
-                                        {sortedProducts.map((product, index) => (
+                                        {sortedProducts.slice(0, renderedRowCount).map((product, index) => (
                                             <motion.tr
                                                 key={product.asin}
                                                 initial={{ opacity: 0, y: 10 }}
@@ -920,6 +1066,7 @@ const ProductsPageContent = () => {
                                                     delay: index * 0.03,
                                                 }}
                                                 className="hover:bg-gray-50 divide-x divide-gray-200 transition-colors"
+                                                ref={index === renderedRowCount - 1 ? lastRowRef : null}
                                             >
                                                 <td className="py-3 pl-4 pr-2 text-sm">
                                                     <div className="flex items-center space-x-2">
@@ -976,6 +1123,16 @@ const ProductsPageContent = () => {
                                                 </td>
                                             </motion.tr>
                                         ))}
+                                        {renderedRowCount < sortedProducts.length && (
+                                            <tr>
+                                                <td colSpan={4} className="px-3 py-4 text-center">
+                                                    <div className="flex justify-center items-center space-x-2 text-xs text-gray-500 py-2 bg-gray-50">
+                                                        <div className="w-4 h-4 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin" />
+                                                        <span>Loading more products...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -1015,8 +1172,12 @@ const ProductsPageContent = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 bg-white">
-                                    {filteredProducts.map((product) => (
-                                        <tr key={product.asin} className="hover:bg-gray-50">
+                                    {sortedProducts.slice(0, renderedRowCount).map((product, index) => (
+                                        <tr
+                                            key={product.asin}
+                                            className="hover:bg-gray-50"
+                                            ref={index === renderedRowCount - 1 ? lastRowRef : null}
+                                        >
                                             <td className="py-4 pl-4 pr-3 text-sm">
                                                 <div className="flex items-center">
                                                     <div className="h-10 w-10 flex-shrink-0">
@@ -1078,6 +1239,16 @@ const ProductsPageContent = () => {
                                             </td>
                                         </tr>
                                     ))}
+                                    {renderedRowCount < sortedProducts.length && (
+                                        <tr>
+                                            <td colSpan={5} className="px-3 py-4 text-center">
+                                                <div className="flex justify-center items-center space-x-2 text-sm text-gray-500 py-2 bg-gray-50">
+                                                    <div className="w-5 h-5 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin" />
+                                                    <span>Loading more products...</span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -1167,7 +1338,7 @@ const ProductsPageContent = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 bg-white">
-                                        {sortedProducts.map((product, index) => (
+                                        {sortedProducts.slice(0, renderedRowCount).map((product, index) => (
                                             <motion.tr
                                                 key={product.asin}
                                                 initial={{ opacity: 0, y: 10 }}
@@ -1177,6 +1348,7 @@ const ProductsPageContent = () => {
                                                     delay: index * 0.02,
                                                 }}
                                                 className="hover:bg-gray-50 transition-colors duration-150"
+                                                ref={index === renderedRowCount - 1 ? lastRowRef : null}
                                             >
                                                 <td className="py-4 pl-4 pr-3 text-sm">
                                                     <div className="flex items-center">
@@ -1239,6 +1411,16 @@ const ProductsPageContent = () => {
                                                 </td>
                                             </motion.tr>
                                         ))}
+                                        {renderedRowCount < sortedProducts.length && (
+                                            <tr>
+                                                <td colSpan={6} className="px-3 py-4 text-center">
+                                                    <div className="flex justify-center items-center space-x-2 text-sm text-gray-500 py-2 bg-gray-50">
+                                                        <div className="w-5 h-5 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin" />
+                                                        <span>Loading more products...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -1258,6 +1440,9 @@ const ProductsPageContent = () => {
                 className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
             >
                 <h1 className="text-xl md:text-2xl font-bold text-gray-800">Product Management</h1>
+                <div className="flex items-center">
+                    {renderItemsPerPageSelect()}
+                </div>
             </motion.div>
 
             <AnimatePresence>
