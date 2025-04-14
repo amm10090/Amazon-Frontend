@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Image from "next/image";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 
 import FavoriteButton from '@/components/common/FavoriteButton';
@@ -39,7 +39,6 @@ function SearchSkeleton() {
 }
 
 function SearchPageContent() {
-    const router = useRouter();
     const searchParams = useSearchParams();
     const searchKeyword = searchParams.get("keyword") || "";
 
@@ -100,7 +99,7 @@ function SearchPageContent() {
 
     // Handle product click
     const handleProductClick = (productId: string) => {
-        router.push(`/product/${productId}`);
+        window.open(`/product/${productId}`, '_blank');
     };
 
     // Add a keydown handler function

@@ -230,10 +230,7 @@ export function CategoryProducts({ title, slug, page_size = 4, className = '', i
                                         )}
                                     </div>
                                     {savingsPercentage > 0 && (
-                                        <span className={`text-xs font-bold text-white px-1.5 py-0.5 rounded ${savingsPercentage > 30 ? 'bg-primary-badge' :
-                                            savingsPercentage > 10 ? 'bg-accent' :
-                                                'bg-secondary'
-                                            }`}>
+                                        <span className="text-xs font-bold text-white px-1.5 py-0.5 rounded bg-primary-badge">
                                             -{Math.round(savingsPercentage)}%
                                         </span>
                                     )}

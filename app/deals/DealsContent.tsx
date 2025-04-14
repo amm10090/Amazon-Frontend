@@ -61,88 +61,52 @@ const DealsPage = () => {
         try {
             setLoading(true);
 
-            // 第一步：获取总商品数
-            const countParams = new URLSearchParams();
-
-            if (filters.minDiscount) {
-                countParams.append('min_discount', filters.minDiscount.toString());
-            }
-            if (filters.isPrimeOnly) {
-                countParams.append('is_prime_only', filters.isPrimeOnly.toString());
-            }
-
-            const countResponse = await fetch(`/api/products/count?${countParams.toString()}`);
-
-            if (!countResponse.ok) {
-                throw new Error('获取商品总数失败');
-            }
-
-            const countResult = await countResponse.json();
-
-            if (!countResult.success) {
-                throw new Error('获取商品总数失败');
-            }
-
-            const total = countResult.data.total;
-            const pageSize = pagination.page_size;
-            const maxPage = Math.ceil(total / pageSize);
-
-            // 生成1到maxPage之间的随机页码
-            const randomPage = Math.max(1, Math.floor(Math.random() * maxPage));
-
-            // 第二步：使用随机页码获取商品
+            // 获取商品数据
             const response = await productsApi.getDeals({
                 active: true,
-                page: randomPage,
+                page: pagination.page,
                 page_size: pagination.page_size,
                 min_discount: filters.minDiscount,
                 is_prime_only: filters.isPrimeOnly,
             } as GetDealsParams);
 
-            // 适配不同层级的响应结构
+            // 适配响应结构
             let itemsData: Product[] = [];
-            const totalItems = total; // 使用之前获取的总数
 
-            // 处理不同层级的嵌套响应
             if (response.data?.data) {
-                // ApiResponse<ListResponse<Product>> 结构
                 const listData = response.data.data as unknown as {
                     items: Product[];
+                    total: number;
+                    page: number;
+                    page_size: number;
                 };
 
                 if (listData.items && Array.isArray(listData.items)) {
-                    itemsData = listData.items;
+                    // 对每一页的商品都进行随机排序
+                    itemsData = [...listData.items].sort(() => Math.random() - 0.5);
                 }
-            } else if (response.data) {
-                // 直接包含数据
-                const directData = response.data as unknown as {
-                    items: Product[];
-                };
 
-                if (directData.items && Array.isArray(directData.items)) {
-                    itemsData = directData.items;
-                }
+                // 使用API返回的分页信息
+                setPagination(prev => ({
+                    ...prev,
+                    page: listData.page,
+                    page_size: listData.page_size,
+                    total: listData.total
+                }));
             }
 
-            // 随机打乱商品数组
-            const shuffledItems = itemsData.sort(() => Math.random() - 0.5);
-
-            setDeals(shuffledItems);
-            setPagination(prev => ({
-                ...prev,
-                total: totalItems
-            }));
+            setDeals(itemsData);
         } catch {
             setError("获取特价商品失败，请稍后再试。");
         } finally {
             setLoading(false);
         }
-    }, [pagination.page_size, filters.minDiscount, filters.isPrimeOnly]);
+    }, [pagination.page, pagination.page_size, filters.minDiscount, filters.isPrimeOnly]);
 
     // 监听分页和筛选器变化
     useEffect(() => {
         fetchDeals();
-    }, [fetchDeals, filters]);
+    }, [fetchDeals]);
 
     // 处理分页变化
     const handlePageChange = (newPage: number) => {
@@ -427,11 +391,11 @@ const DealsPage = () => {
                 )}
             </Suspense>
 
-            {/* 分页控件 */}
-            {pagination.total && pagination.page_size && (
+            {/* 分页控件 - 修改条件判断 */}
+            {!loading && deals.length > 0 && pagination.total && (
                 <Pagination
                     currentPage={pagination.page}
-                    totalPages={Math.ceil(pagination.total / pagination.page_size)}
+                    totalPages={Math.ceil((pagination.total || 0) / pagination.page_size)}
                     onPageChange={handlePageChange}
                     className="mt-8"
                 />

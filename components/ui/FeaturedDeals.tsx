@@ -339,10 +339,7 @@ export function FeaturedDeals({
                                         )}
                                     </div>
                                     {savingsPercentage > 0 && (
-                                        <span className={`text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 ${savingsPercentage > 30 ? 'bg-primary-badge' :
-                                            savingsPercentage > 10 ? 'bg-accent' :
-                                                'bg-secondary'
-                                            }`}>
+                                        <span className="text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 bg-primary-badge">
                                             -{Math.round(savingsPercentage)}%
                                         </span>
                                     )}
