@@ -54,7 +54,7 @@ export async function PUT(
 
         // 数据库操作
         const client = await clientPromise;
-        const db = client.db();
+        const db = client.db('oohunt');
         const objectId = new ObjectId(userId);
 
         const result = await db.collection('users').updateOne(

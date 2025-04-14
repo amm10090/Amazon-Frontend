@@ -28,7 +28,9 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
                 const response = await fetch(`/api/users/${userId}`);
 
                 if (!response.ok) {
-                    throw new Error(`获取用户详情失败: ${response.statusText}`);
+                    const errorData = await response.json().catch(() => null);
+
+                    throw new Error(errorData?.error || `获取用户详情失败: ${response.statusText}`);
                 }
 
                 const data = await response.json();
@@ -75,8 +77,15 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
             addToast({
                 title: "User Deleted",
                 description: "The user has been successfully deleted.",
-                color: "success",
                 timeout: 5000,
+                classNames: {
+                    base: 'bg-green-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                }
+
             });
 
             // 删除成功后返回用户列表页
@@ -88,6 +97,13 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
                 description: err instanceof Error ? err.message : 'Failed to delete user',
                 color: "danger",
                 timeout: 8000,
+                classNames: {
+                    base: 'bg-red-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                }
             });
 
             setError(err instanceof Error ? err.message : '删除用户出错');
@@ -118,8 +134,14 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
             addToast({
                 title: "Role Updated",
                 description: `User role has been changed to ${selectedRole}.`,
-                color: "success",
                 timeout: 5000,
+                classNames: {
+                    base: 'bg-green-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                }
             });
 
             // 更新本地用户数据
@@ -130,10 +152,15 @@ export function UserDetailPageContent({ userId }: { userId: string }) {
             addToast({
                 title: "Error",
                 description: err instanceof Error ? err.message : 'Failed to update user role',
-                color: "danger",
                 timeout: 8000,
+                classNames: {
+                    base: 'bg-red-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                }
             });
-
             setError(err instanceof Error ? err.message : '更新用户角色出错');
         }
     };

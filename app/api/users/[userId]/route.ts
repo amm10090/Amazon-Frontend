@@ -47,7 +47,7 @@ export async function GET(
 
         // 数据库操作
         const client = await clientPromise;
-        const db = client.db();
+        const db = client.db('oohunt');
 
         const user = await db.collection('users').findOne(
             { _id: new ObjectId(userId) },
@@ -120,7 +120,7 @@ export async function DELETE(
 
         // 数据库操作
         const client = await clientPromise;
-        const db = client.db();
+        const db = client.db('oohunt');
         const objectId = new ObjectId(userId);
 
         // 查找用户
@@ -213,7 +213,7 @@ export async function PATCH(
 
         // 数据库操作
         const client = await clientPromise;
-        const db = client.db();
+        const db = client.db('oohunt');
         const objectId = new ObjectId(userId);
 
         const result = await db.collection('users').updateOne(

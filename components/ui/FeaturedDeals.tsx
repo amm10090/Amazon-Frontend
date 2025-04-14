@@ -415,7 +415,7 @@ export function FeaturedDeals({
 
                     <motion.div variants={itemVariants}>
                         <Link
-                            href="/products"
+                            href="/product"
                             className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors text-sm"
                         >
                             <span>See All</span>
