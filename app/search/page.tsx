@@ -131,7 +131,7 @@ function SearchPageContent() {
                 <div className="flex-shrink-0">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
                     <select
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary cursor-pointer"
                         value={sortBy}
                         onChange={handleSortChange}
                     >
@@ -145,7 +145,7 @@ function SearchPageContent() {
                 <div className="flex-shrink-0">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
                     <select
-                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary cursor-pointer"
                         value={sortOrder}
                         onChange={handleOrderChange}
                     >
@@ -185,7 +185,7 @@ function SearchPageContent() {
                         >
                             {/* 收藏按钮 */}
                             <div
-                                className="absolute top-3 right-3 z-20"
+                                className="absolute top-3 right-3 z-20 cursor-pointer"
                                 onClick={(e) => e.stopPropagation()}
                                 onKeyDown={(e) => e.stopPropagation()}
                                 role="button"
@@ -200,7 +200,7 @@ function SearchPageContent() {
                             </div>
 
                             <div
-                                className="block"
+                                className="block cursor-pointer"
                                 onClick={() => handleProductClick(product.id)}
                                 onKeyDown={(e) => handleKeyDown(e, product.id)}
                                 tabIndex={0}
@@ -297,7 +297,7 @@ function SearchPageContent() {
                                         <motion.div
                                             whileHover={{ scale: 1.03 }}
                                             whileTap={{ scale: 0.97 }}
-                                            className="w-full py-2 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-button-light dark:hover:bg-primary-button text-white text-center rounded-full font-medium shadow-sm transition-colors"
+                                            className="w-full py-2 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-button-light dark:hover:bg-primary-button text-white text-center rounded-full font-medium shadow-sm transition-colors cursor-pointer"
                                         >
                                             View Details
                                         </motion.div>
@@ -318,7 +318,7 @@ function SearchPageContent() {
                             disabled={currentPage === 1}
                             className={`px-4 py-2 rounded-md ${currentPage === 1
                                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300 cursor-pointer"
                                 }`}
                         >
                             Previous
@@ -333,7 +333,7 @@ function SearchPageContent() {
                             disabled={currentPage === totalPages}
                             className={`px-4 py-2 rounded-md ${currentPage === totalPages
                                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300 cursor-pointer"
                                 }`}
                         >
                             Next
