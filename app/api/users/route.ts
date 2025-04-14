@@ -22,7 +22,7 @@ export async function GET(_request: NextRequest) {
 
         // 连接数据库
         const client = await clientPromise;
-        const db = client.db();
+        const db = client.db('oohunt');
 
         // 获取用户列表（不包含密码字段）
         const users = await db.collection('users')
@@ -49,7 +49,6 @@ export async function GET(_request: NextRequest) {
             data: formattedUsers
         });
     } catch {
-
         return NextResponse.json(
             { error: '服务器错误' },
             { status: 500 }

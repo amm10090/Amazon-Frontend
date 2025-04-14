@@ -606,7 +606,7 @@ export function useEmailList(params?: {
     sort_order?: 'asc' | 'desc';
     search?: string;
     is_active?: boolean;
-    collection?: string; // 指定集合名称：'email_list' 或 'email_subscription'
+    collection?: string; // 指定集合名称：'email_subscription' 或 'users'
 }): SWRHookResponse<{ items: EmailItem[], total: number, page: number, page_size: number }> {
     const cacheKey = JSON.stringify(['/api/emails/list', params]);
 

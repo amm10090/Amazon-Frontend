@@ -14,14 +14,14 @@ export async function GET(request: NextRequest) {
         const sort_order = searchParams.get('sort_order') || 'desc';
         const search = searchParams.get('search') || '';
         const is_active = searchParams.get('is_active');
-        const collection = searchParams.get('collection') || 'email_list';
+        const collection = searchParams.get('collection') || 'users';
 
         // 记录使用的数据库名称
         const dbName = process.env.MONGODB_DB || 'oohunt';
         const client = await clientPromise;
         const db = client.db(dbName);
         // 根据collection参数选择不同的集合
-        const dbCollection = db.collection(collection === 'email_subscription' ? 'email_subscription' : 'email_list');
+        const dbCollection = db.collection(collection === 'email_subscription' ? 'email_subscription' : 'users');
 
         // 构建查询条件
         const query: Record<string, MongoQueryValue> = {};

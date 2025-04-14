@@ -133,7 +133,7 @@ const EmailsPageContent = () => {
         sort_order: sortOrder,
         search: debouncedSearchTerm,
         is_active: statusFilter ? statusFilter === 'true' : undefined,
-        collection: activeTab === 'subscribers' ? 'email_subscription' : 'email_list'
+        collection: activeTab === 'subscribers' ? 'email_subscription' : 'users'
     });
 
     // Get messages list data
@@ -177,7 +177,7 @@ const EmailsPageContent = () => {
     // Handle CSV export
     const handleExportCSV = () => {
         // Build export URL with current filters
-        let exportUrl = `/api/emails/export?collection=${activeTab === 'subscribers' ? 'email_subscription' : 'email_list'}`;
+        let exportUrl = `/api/emails/export?collection=${activeTab === 'subscribers' ? 'email_subscription' : 'users'}`;
         const params = new URLSearchParams();
 
         if (debouncedSearchTerm) {
@@ -203,10 +203,10 @@ const EmailsPageContent = () => {
         });
     };
 
-    // Update subscription status
+    // 更新订阅状态
     const handleUpdateStatus = async (id: string, isActive: boolean) => {
         try {
-            const response = await fetch(`/api/emails/${id}/status?collection=${activeTab === 'subscribers' ? 'email_subscription' : 'email_list'}`, {
+            const response = await fetch(`/api/emails/${id}/status?collection=${activeTab === 'subscribers' ? 'email_subscription' : 'users'}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -222,8 +222,18 @@ const EmailsPageContent = () => {
             addToast({
                 title: "Status Updated",
                 description: `Email status has been ${isActive ? 'activated' : 'deactivated'}`,
-                color: "success",
                 timeout: 5000,
+                classNames: {
+                    base: 'bg-green-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                    closeButton: 'text-white/80 hover:text-white',
+                    closeIcon: 'h-4 w-4',
+                    progressTrack: 'bg-white/20',
+                    progressIndicator: 'bg-white'
+                }
             });
 
             // Refresh data
@@ -235,6 +245,13 @@ const EmailsPageContent = () => {
                 description: error instanceof Error ? error.message : 'Failed to update status, please try again later',
                 color: "danger",
                 timeout: 5000,
+                classNames: {
+                    base: 'bg-red-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                }
             });
         }
     };
@@ -284,7 +301,7 @@ const EmailsPageContent = () => {
                 <div className="text-sm text-gray-700">
                     <h3 className="font-medium mb-2">Debug Information:</h3>
                     <ul className="list-disc list-inside space-y-1">
-                        <li>Collection: {activeTab === 'subscribers' ? 'email_subscription' : 'email_list'}</li>
+                        <li>Collection: {activeTab === 'subscribers' ? 'email_subscription' : 'users'}</li>
                         <li>Page: {page}</li>
                         <li>Page Size: {pageSize}</li>
                         <li>Sort Field: {sortBy}</li>

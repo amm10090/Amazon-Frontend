@@ -17,7 +17,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
         const { isActive } = await request.json();
         const searchParams = request.nextUrl.searchParams;
-        const collection = searchParams.get('collection') || 'email_list';
+        const collection = searchParams.get('collection') || 'users';
 
         // 记录使用的数据库名称
         const dbName = process.env.MONGODB_DB || 'oohunt';
@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         const client = await clientPromise;
         const db = client.db(dbName);
         // Select collection based on parameter
-        const dbCollection = db.collection(collection === 'email_subscription' ? 'email_subscription' : 'email_list');
+        const dbCollection = db.collection(collection === 'email_subscription' ? 'email_subscription' : 'users');
 
         // Update email status
         const result = await dbCollection.updateOne(

@@ -390,8 +390,14 @@ const MessagesPageContent = () => {
         addToast({
             title: "Export Started",
             description: "CSV file download has started",
-            color: "success",
             timeout: 5000,
+            classNames: {
+                base: 'bg-green-500 rounded-lg shadow-md',
+                title: 'text-white font-semibold',
+                description: 'text-white opacity-90',
+                content: 'flex items-center gap-2 py-2',
+                icon: 'text-white h-5 w-5',
+            }
         });
     };
 
@@ -769,17 +775,28 @@ const MessagesPageContent = () => {
             addToast({
                 title: "Delete Successful",
                 description: "The message has been deleted",
-                color: "success",
                 timeout: 5000,
+                classNames: {
+                    base: 'bg-green-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                }
             });
-
             mutate();
         } catch (error) {
             addToast({
                 title: "Delete Failed",
                 description: error instanceof Error ? error.message : 'Failed to delete message, please try again later',
-                color: "danger",
                 timeout: 5000,
+                classNames: {
+                    base: 'bg-red-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                }
             });
         }
     };
@@ -802,8 +819,14 @@ const MessagesPageContent = () => {
             addToast({
                 title: "Update Success",
                 description: `Message status has been updated to ${isProcessed ? 'Processed' : 'Pending'}`,
-                color: "success",
                 timeout: 5000,
+                classNames: {
+                    base: 'bg-green-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                }
             });
 
             mutate();
@@ -811,8 +834,14 @@ const MessagesPageContent = () => {
             addToast({
                 title: "Update Failed",
                 description: error instanceof Error ? error.message : 'Failed to update status, please try again later',
-                color: "danger",
                 timeout: 5000,
+                classNames: {
+                    base: 'bg-red-500 rounded-lg shadow-md',
+                    title: 'text-white font-semibold',
+                    description: 'text-white opacity-90',
+                    content: 'flex items-center gap-2 py-2',
+                    icon: 'text-white h-5 w-5',
+                }
             });
             throw error;
         }
