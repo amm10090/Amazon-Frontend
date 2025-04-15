@@ -81,6 +81,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         { name: 'Users', href: '/dashboard/users', icon: '👥' },
         { name: 'Products', href: '/dashboard/products', icon: '📦' },
         { name: 'Emails', href: '/dashboard/emails', icon: '📧' },
+        { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
     ];
 
     if (!session?.user || !session.user.role ||

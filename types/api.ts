@@ -215,4 +215,16 @@ export interface ContactMessage {
     isProcessed: boolean;
     processedAt?: string;
     notes?: string;
+}
+
+// 社交媒体链接配置
+export interface SocialLinks {
+    twitter?: string;
+    facebook?: string;
+    instagram?: string;
+    pinterest?: string;
+    youtube?: string;
+    linkedin?: string;
+    createdAt?: string;
+    updatedAt?: string;
 } 

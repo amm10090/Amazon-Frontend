@@ -1,7 +1,23 @@
+"use client";
+
+import { Facebook, Instagram, Linkedin, Twitter, Youtube } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { useSocialLinks } from '@/lib/hooks';
+
 const Footer = () => {
+    const { data: socialLinks } = useSocialLinks();
+
+    // Social media icons configuration
+    const socialIcons = {
+        twitter: Twitter,
+        facebook: Facebook,
+        instagram: Instagram,
+        youtube: Youtube,
+        linkedin: Linkedin,
+    };
+
     return (
         <footer className="bg-background border-t border-text/10 pt-12 pb-6">
             <div className="container mx-auto px-6">
@@ -76,15 +92,24 @@ const Footer = () => {
 
                         <h3 className="text-lg font-bold mb-4 text-primary">Connect</h3>
                         <div className="flex space-x-4">
-                            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
-                                Twitter
-                            </a>
-                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
-                                Facebook
-                            </a>
-                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200">
-                                Instagram
-                            </a>
+                            {Object.entries(socialLinks || {}).map(([platform, url]) => {
+                                if (!url || !socialIcons[platform as keyof typeof socialIcons]) return null;
+
+                                const Icon = socialIcons[platform as keyof typeof socialIcons];
+
+                                return (
+                                    <a
+                                        key={platform}
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors duration-200"
+                                        aria-label={`Follow us on ${platform}`}
+                                    >
+                                        <Icon className="w-5 h-5" />
+                                    </a>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

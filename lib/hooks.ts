@@ -4,7 +4,7 @@ import type { AxiosResponse } from 'axios';
 import { useEffect } from 'react';
 import useSWR from 'swr';
 
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem, ListResponse, EmailItem, ContactMessage } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem, ListResponse, EmailItem, ContactMessage, SocialLinks } from '@/types/api';
 
 import { productsApi, userApi, systemApi } from './api';
 
@@ -727,6 +727,33 @@ export function useContactMessages(params?: {
 
     return {
         data: data?.data || { items: [], total: 0, page: 1, page_size: 10 },
+        isLoading,
+        isError: error,
+        mutate,
+    };
+}
+
+// 社交媒体链接配置
+export function useSocialLinks(): SWRHookResponse<SocialLinks> & { mutate: () => Promise<unknown> } {
+    const { data: response, error, isLoading, mutate } = useSWR(
+        '/api/settings/social-links',
+        async () => {
+            const res = await fetch('/api/settings/social-links');
+
+            if (!res.ok) {
+                throw new Error('获取社交媒体链接配置失败');
+            }
+
+            return res.json();
+        },
+        {
+            revalidateOnFocus: false,
+            dedupingInterval: 60000, // 1分钟内不重复请求
+        }
+    );
+
+    return {
+        data: response,
         isLoading,
         isError: error,
         mutate,
