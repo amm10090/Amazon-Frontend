@@ -74,7 +74,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         if (categoryStats && categoryStats.product_groups) {
             // 将对象转换为数组，过滤数量大于50的分类
             const categories = Object.entries(categoryStats.product_groups)
-                .filter(([_groupName, count]) => (count as number) > 50)
+                .filter(([_groupName, count]) => (count as number) > 1)
                 .map(([groupName]) => groupName);
 
             // 为每个分类创建路由
