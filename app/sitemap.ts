@@ -72,7 +72,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const categoryRoutes: MetadataRoute.Sitemap = [];
 
         if (categoryStats && categoryStats.product_groups) {
-            // 将对象转换为数组，过滤数量大于50的分类
+            // 将对象转换为数组，过滤数量大于50的分类 这里可以控制筛选在站点地图中显示分类的数量
             const categories = Object.entries(categoryStats.product_groups)
                 .filter(([_groupName, count]) => (count as number) > 1)
                 .map(([groupName]) => groupName);
