@@ -275,7 +275,7 @@ export function CategoryProducts({ title, slug, page_size = 4, className = '', i
                     <h2 className="text-2xl font-bold text-primary-dark dark:text-white">{title}</h2>
 
                     <Link
-                        href={`/product?product_groups=${encodeURIComponent(slug)}`}
+                        href={`/product/category/${encodeURIComponent(slug)}`}
                         className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors"
                     >
                         <span>See All</span>
@@ -321,7 +321,7 @@ export function CategoryProducts({ title, slug, page_size = 4, className = '', i
 
                 <motion.div variants={itemVariants}>
                     <Link
-                        href={`/product?product_groups=${encodeURIComponent(slug)}`}
+                        href={`/product/category/${encodeURIComponent(slug)}`}
                         className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors text-sm"
                     >
                         <span>See All</span>

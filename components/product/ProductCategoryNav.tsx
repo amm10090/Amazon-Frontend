@@ -161,10 +161,12 @@ export function ProductCategoryNav({
     // 添加一个ref来标记组件是否已挂载
     const isMountedRef = useRef(false);
 
-    // 从URL中读取分类参数，优先级：category > product_groups > props中的selectedCategory
+    // 从URL中读取分类参数
     const categoryFromUrl = searchParams.get('category') || searchParams.get('product_groups') || '';
-    // 如果URL中有分类参数，则使用URL中的参数，否则使用props中传入的参数
-    const actualSelectedCategory = categoryFromUrl || selectedCategory;
+
+    // 简化逻辑：始终使用父组件传入的selectedCategory作为当前选中值
+    // 不再区分是否在分类页面，统一处理方式
+    const actualSelectedCategory = selectedCategory;
 
     // 只在组件初始挂载时从URL更新分类，避免循环调用
     useEffect(() => {
@@ -360,52 +362,64 @@ export function ProductCategoryNav({
         // 记住这次选择的分类
         lastSelectedCategoryRef.current = '';
 
-        // 构建新的URL
-        const params = new URLSearchParams(window.location.search);
-
-        // 清除分类参数
-        params.delete('product_groups');
-        params.delete('category');
-        params.set('page', '1'); // 重置页码
-
-        // 添加时间戳防止缓存问题
-        params.set('_ts', Date.now().toString());
-
-        // 更新URL
-        const newPath = `${window.location.pathname}?${params.toString()}`;
-
-        router.replace(newPath, { scroll: false });
-
-        // 同时更新父组件状态
+        // 先更新父组件状态，确保状态同步
         onCategorySelect('');
+
+        // 直接操作URL，使用最简单的方法
+        if (typeof window !== 'undefined') {
+            try {
+                // 方法1：直接替换URL，强制更新
+                window.history.replaceState(
+                    { as: '/product', url: '/product' },
+                    '',
+                    '/product'
+                );
+
+                // 方法2：延迟执行router.replace，确保它是最后一个执行的导航
+                setTimeout(() => {
+                    router.replace('/product', { scroll: false });
+                }, 50);
+            } catch {
+                // 如果出错，使用最直接的方法
+                window.location.href = '/product';
+            }
+        }
     }, [onCategorySelect, router]);
 
-    // Handle click on category button
-    const handleCategorySelect = useCallback((category: string) => {
-        // 记住这次选择的分类
+    // 处理分类点击事件
+    const handleCategoryClick = useCallback((category: string) => {
+        // 记录最后一次通过点击选择的分类
         lastSelectedCategoryRef.current = category;
 
-        // 构建新的URL
-        const params = new URLSearchParams(window.location.search);
 
-        if (category) {
-            params.set('product_groups', category);
-        } else {
-            params.delete('product_groups');
-        }
-        params.delete('category'); // 清除旧的category参数
-        params.set('page', '1'); // 重置页码
-
-        // 添加时间戳防止缓存问题
-        params.set('_ts', Date.now().toString());
-
-        // 更新URL
-        const newPath = `${window.location.pathname}?${params.toString()}`;
-
-        router.replace(newPath, { scroll: false });
-
-        // 同时更新父组件状态
+        // 先更新父组件状态，确保状态同步
         onCategorySelect(category);
+
+        // 构建新的URL路径 - 使用categoryId参数
+        const newPath = category
+            ? `/product/category/${encodeURIComponent(category)}`
+            : '/product';
+
+        // 直接操作URL，使用最简单的方法
+        if (typeof window !== 'undefined') {
+            // 取消所有可能的导航事件
+            try {
+                // 方法1：直接替换URL，强制更新
+                window.history.replaceState(
+                    { as: newPath, url: newPath },
+                    '',
+                    newPath
+                );
+
+                // 方法2：延迟执行router.replace，确保它是最后一个执行的导航
+                setTimeout(() => {
+                    router.replace(newPath, { scroll: false });
+                }, 50);
+            } catch {
+                // 如果出错，使用最直接的方法
+                window.location.href = newPath;
+            }
+        }
     }, [onCategorySelect, router]);
 
     // Toggle show more/less or navigate to categories page
@@ -425,7 +439,19 @@ export function ProductCategoryNav({
             sessionStorage.setItem('prevPath', currentPath);
 
             // 导航到分类页面并传递当前选中的分类
-            router.push(`/categories${actualSelectedCategory ? `?category=${encodeURIComponent(actualSelectedCategory)}` : ''}`);
+            const newPath = `/categories${actualSelectedCategory ? `?category=${encodeURIComponent(actualSelectedCategory)}` : ''}`;
+
+            // 直接使用浏览器API更新URL
+            if (typeof window !== 'undefined') {
+                window.history.replaceState(
+                    { url: newPath, as: newPath, options: { shallow: true, scroll: false } },
+                    '',
+                    newPath
+                );
+
+                // 同时仍然调用router.replace确保Next.js状态更新
+                router.replace(newPath, { scroll: false });
+            }
         } else {
             setShowAll(!showAll);
         }
@@ -475,7 +501,7 @@ export function ProductCategoryNav({
                             exit={{ opacity: 0, scale: 0.95 }}
                             layout
                             className={getButtonClassName(actualSelectedCategory === category.name)}
-                            onClick={() => handleCategorySelect(category.name)}
+                            onClick={() => handleCategoryClick(category.name)}
                         >
                             <span>{category.name}</span>
                         </motion.button>
@@ -531,7 +557,7 @@ export function ProductCategoryNav({
                             whileHover={{ scale: 1.05, boxShadow: "0px 2px 4px rgba(0,0,0,0.1)" }}
                             whileTap={{ scale: 0.95 }}
                             className={getButtonClassName(actualSelectedCategory === category.name)}
-                            onClick={() => handleCategorySelect(category.name)}
+                            onClick={() => handleCategoryClick(category.name)}
                         >
                             <span>{category.name}</span>
                         </motion.button>

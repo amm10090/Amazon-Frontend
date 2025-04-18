@@ -329,11 +329,25 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         // 基于当前URL的searchParams创建新实例，保留所有现有参数
         const params = new URLSearchParams(searchParams.toString());
 
-        // 确保保留分类相关参数（这一步可以省略，因为我们已经基于现有searchParams创建了params）
-        // 以防万一，我们可以确保这些参数一定存在
-        const productGroups = searchParams.get('product_groups');
-        const category = searchParams.get('category');
+        // 获取当前路径信息，检查是否使用新的分类URL格式
+        const path = pathname;
+        const isUsingCategoryPath = path.includes('/product/category/');
+
+        // 如果使用的是新的分类路径，则不需要在查询参数中包含分类信息
+        if (!isUsingCategoryPath) {
+            // 确保保留分类相关参数，仅用于旧格式兼容
+            const productGroups = searchParams.get('product_groups');
+            const category = searchParams.get('category');
+
+            // 保留必要的导航参数
+            if (productGroups) params.set('product_groups', productGroups);
+            if (category) params.set('category', category);
+        }
+
+        // 保留页码参数
         const page = searchParams.get('page');
+
+        if (page) params.set('page', page);
 
         // 先清除所有筛选相关参数
         params.delete('min_price');
@@ -344,11 +358,6 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         params.delete('api_provider');
         // 也清除时间戳参数，稍后根据条件再添加
         params.delete('_ts');
-
-        // 保留必要的导航参数
-        if (productGroups) params.set('product_groups', productGroups);
-        if (category) params.set('category', category);
-        if (page) params.set('page', page);
 
         // 使用辅助函数检查是否有活跃的筛选条件
         const hasFilters = hasActiveFilters(currentFilter);
@@ -380,7 +389,7 @@ export function ProductFilter({ onFilter, hideButtons }: ProductFilterProps) {
         }
 
         return params;
-    }, [searchParams, MAX_PRICE, hasActiveFilters]); // 添加hasActiveFilters依赖
+    }, [searchParams, MAX_PRICE, hasActiveFilters, pathname]); // 添加pathname依赖
 
     // 创建自动应用筛选函数，使用debounce减少频繁更新
     const autoApplyFilters = useCallback((newFilter: FilterState) => {

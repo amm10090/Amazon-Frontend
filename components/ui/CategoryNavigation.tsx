@@ -2,7 +2,7 @@
 
 import { motion, useAnimation, useMotionValue, useTransform, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 import { useCategoryStats } from '@/lib/hooks';
@@ -158,6 +158,7 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
     const [_scrollDirection, setScrollDirection] = useState<'left' | 'right' | null>(null);
     const lastScrollPosition = useRef(0);
     const [activePointIndex, setActivePointIndex] = useState<number>(0);
+    const router = useRouter();
 
     // 使用ref来跟踪已处理的数据，避免重复处理
     const processedDataRef = useRef<boolean>(false);
@@ -541,27 +542,32 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
         }
     }, [categories, useAnchorLinks]);
 
-    // 处理分类点击事件
+    // 处理分类点击
     const handleCategoryClick = (slug: string) => {
-        if (!slug) return;
+        setActiveCardIndex(categories.findIndex(c => c.slug === slug));
 
-        if (useAnchorLinks) {
-            // 使用锚点链接滚动到对应分类区域
-            const categoryElement = document.getElementById(`category-${slug}`);
+        // 如果不使用锚点链接，则路由跳转
+        if (!useAnchorLinks) {
+            // 使用新的URL格式
+            const newPath = `/product/category/${encodeURIComponent(slug)}`;
 
-            if (categoryElement) {
-                // 滚动到元素，添加一些顶部偏移以避免被导航栏遮挡
-                window.scrollTo({
-                    top: categoryElement.offsetTop - 120, // 120px的偏移，根据需要调整
-                    behavior: 'smooth'
+            router.replace(newPath, { scroll: false });
+
+            return;
+        }
+
+        // 使用锚点链接
+        if (typeof window !== 'undefined') {
+            // 在当前页面中查找目标元素
+            const targetElement = document.getElementById(`category-${slug}`);
+
+            if (targetElement) {
+                // 平滑滚动到目标元素
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
                 });
             }
-        } else {
-            // 原有行为：构建产品页面URL，使用原始分类名称作为product_groups参数
-            const productPageUrl = `/product?product_groups=${encodeURIComponent(slug)}`;
-
-            // 使用window.location导航
-            window.location.href = productPageUrl;
         }
     };
 
@@ -995,7 +1001,7 @@ export function CategoryNavigation({ useAnchorLinks = false }: CategoryNavigatio
                                 </button>
                             ) : (
                                 <Link
-                                    href={`/product?product_groups=${encodeURIComponent(category.slug)}`}
+                                    href={`/product/category/${encodeURIComponent(category.slug)}`}
                                     className={`block ${isActiveCategory(category.slug) ? 'pointer-events-none' : ''}`}
                                 >
                                     <motion.div

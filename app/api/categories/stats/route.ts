@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import type { CategoryStats } from '@/types/api';
 
 // 配置路由段缓存，缓存整个路由处理程序6小时
-export const revalidate = 21600;
+export const revalidate = 0;
 
 // API Base URL configuration
 const API_BASE_URL = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';

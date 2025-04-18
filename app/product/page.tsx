@@ -3,7 +3,7 @@
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 
 import FavoriteButton from '@/components/common/FavoriteButton';
@@ -297,8 +297,24 @@ const ScrollToTopButton = () => {
     );
 };
 
+// 在主页面组件之前添加接口定义
+interface ProductsPageProps {
+    categoryFromSlug?: string;
+}
+
+// 修改主页面组件
+export default function ProductsPage({ categoryFromSlug }: ProductsPageProps = {}) {
+    return (
+        <Suspense fallback={<div className="w-full h-screen flex items-center justify-center">
+            <div className="animate-pulse text-xl font-semibold">Loading products...</div>
+        </div>}>
+            <ProductsContent categoryFromSlug={categoryFromSlug} />
+        </Suspense>
+    );
+}
+
 // 使用 Client Component 包装搜索参数逻辑
-function ProductsContent() {
+function ProductsContent({ categoryFromSlug }: { categoryFromSlug?: string } = {}) {
     const searchParamsFromUrl = useSearchParams();
     const [searchParams, setSearchParams] = useState({
         product_groups: '' as string,
@@ -424,7 +440,10 @@ function ProductsContent() {
         const brands = searchParamsFromUrl.get('brands') || '';
         const product_groups = searchParamsFromUrl.get('product_groups') || '';
         const category = searchParamsFromUrl.get('category') || ''; // 兼容category参数
-        const effective_category = product_groups || category; // 优先使用product_groups
+
+        // 优先使用从路由路径传入的categoryFromSlug，而不是查询参数
+        // 如果有categoryFromSlug，则忽略查询参数中的category或product_groups
+        const effective_category = categoryFromSlug || product_groups || category;
 
         const page = Number(searchParamsFromUrl.get('page')) || 1;
         const min_price = searchParamsFromUrl.get('min_price') ? Number(searchParamsFromUrl.get('min_price')) : undefined;
@@ -466,19 +485,26 @@ function ProductsContent() {
             is_prime_only: is_prime_only
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParamsFromUrl]);
+    }, [searchParamsFromUrl, categoryFromSlug]);
 
     // 引入useRouter和usePathname
     const router = useRouter();
-    const pathname = '/product'; // 当前页面路径
+    const pathname = usePathname(); // 使用当前页面实际路径
 
     // 添加useEffect，当searchParams变化时更新URL
     useEffect(() => {
         // 创建URL参数对象
         const params = new URLSearchParams();
 
-        // 仅添加有值的参数
-        if (searchParams.product_groups) params.set('product_groups', searchParams.product_groups);
+        // 检查当前是否在分类页面（URL包含/category/）
+        const isInCategoryPage = pathname.includes('/category/');
+
+        // 仅在非分类页面时添加product_groups参数，避免重复
+        if (searchParams.product_groups && !isInCategoryPage) {
+            params.set('product_groups', searchParams.product_groups);
+        }
+
+        // 其他参数正常添加
         if (searchParams.brands) params.set('brands', searchParams.brands);
         if (searchParams.page > 1) params.set('page', searchParams.page.toString());
         if (searchParams.min_price !== undefined) params.set('min_price', searchParams.min_price.toString());
@@ -708,20 +734,46 @@ function ProductsContent() {
     };
 
     // 处理分类点击
-    const handleCategoryClick = (category: string) => {
+    const handleCategoryClick = useCallback((category: string) => {
+        // 先更新内部状态
         setSearchParams(prev => ({
             ...prev,
             product_groups: category || '',
             page: 1
         }));
 
+        // 构建新的URL路径
+        const newPath = category
+            ? `/product/category/${encodeURIComponent(category)}`
+            : '/product';
+
+        // 直接操作URL，使用最简单的方法
+        if (typeof window !== 'undefined') {
+            try {
+                // 方法1：直接替换URL，强制更新
+                window.history.replaceState(
+                    { as: newPath, url: newPath },
+                    '',
+                    newPath
+                );
+
+                // 方法2：延迟执行router.replace，确保它是最后一个执行的导航
+                setTimeout(() => {
+                    router.replace(newPath, { scroll: false });
+                }, 50);
+            } catch {
+                // 如果出错，使用最直接的方法
+                window.location.href = newPath;
+            }
+        }
+
         if (catalogRef.current) {
             catalogRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    };
+    }, [router, setSearchParams, catalogRef]);
 
     // 处理分页
-    const handlePageChange = (page: number) => {
+    const handlePageChange = useCallback((page: number) => {
         setSearchParams(prev => ({ ...prev, page }));
 
         if (catalogRef.current) {
@@ -730,7 +782,7 @@ function ProductsContent() {
                 behavior: 'smooth'
             });
         }
-    };
+    }, [setSearchParams, catalogRef]);
 
     // 处理筛选条件变更
     const handleFilterChange = useCallback((filters: FilterParams) => {
@@ -1329,16 +1381,5 @@ function ProductsContent() {
                 </div>
             </div>
         </div>
-    );
-}
-
-// 主页面组件
-export default function ProductsPage() {
-    return (
-        <Suspense fallback={<div className="w-full h-screen flex items-center justify-center">
-            <div className="animate-pulse text-xl font-semibold">Loading products...</div>
-        </div>}>
-            <ProductsContent />
-        </Suspense>
     );
 }

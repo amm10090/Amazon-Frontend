@@ -145,36 +145,11 @@ function CategoriesContent() {
         // 检查是否是产品页面路径
         const _isProductPage = prevPath.startsWith('/product');
 
-        // 构建URL对象更可靠地处理参数
-        let url;
-
-        try {
-            url = new URL(prevPath, window.location.origin);
-        } catch {
-            url = new URL('/product', window.location.origin);
-        }
-
-        // 清除旧的分类参数（同时清除category和product_groups）
-        url.searchParams.delete('category');
-        url.searchParams.delete('product_groups');
-
-        // 设置新的分类参数（统一使用product_groups保持一致性）
-        if (category) {
-            url.searchParams.set('product_groups', category);
-        }
-
-        // 重置分页到第一页
-        if (url.searchParams.has('page')) {
-            url.searchParams.set('page', '1');
-        }
-
-        // 构建最终URL (只保留pathname和search部分)
-        const finalUrl = `${url.pathname}${url.search}`;
+        // 使用新的URL格式导航到分类页面，保持categoryId参数名一致
+        const finalUrl = `/product/category/${encodeURIComponent(category)}`;
 
         // 添加时间戳到URL，防止缓存问题
-        const urlWithTimestamp = finalUrl.includes('?')
-            ? `${finalUrl}&_ts=${Date.now()}`
-            : `${finalUrl}?_ts=${Date.now()}`;
+        const urlWithTimestamp = `${finalUrl}?_ts=${Date.now()}`;
 
         // 延迟50ms后导航，确保页面状态完成更新
         setTimeout(() => {
