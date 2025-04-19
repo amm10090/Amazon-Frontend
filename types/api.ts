@@ -69,6 +69,9 @@ export interface Product {
     timestamp?: string;
     coupon_info?: Record<string, unknown>;
     api_provider?: string;
+    coupon_expiration_date?: string;
+    coupon_terms?: string;
+    source?: string;
 }
 
 export interface ComponentProduct {

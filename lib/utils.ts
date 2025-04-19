@@ -211,7 +211,10 @@ export function adaptProducts(apiProducts: Product[]): ComponentProduct[] {
                 availability: mainOffer?.availability || '无库存',
                 couponValue: couponValue,
                 couponType: couponType,
-                apiProvider: p.api_provider
+                apiProvider: p.api_provider,
+                couponExpirationDate: p.coupon_expiration_date || null,
+                couponTerms: p.coupon_terms || null,
+                source: p.source || null
             };
         } catch {
             // 返回基本信息

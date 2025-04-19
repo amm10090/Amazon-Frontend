@@ -22,6 +22,18 @@ export default function ProductInfo({ product }: ProductInfoProps) {
     const [toastType, setToastType] = useState<'success' | 'error'>('success');
     const [lastAction, setLastAction] = useState<'add' | 'remove'>('add');
 
+    // 日期格式化函数
+    const formatExpiryDate = (dateString: string): string => {
+        const date = new Date(dateString);
+        const options: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        };
+
+        return date.toLocaleDateString('en-US', options);
+    };
+
     const handleWishlistToggle = async () => {
         try {
             const actionType = isFavorite ? 'remove' : 'add';
@@ -126,6 +138,33 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                         </>
                     )}
                 </div>
+
+                {/* 显示优惠券到期时间 */}
+                {product.source === 'coupon' && product.couponExpirationDate && (
+                    <div className="coupon-info mt-2 text-sm border-t border-gray-200 dark:border-gray-700 pt-2">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                            {/* 优惠券面值和类型显示 */}
+                            {product.couponValue && (
+                                <div className="inline-flex items-center bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-[#1A5276] dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                                    </svg>
+                                    <span className="text-[#1A5276] dark:text-blue-400 font-medium">Coupon: Save {product.couponType === 'percent' ? `${product.couponValue}%` : `$${product.couponValue}`}</span>
+                                </div>
+                            )}
+
+                            {/* 优惠券到期时间 */}
+                            <div className="inline-flex items-center bg-gray-50 dark:bg-gray-800/40 px-2 py-1 rounded">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span className="text-gray-600 dark:text-gray-400">
+                                    Expiry Date {formatExpiryDate(product.couponExpirationDate)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {product.title.includes('Size') && (
