@@ -277,17 +277,20 @@ function SearchPageContent() {
                                                     </span>
                                                 )}
                                             </div>
-                                            {product.discount > 0 ? (
-                                                <span className="text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 bg-primary-badge">
-                                                    -{Math.round(product.discount)}%
-                                                </span>
-                                            ) : (product.couponValue && product.couponType && (
+                                            {/* 折扣标签 - 只在discount不为null且大于0且四舍五入后大于0时显示 */}
+                                            {product.discount ? (
+                                                Math.round(product.discount) > 0 ? (
+                                                    <span className="text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 bg-primary-badge">
+                                                        -{Math.round(product.discount)}%
+                                                    </span>
+                                                ) : null
+                                            ) : product.couponValue && product.couponType ? (
                                                 <span className="text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 bg-green-500">
                                                     {product.couponType === 'percentage'
                                                         ? `${product.couponValue}%`
                                                         : `$${product.couponValue}`} Coupon
                                                 </span>
-                                            ))}
+                                            ) : null}
                                         </div>
                                     </div>
 
