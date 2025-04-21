@@ -59,7 +59,7 @@ async function getProduct(id: string): Promise<Product | null> {
     }
 }
 
-// Generate page metadata
+// 生成页面元数据
 export async function generateMetadata(
     props: ProductPageProps
 ): Promise<Metadata> {
@@ -75,9 +75,12 @@ export async function generateMetadata(
         };
     }
 
+    // 将商品标题的首字母大写
+    const formattedTitle = product.title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+
     return {
-        title: `Oohunt - ${product.title}`,
-        description: product.description || `View details and pricing for ${product.title}`,
+        title: `Oohunt - ${formattedTitle}`,
+        description: product.description || `View details and pricing for ${formattedTitle}`,
     };
 }
 

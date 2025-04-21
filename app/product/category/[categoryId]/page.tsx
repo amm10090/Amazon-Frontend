@@ -15,11 +15,11 @@ export const generateMetadata = async ({ params }: { params: { categoryId: strin
         .join(' ');
 
     return {
-        title: `${formattedCategory} - 最佳商品和优惠`,
-        description: `浏览我们精选的${formattedCategory}商品，获得最佳价格和独家优惠。`,
+        title: `${formattedCategory} - Best Products and Deals`,
+        description: `Browse our curated selection of ${formattedCategory} products and get the best prices and exclusive deals.`,
         openGraph: {
-            title: `${formattedCategory} - 最佳商品和优惠`,
-            description: `浏览我们精选的${formattedCategory}商品，获得最佳价格和独家优惠。`,
+            title: `${formattedCategory} - Best Products and Deals`,
+            description: `Browse our curated selection of ${formattedCategory} products and get the best prices and exclusive deals.`,
         }
     };
 };
