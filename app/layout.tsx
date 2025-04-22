@@ -14,8 +14,9 @@ const geist = Geist({
 
 });
 
-// 从环境变量获取Bing Webmaster ID
+// 从环境变量获取验证ID
 const BING_WEBMASTER_ID = process.env.NEXT_PUBLIC_BING_WEBMASTER_ID || '';
+const IMPACT_SITE_VERIFICATION = process.env.NEXT_PUBLIC_IMPACT_SITE_VERIFICATION || '';
 
 export const metadata: Metadata = {
   title: "Oohunt - Your Ultimate Shopping Companion",
@@ -25,7 +26,8 @@ export const metadata: Metadata = {
   },
   verification: {
     other: {
-      'msvalidate.01': BING_WEBMASTER_ID
+      'msvalidate.01': BING_WEBMASTER_ID,
+      'impact-site-verification': IMPACT_SITE_VERIFICATION
     },
   },
 };
