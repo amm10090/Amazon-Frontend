@@ -129,7 +129,7 @@ export default async function ProductPage(props: ProductPageProps) {
                             Similar Products
                         </h2>
                         <Link
-                            href={`/products?product_groups=${encodeURIComponent(adaptedProduct.category)}`}
+                            href={`/products/category/${encodeURIComponent(adaptedProduct.category)}`}
                             className="flex items-center text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400 font-medium transition-colors"
                         >
                             <span>See All</span>

@@ -49,6 +49,8 @@ export function FeaturedDeals({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isMobile, setIsMobile] = useState(false);
+    // 添加一个静态变量用于存储已展示的商品ID，避免重复
+    const [shownProductIds] = useState(new Set<string>());
 
     // 根据屏幕宽度动态设置商品数量
     const [dynamicPageSize, setDynamicPageSize] = useState(pageSize);
@@ -136,10 +138,106 @@ export function FeaturedDeals({
                         if (Array.isArray(products) && products.length > 0) {
                             // 随机打乱商品数组
                             products = shuffleArray(products);
+
+                            // 实现去重逻辑
+                            if (!hideTitle) { // Today's Best Deals
+                                // 将当前商品ID存入静态集合中
+                                products.forEach((product: Product) => {
+                                    const productId = product.asin || product.id || '';
+
+                                    if (productId) shownProductIds.add(productId);
+                                });
+                            } else { // Similar Products
+                                // 过滤掉已经显示过的商品
+                                products = products.filter((product: Product) => {
+                                    const productId = product.asin || product.id || '';
+
+                                    return productId && !shownProductIds.has(productId);
+                                });
+
+                                // 如果过滤后没有商品，则走兜底逻辑
+                                if (products.length === 0 && productGroups) {
+                                    // 向下执行兜底逻辑
+                                } else {
+                                    // 只取需要的数量
+                                    products = products.slice(0, dynamicPageSize);
+                                    setDeals(products);
+
+                                    return; // 提前返回，不执行兜底逻辑
+                                }
+                            }
+
                             // 只取需要的数量
                             products = products.slice(0, dynamicPageSize);
+                            setDeals(products);
+                        } else if (productGroups) {
+                            // 兜底方案：当指定分类没有数据时，移除分类限制重新请求
+
+                            // 重新获取总数，但不指定分类
+                            const fallbackCountResponse = await fetch('/api/products/count');
+
+                            if (fallbackCountResponse.ok) {
+                                const fallbackCountResult = await fallbackCountResponse.json();
+
+                                if (fallbackCountResult.success) {
+                                    const fallbackTotal = fallbackCountResult.data.total;
+                                    const fallbackMaxPage = Math.ceil(fallbackTotal / pageSize);
+                                    const fallbackRandomPage = Math.max(1, Math.floor(Math.random() * fallbackMaxPage));
+
+                                    // 不带分类的请求参数
+                                    const fallbackParams = new URLSearchParams({
+                                        page: fallbackRandomPage.toString(),
+                                        page_size: dynamicPageSize.toString()
+                                    });
+
+                                    // 获取兜底商品数据
+                                    const fallbackResponse = await fetch(`/api/products/list?${fallbackParams.toString()}`);
+
+                                    if (fallbackResponse.ok) {
+                                        const fallbackResult = await fallbackResponse.json();
+
+                                        if (fallbackResult.success && fallbackResult.data.items.length > 0) {
+                                            let fallbackProducts = shuffleArray(fallbackResult.data.items) as Product[];
+
+                                            // 过滤掉已经在Today's Best Deals中显示的商品
+                                            if (!hideTitle) { // hideTitle=false表示是Today's Best Deals
+                                                // 将当前商品ID存入静态集合中
+                                                fallbackProducts.forEach((product: Product) => {
+                                                    const productId = product.asin || product.id || '';
+
+                                                    if (productId) shownProductIds.add(productId);
+                                                });
+                                            } else { // hideTitle=true表示是Similar Products
+                                                // 过滤掉已经显示过的商品
+                                                fallbackProducts = fallbackProducts.filter((product: Product) => {
+                                                    const productId = product.asin || product.id || '';
+
+                                                    return productId && !shownProductIds.has(productId);
+                                                });
+                                            }
+
+                                            // 固定显示4个商品的兜底数据，无论父组件传入的pageSize是多少
+                                            setDeals(fallbackProducts.slice(0, 4));
+                                        } else {
+                                            setDeals([]);
+                                            setError('没有找到商品数据');
+                                        }
+                                    } else {
+                                        setDeals([]);
+                                        setError('获取兜底商品数据失败');
+                                    }
+                                } else {
+                                    setDeals([]);
+                                    setError('获取兜底商品总数失败');
+                                }
+                            } else {
+                                setDeals([]);
+                                setError('兜底请求失败');
+                            }
+                        } else {
+                            setDeals([]);
+                            setError(result.error || '当前无可用商品');
                         }
-                        setDeals(products);
                     } else {
                         setDeals([]);
                         setError(result.error || 'No deals available at the moment');
@@ -178,7 +276,7 @@ export function FeaturedDeals({
         };
 
         fetchDeals();
-    }, [dynamicPageSize, productGroups, useListApi]);
+    }, [dynamicPageSize, productGroups, useListApi, hideTitle, shownProductIds]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
