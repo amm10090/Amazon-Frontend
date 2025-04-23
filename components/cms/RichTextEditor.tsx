@@ -101,6 +101,7 @@ export function RichTextEditor({
                         class: 'border-l-4 border-gray-300 pl-4 italic',
                     },
                 },
+                dropcursor: false
             }),
             Placeholder.configure({
                 placeholder,
