@@ -1,0 +1,157 @@
+/* 富文本编辑器内容样式 */
+
+/* 空编辑器提示 */
+.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #ced4da;
+  pointer-events: none;
+  height: 0;
+}
+
+/* 引用块样式 */
+.ProseMirror blockquote {
+  border-left: 3px solid #b4b4b4;
+  padding-left: 1rem;
+  font-style: italic;
+  color: #4a5568;
+  margin: 1rem 0;
+}
+
+/* 代码块样式 */
+.ProseMirror pre {
+  background-color: #f7fafc;
+  border-radius: 0.25rem;
+  padding: 0.75rem 1rem;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.875rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
+
+.ProseMirror code {
+  background-color: #f0f0f0;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  font-size: 0.875em;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+/* 高亮文本样式 */
+.ProseMirror mark {
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  background-color: #fef3c7; /* 默认黄色 */
+}
+
+.ProseMirror mark[data-color="#fef3c7"] {
+  background-color: #fef3c7; /* 黄色 */
+}
+
+.ProseMirror mark[data-color="#d1fae5"] {
+  background-color: #d1fae5; /* 绿色 */
+}
+
+.ProseMirror mark[data-color="#fce7f3"] {
+  background-color: #fce7f3; /* 粉色 */
+}
+
+.ProseMirror mark[data-color="#dbeafe"] {
+  background-color: #dbeafe; /* 蓝色 */
+}
+
+/* 文本颜色样式 */
+.ProseMirror span[style*="color"] {
+  border-radius: 0.125rem;
+}
+
+/* 列表样式 */
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+}
+
+.ProseMirror ul li {
+  list-style-type: disc;
+}
+
+.ProseMirror ol li {
+  list-style-type: decimal;
+}
+
+/* 链接样式 */
+.ProseMirror a {
+  color: #3182ce;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.1s ease-in-out;
+}
+
+.ProseMirror a:hover {
+  color: #2c5282;
+}
+
+/* 图片样式 */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.25rem;
+  display: block;
+  margin: 1rem auto;
+}
+
+/* 产品嵌入样式 */
+.ProseMirror .product-embed {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin: 1rem 0;
+  background-color: #f8fafc;
+}
+
+/* 编辑器容器样式 */
+.rich-text-editor {
+  --content-width: 100%;
+  --content-max-width: 768px;
+}
+
+/* 编辑器内容容器 */
+.rich-text-editor .ProseMirror {
+  outline: none;
+  min-height: 150px;
+}
+
+/* 预览模式样式 */
+.rich-text-editor.preview .ProseMirror {
+  color: #1a202c;
+  line-height: 1.7;
+}
+
+/* 颜色选择器弹出菜单样式 */
+.color-picker-dropdown {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+  display: flex;
+}
+
+.color-picker-trigger:hover + .color-picker-dropdown,
+.color-picker-dropdown:hover {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 响应式样式 */
+@media (max-width: 640px) {
+  .rich-text-editor {
+    --content-max-width: 100%;
+  }
+}
+
+/* 工具栏响应式 */
+@media (max-width: 768px) {
+  .rich-text-editor .toolbar-group {
+    flex-wrap: wrap;
+  }
+} 

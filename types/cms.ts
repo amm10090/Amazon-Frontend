@@ -15,7 +15,12 @@ export interface ContentPage {
     publishedAt?: Date;     // 发布日期
     createdAt: Date;        // 创建日期
     updatedAt: Date;        // 更新日期
-    seoData?: {             // SEO相关数据
+    metaTitle?: string;     // SEO标题，优先于title
+    metaDescription?: string; // SEO描述，优先于excerpt
+    metaKeywords?: string;  // SEO关键词，逗号分隔
+    canonicalUrl?: string;  // 规范URL
+    ogImage?: string;       // Open Graph图片URL
+    seoData?: {             // 旧版SEO相关数据（保留向后兼容）
         metaTitle?: string;
         metaDescription?: string;
         canonicalUrl?: string;
