@@ -1,82 +1,46 @@
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Popover, PopoverTrigger, PopoverContent, Input, Kbd } from '@heroui/react';
 import type { Editor } from '@tiptap/react';
 import {
     Bold, Italic, Underline, Strikethrough, List, ListOrdered, Undo, Redo,
     Link as LinkIcon, Image as ImageIcon, Tag, Heading1, Heading2, Heading3,
     AlignLeft, AlignCenter, AlignRight, Code, Quote,
-    Trash2, ChevronsUp, ChevronsDown, Highlighter, Type, Palette,
-    CornerDownLeft
+    Trash2, Highlighter, Type, Palette,
+    CornerDownLeft,
+    Youtube as YoutubeIcon,
+    Keyboard
 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
+
+import { ColorPickerPopover } from './ColorPickerPopover';
 
 interface TiptapToolbarProps {
     editor: Editor | null;
     onAddProduct: (e: React.MouseEvent<HTMLButtonElement>) => void; // 更新回调函数类型
 }
 
-// 预设高亮颜色
-const highlightColors = {
-    yellow: '#fef3c7',
-    green: '#d1fae5',
-    pink: '#fce7f3',
-    blue: '#dbeafe',
-};
-
-// 预设文本颜色
-const textColors = {
-    default: '#000000',
-    gray: '#64748b',
-    brown: '#78350f',
-    red: '#dc2626',
-    orange: '#ea580c',
-    yellow: '#ca8a04',
-    green: '#16a34a',
-    blue: '#2563eb',
-    purple: '#9333ea',
-    pink: '#db2777',
-};
+// 辅助函数，用于生成 Kbd 标签
+const ShortcutKey = ({ children }: { children: React.ReactNode }) => (
+    <Kbd className="text-xs">{children}</Kbd>
+);
 
 export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
-    // 处理图片上传
-    const handleImageUpload = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const [isTypographyModalOpen, setIsTypographyModalOpen] = useState(false);
+    const [isYoutubePopoverOpen, setIsYoutubePopoverOpen] = useState(false);
+    const [youtubeUrl, setYoutubeUrl] = useState('');
+    const [youtubeWidth, setYoutubeWidth] = useState('640');
+    const [youtubeHeight, setYoutubeHeight] = useState('480');
+    // 新增链接和图片 Popover 状态
+    const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false);
+    const [linkUrl, setLinkUrl] = useState('');
+    const [isImagePopoverOpen, setIsImagePopoverOpen] = useState(false);
+    const [imageUrl, setImageUrl] = useState('');
+    // 新增：快捷键模态框状态
+    const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
 
-        if (!editor) return;
-
-        const url = prompt('输入图片 URL:', 'https://');
-
-        if (url && url !== 'https://') {
-            editor.chain().focus().setImage({ src: url }).run();
-        }
-    }, [editor]);
-
-    // 处理链接添加
-    const handleLinkAdd = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!editor) return;
-
-        const previousUrl = editor.getAttributes('link').href;
-        const url = prompt('输入链接 URL:', previousUrl || 'https://');
-
-        // 用户取消
-        if (url === null) {
-            return;
-        }
-
-        // 用户清空URL，则移除链接
-        if (url === '') {
-            editor.chain().focus().extendMarkRange('link').unsetLink().run();
-
-            return;
-        }
-
-        // 设置链接
-        if (url && url !== 'https://') {
-            editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-        }
-    }, [editor]);
+    // 新增：切换快捷键模态框
+    const toggleShortcutModal = useCallback(() => {
+        setIsShortcutModalOpen(!isShortcutModalOpen);
+    }, [isShortcutModalOpen]);
 
     // 清除格式
     const clearFormatting = useCallback(() => {
@@ -85,12 +49,11 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
     }, [editor]);
 
     // 应用排版规则
-    const applyTypography = useCallback(() => {
-        if (!editor) return;
-        // Typography 插件会自动将(c) → ©, (tm) → ™, 等
-        // 这个按钮主要是提示用户有这个功能
-        alert('排版功能已启用，支持以下自动转换：\n\n(c) → ©\n(tm) → ™\n(r) → ®\n1/2 → ½\n-> → →\n-- → –\n... → …');
-    }, [editor]);
+    const applyTypography = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsTypographyModalOpen(true);
+    }, []);
 
     // 插入或取消强制换行（硬断行）
     const toggleHardBreak = useCallback(() => {
@@ -98,53 +61,161 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
         editor.chain().focus().setHardBreak().run();
     }, [editor]);
 
-    // 向上/向下移动段落
-    const moveParagraphUp = useCallback(() => {
+    // 修改：handleYoutubeAdd 只打开 Popover
+    const handleYoutubeAdd = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (!editor) return;
-        // 目前Tiptap没有内置命令用于移动段落，这里只是示例
-        // 实际需要自定义扩展实现
-        alert('【功能演示】向上移动段落');
+        // 打开 Popover 时，不清空 URL，以便用户可以编辑之前的输入
+        setIsYoutubePopoverOpen(true);
     }, [editor]);
 
-    const moveParagraphDown = useCallback(() => {
+    // 更新：应用 YouTube URL，包含宽度和高度
+    const applyYoutubeUrl = useCallback(() => {
         if (!editor) return;
-        // 目前Tiptap没有内置命令用于移动段落，这里只是示例
-        // 实际需要自定义扩展实现
-        alert('【功能演示】向下移动段落');
-    }, [editor]);
+        const urlToApply = youtubeUrl.trim();
+        const parsedWidth = parseInt(youtubeWidth, 10);
+        const parsedHeight = parseInt(youtubeHeight, 10);
+        const finalWidth = (!isNaN(parsedWidth) && parsedWidth > 0) ? parsedWidth : 640;
+        const finalHeight = (!isNaN(parsedHeight) && parsedHeight > 0) ? parsedHeight : 480;
 
-    // 应用高亮颜色
-    const applyHighlightColor = useCallback((color: string | null) => {
-        if (!editor) return;
-        if (color === null) {
-            // 移除高亮
-            editor.chain().focus().unsetHighlight().run();
-        } else {
-            // 应用或切换指定颜色高亮
-            editor.chain().focus().toggleHighlight({ color }).run();
-        }
-    }, [editor]);
-
-    // 应用文本颜色
-    const applyTextColor = useCallback((color: string | null) => {
-        if (!editor) return;
-
-        try {
-            if (color === null || color === textColors.default) {
-                // 移除颜色，使用unsetColor命令
-                editor.chain().focus().unsetColor().run();
-            } else {
-                // 设置颜色，使用setColor命令
-                editor.chain().focus().setColor(color).run();
+        if (urlToApply) {
+            try {
+                new URL(urlToApply);
+                if (urlToApply.includes('youtube.com') || urlToApply.includes('youtu.be')) {
+                    editor.chain().focus().setYoutubeVideo({
+                        src: urlToApply,
+                        width: finalWidth,
+                        height: finalHeight
+                    }).run();
+                    setIsYoutubePopoverOpen(false);
+                    setYoutubeUrl('');
+                    setYoutubeWidth('640');
+                    setYoutubeHeight('480');
+                } else {
+                    alert('请输入有效的 YouTube 或 YouTube Music 链接。');
+                }
+            } catch {
+                alert('输入的 URL 无效。');
             }
-        } catch {
-            return
+        } else {
+            setIsYoutubePopoverOpen(false);
+            setYoutubeUrl('');
+            setYoutubeWidth('640');
+            setYoutubeHeight('480');
         }
+    }, [editor, youtubeUrl, youtubeWidth, youtubeHeight]);
+
+    // 新增：处理取消操作，重置状态
+    const handleYoutubeCancel = useCallback(() => {
+        setIsYoutubePopoverOpen(false);
+        setYoutubeUrl('');
+        setYoutubeWidth('640');
+        setYoutubeHeight('480');
+    }, []);
+
+    // 新增：应用链接 URL
+    const applyLinkUrl = useCallback(() => {
+        if (!editor) return;
+        const urlToSet = linkUrl.trim();
+
+        if (urlToSet === '') {
+            editor.chain().focus().extendMarkRange('link').unsetLink().run();
+        } else {
+            // 简单的验证，确保是 http(s) 开头
+            if (!/^https?:\/\//i.test(urlToSet)) {
+                alert('请输入有效的 URL (以 http:// 或 https:// 开头)');
+
+                return;
+            }
+            editor.chain().focus().extendMarkRange('link').setLink({ href: urlToSet }).run();
+        }
+        setIsLinkPopoverOpen(false);
+        setLinkUrl(''); // 关闭后清空
+    }, [editor, linkUrl]);
+
+    // 新增：移除链接
+    const handleLinkRemove = useCallback(() => {
+        if (!editor) return;
+        editor.chain().focus().extendMarkRange('link').unsetLink().run();
+        setIsLinkPopoverOpen(false);
+        setLinkUrl(''); // 关闭后清空
     }, [editor]);
+
+    // 新增：应用图片 URL
+    const applyImageUrl = useCallback(() => {
+        if (!editor) return;
+        const urlToApply = imageUrl.trim();
+
+        if (urlToApply) {
+            // 可选：添加更严格的URL验证
+            try {
+                new URL(urlToApply); // 基础验证
+                editor.chain().focus().setImage({ src: urlToApply }).run();
+                setIsImagePopoverOpen(false);
+                setImageUrl(''); // 成功后清空
+            } catch {
+                alert('输入的图片 URL 无效。');
+            }
+        } else {
+            // 如果URL为空，可以选择关闭或提示用户输入
+            setIsImagePopoverOpen(false);
+        }
+    }, [editor, imageUrl]);
+
+    // 新增：取消图片插入
+    const handleImageCancel = useCallback(() => {
+        setIsImagePopoverOpen(false);
+        setImageUrl(''); // 取消时清空
+    }, []);
 
     if (!editor) {
         return null;
     }
+
+    // 快捷键数据（根据启用的扩展和 Tiptap 文档整理）
+    // 注意：Mod = Cmd (macOS) / Ctrl (Windows/Linux)
+    const shortcuts = [
+        {
+            category: '基本操作', items: [
+                { action: '撤销', win: 'Ctrl + Z', mac: 'Cmd + Z' },
+                { action: '重做', win: 'Ctrl + Shift + Z', mac: 'Cmd + Shift + Z' },
+                { action: '强制换行', win: 'Shift + Enter 或 Ctrl + Enter', mac: 'Shift + Enter 或 Cmd + Enter' },
+                { action: '复制', win: 'Ctrl + C', mac: 'Cmd + C' },
+                { action: '剪切', win: 'Ctrl + X', mac: 'Cmd + X' },
+                { action: '粘贴', win: 'Ctrl + V', mac: 'Cmd + V' },
+                { action: '无格式粘贴', win: 'Ctrl + Shift + V', mac: 'Cmd + Shift + V' },
+            ]
+        },
+        {
+            category: '文本格式化', items: [
+                { action: '加粗', win: 'Ctrl + B', mac: 'Cmd + B' },
+                { action: '斜体', win: 'Ctrl + I', mac: 'Cmd + I' },
+                { action: '下划线', win: 'Ctrl + U', mac: 'Cmd + U' },
+                { action: '删除线', win: 'Ctrl + Shift + S', mac: 'Cmd + Shift + S' },
+                { action: '代码', win: 'Ctrl + E', mac: 'Cmd + E' },
+                { action: '高亮', win: 'Ctrl + Shift + H', mac: 'Cmd + Shift + H' },
+            ]
+        },
+        {
+            category: '段落格式化', items: [
+                { action: '普通文本', win: 'Ctrl + Alt + 0', mac: 'Cmd + Alt + 0' },
+                { action: '一级标题', win: 'Ctrl + Alt + 1', mac: 'Cmd + Alt + 1' },
+                { action: '二级标题', win: 'Ctrl + Alt + 2', mac: 'Cmd + Alt + 2' },
+                { action: '三级标题', win: 'Ctrl + Alt + 3', mac: 'Cmd + Alt + 3' },
+                { action: '无序列表', win: 'Ctrl + Shift + 8', mac: 'Cmd + Shift + 8' },
+                { action: '有序列表', win: 'Ctrl + Shift + 7', mac: 'Cmd + Shift + 7' },
+                { action: '引用', win: 'Ctrl + Shift + B', mac: 'Cmd + Shift + B' },
+                { action: '代码块', win: 'Ctrl + Alt + C', mac: 'Cmd + Alt + C' },
+                { action: '左对齐', win: 'Ctrl + Shift + L', mac: 'Cmd + Shift + L' },
+                { action: '居中对齐', win: 'Ctrl + Shift + E', mac: 'Cmd + Shift + E' },
+                { action: '右对齐', win: 'Ctrl + Shift + R', mac: 'Cmd + Shift + R' },
+            ]
+        },
+    ];
+
+    // 检测操作系统 (简易方式，可能不完全准确)
+    const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
     return (
         <div className="p-2 border-b border-gray-300 flex flex-wrap items-center gap-1 bg-white sticky top-0 z-10">
@@ -154,7 +225,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().undo().run()}
                     className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="撤销"
+                    title="撤销 (Ctrl+Z)"
                     disabled={!editor.can().undo()}
                 >
                     <Undo size={16} />
@@ -163,7 +234,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().redo().run()}
                     className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="重做"
+                    title="重做 (Ctrl+Shift+Z)"
                     disabled={!editor.can().redo()}
                 >
                     <Redo size={16} />
@@ -177,7 +248,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleBold().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bold') ? 'bg-gray-200' : ''}`}
-                    title="加粗"
+                    title="加粗 (Ctrl+B)"
                 >
                     <Bold size={16} />
                 </button>
@@ -185,7 +256,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleItalic().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('italic') ? 'bg-gray-200' : ''}`}
-                    title="斜体"
+                    title="斜体 (Ctrl+I)"
                 >
                     <Italic size={16} />
                 </button>
@@ -193,7 +264,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleUnderline().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('underline') ? 'bg-gray-200' : ''}`}
-                    title="下划线"
+                    title="下划线 (Ctrl+U)"
                 >
                     <Underline size={16} />
                 </button>
@@ -201,58 +272,43 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleStrike().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('strike') ? 'bg-gray-200' : ''}`}
-                    title="删除线"
+                    title="删除线 (Ctrl+Shift+S)"
                 >
                     <Strikethrough size={16} />
                 </button>
-                <button
-                    type="button"
-                    onClick={() => applyHighlightColor(null)}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${!editor.isActive('highlight') ? '' : 'bg-gray-200'}`}
-                    title="移除高亮"
-                >
-                    <Highlighter size={16} className="text-gray-400" />
-                </button>
-                <div className="flex items-center ml-1 border-l pl-1">
-                    <Palette size={16} className="mr-1 text-gray-500" />
-                    {Object.entries(highlightColors).map(([name, color]) => (
-                        <button
-                            key={name}
-                            type="button"
-                            onClick={() => applyHighlightColor(color)}
-                            className={`w-5 h-5 rounded border border-gray-300 mr-1 ${editor.isActive('highlight', { color }) ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
-                            style={{ backgroundColor: color }}
-                            title={`高亮 (${name})`}
-                        />
-                    ))}
+
+                {/* 高亮颜色选择器 Popover */}
+                <div className="ml-1 border-l pl-1">
+                    <ColorPickerPopover
+                        editor={editor}
+                        mode="highlight"
+                        trigger={
+                            <button
+                                type="button"
+                                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('highlight') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                title="高亮颜色 (Ctrl+Shift+H)"
+                            >
+                                <Highlighter size={16} />
+                            </button>
+                        }
+                    />
                 </div>
 
-                {/* 文本颜色选择器 */}
-                <div className="flex items-center ml-1 border-l pl-1">
-                    <span className="inline-block w-4 h-4 mr-1 text-gray-500 font-bold">A</span>
-                    <div className="flex flex-wrap gap-1 max-w-[150px]">
-                        {/* 默认黑色 */}
-                        <button
-                            type="button"
-                            onClick={() => applyTextColor(null)}
-                            className={`w-5 h-5 rounded-full border border-gray-300 mr-0.5 flex items-center justify-center ${!editor.isActive('textStyle') ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
-                            title="默认颜色"
-                        >
-                            <span className="text-[10px]">Aa</span>
-                        </button>
-
-                        {/* 其他颜色选项 */}
-                        {Object.entries(textColors).filter(([name]) => name !== 'default').map(([name, color]) => (
+                {/* 文本颜色选择器 Popover */}
+                <div className="ml-1 border-l pl-1">
+                    <ColorPickerPopover
+                        editor={editor}
+                        mode="textColor"
+                        trigger={
                             <button
-                                key={name}
                                 type="button"
-                                onClick={() => applyTextColor(color)}
-                                className={`w-5 h-5 rounded-full border border-gray-300 mr-0.5 ${editor.isActive('textStyle', { color }) ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
-                                style={{ backgroundColor: color }}
-                                title={`文本颜色 (${name})`}
-                            />
-                        ))}
-                    </div>
+                                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('textStyle') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                title="文本颜色"
+                            >
+                                <Palette size={16} />
+                            </button>
+                        }
+                    />
                 </div>
 
                 <button
@@ -272,7 +328,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-200' : ''}`}
-                    title="一级标题"
+                    title="一级标题 (Ctrl+Alt+1)"
                 >
                     <Heading1 size={16} />
                 </button>
@@ -280,7 +336,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-200' : ''}`}
-                    title="二级标题"
+                    title="二级标题 (Ctrl+Alt+2)"
                 >
                     <Heading2 size={16} />
                 </button>
@@ -288,7 +344,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-200' : ''}`}
-                    title="三级标题"
+                    title="三级标题 (Ctrl+Alt+3)"
                 >
                     <Heading3 size={16} />
                 </button>
@@ -309,7 +365,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().setTextAlign('left').run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : ''}`}
-                    title="左对齐"
+                    title="左对齐 (Ctrl+Shift+L)"
                 >
                     <AlignLeft size={16} />
                 </button>
@@ -317,7 +373,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().setTextAlign('center').run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : ''}`}
-                    title="居中"
+                    title="居中 (Ctrl+Shift+E)"
                 >
                     <AlignCenter size={16} />
                 </button>
@@ -325,7 +381,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().setTextAlign('right').run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : ''}`}
-                    title="右对齐"
+                    title="右对齐 (Ctrl+Shift+R)"
                 >
                     <AlignRight size={16} />
                 </button>
@@ -338,7 +394,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleBulletList().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bulletList') ? 'bg-gray-200' : ''}`}
-                    title="无序列表"
+                    title="无序列表 (Ctrl+Shift+8)"
                 >
                     <List size={16} />
                 </button>
@@ -346,7 +402,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleOrderedList().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('orderedList') ? 'bg-gray-200' : ''}`}
-                    title="有序列表"
+                    title="有序列表 (Ctrl+Shift+7)"
                 >
                     <ListOrdered size={16} />
                 </button>
@@ -359,7 +415,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleBlockquote().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('blockquote') ? 'bg-gray-200' : ''}`}
-                    title="引用"
+                    title="引用 (Ctrl+Shift+B)"
                 >
                     <Quote size={16} />
                 </button>
@@ -367,7 +423,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleCodeBlock().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('codeBlock') ? 'bg-gray-200' : ''}`}
-                    title="代码块"
+                    title="代码块 (Ctrl+Alt+C)"
                 >
                     <Code size={16} />
                 </button>
@@ -382,24 +438,165 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
             </div>
             <div className="mx-1 w-px h-6 bg-gray-300" />
 
-            {/* 链接、图片、产品 */}
+            {/* 链接、图片、产品、YouTube */}
             <div className="flex items-center mr-1">
-                <button
-                    type="button"
-                    onClick={handleLinkAdd}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('link') ? 'bg-gray-200' : ''}`}
-                    title="添加/编辑链接"
-                >
-                    <LinkIcon size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={handleImageUpload}
-                    className="p-1.5 rounded hover:bg-gray-100"
-                    title="插入图片 (URL)"
-                >
-                    <ImageIcon size={16} />
-                </button>
+                {/* 链接 Popover */}
+                <Popover placement="bottom" isOpen={isLinkPopoverOpen} onOpenChange={setIsLinkPopoverOpen}>
+                    <PopoverTrigger>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const currentUrl = editor?.getAttributes('link').href || '';
+
+                                setLinkUrl(currentUrl);
+                                setIsLinkPopoverOpen(true);
+                            }}
+                            className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('link') ? 'bg-gray-200' : ''}`}
+                            title="添加/编辑链接"
+                        >
+                            <LinkIcon size={16} />
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-3 w-72">
+                        <div className="space-y-3">
+                            <label htmlFor="link-url-input" className="block text-sm font-medium text-gray-700 mb-1">
+                                链接 URL
+                            </label>
+                            <Input
+                                id="link-url-input"
+                                placeholder="https://example.com"
+                                value={linkUrl}
+                                onChange={(e) => setLinkUrl(e.target.value)}
+                                type="url"
+                                size="sm"
+                            />
+                            <div className="flex justify-end gap-2 mt-4">
+                                <Button size="sm" variant="bordered" onPress={handleLinkRemove}>
+                                    移除
+                                </Button>
+                                <Button size="sm" color="primary" onPress={applyLinkUrl}>
+                                    应用
+                                </Button>
+                            </div>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+
+                {/* 图片 Popover */}
+                <Popover placement="bottom" isOpen={isImagePopoverOpen} onOpenChange={setIsImagePopoverOpen}>
+                    <PopoverTrigger>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setImageUrl(''); // 打开时清空
+                                setIsImagePopoverOpen(true);
+                            }}
+                            className="p-1.5 rounded hover:bg-gray-100"
+                            title="插入图片 (URL)"
+                        >
+                            <ImageIcon size={16} />
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-3 w-72">
+                        <div className="space-y-3">
+                            <label htmlFor="image-url-input" className="block text-sm font-medium text-gray-700 mb-1">
+                                图片 URL
+                            </label>
+                            <Input
+                                id="image-url-input"
+                                placeholder="https://example.com/image.jpg"
+                                value={imageUrl}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                type="url"
+                                size="sm"
+                            />
+                            <div className="flex justify-end gap-2 mt-4">
+                                <Button size="sm" variant="bordered" onPress={handleImageCancel}>
+                                    取消
+                                </Button>
+                                <Button size="sm" color="primary" onPress={applyImageUrl}>
+                                    应用
+                                </Button>
+                            </div>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+
+                {/* YouTube Popover */}
+                <Popover placement="bottom" isOpen={isYoutubePopoverOpen} onOpenChange={setIsYoutubePopoverOpen}>
+                    <PopoverTrigger>
+                        <button
+                            type="button"
+                            onClick={handleYoutubeAdd}
+                            className="p-1.5 rounded hover:bg-gray-100"
+                            title="插入 YouTube 视频"
+                        >
+                            <YoutubeIcon size={16} />
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-3 w-72">
+                        <div className="space-y-3">
+                            {/* 手动添加 label */}
+                            <label htmlFor="youtube-url-input" className="block text-sm font-medium text-gray-700 mb-1">
+                                YouTube URL
+                            </label>
+                            <Input
+                                // 移除 label 和 labelPlacement
+                                placeholder="https://www.youtube.com/watch?v=..."
+                                value={youtubeUrl}
+                                onChange={(e) => setYoutubeUrl(e.target.value)}
+                                type="url"
+                                size="sm"
+                                id="youtube-url-input" // 添加 id
+                                className="" // 移除 mb-3，可以保留空 className 或其他需要的类
+                            />
+                            <div className="flex gap-3 mb-3">
+                                {/* 手动添加宽度 label */}
+                                <div className="flex-1">
+                                    <label htmlFor="youtube-width-input" className="block text-sm font-medium text-gray-700 mb-1">宽度 (px)</label>
+                                    <Input
+                                        // 移除 label
+                                        placeholder="640"
+                                        value={youtubeWidth}
+                                        onChange={(e) => setYoutubeWidth(e.target.value)}
+                                        type="number"
+                                        min="1"
+                                        size="sm"
+                                        id="youtube-width-input" // 添加 id
+                                        className="" // 保持flex-1由外部div处理
+                                    />
+                                </div>
+                                {/* 手动添加高度 label */}
+                                <div className="flex-1">
+                                    <label htmlFor="youtube-height-input" className="block text-sm font-medium text-gray-700 mb-1">高度 (px)</label>
+                                    <Input
+                                        // 移除 label
+                                        placeholder="480"
+                                        value={youtubeHeight}
+                                        onChange={(e) => setYoutubeHeight(e.target.value)}
+                                        type="number"
+                                        min="1"
+                                        size="sm"
+                                        id="youtube-height-input" // 添加 id
+                                        className="" // 保持flex-1由外部div处理
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-2 mt-4">
+                                <Button size="sm" variant="bordered" onPress={handleYoutubeCancel}>
+                                    取消
+                                </Button>
+                                <Button size="sm" color="primary" onPress={applyYoutubeUrl}>
+                                    应用
+                                </Button>
+                            </div>
+                        </div>
+                    </PopoverContent>
+                </Popover>
                 <button
                     type="button"
                     onClick={onAddProduct}
@@ -411,25 +608,102 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
             </div>
             <div className="mx-1 w-px h-6 bg-gray-300" />
 
-            {/* 段落操作 */}
+            {/* 新增：快捷键说明按钮 */}
             <div className="flex items-center">
                 <button
                     type="button"
-                    onClick={moveParagraphUp}
+                    onClick={toggleShortcutModal}
                     className="p-1.5 rounded hover:bg-gray-100"
-                    title="向上移动段落"
+                    title="查看键盘快捷键"
                 >
-                    <ChevronsUp size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={moveParagraphDown}
-                    className="p-1.5 rounded hover:bg-gray-100"
-                    title="向下移动段落"
-                >
-                    <ChevronsDown size={16} />
+                    <Keyboard size={16} />
                 </button>
             </div>
+
+            {/* Typography Explanation Modal */}
+            <Modal isOpen={isTypographyModalOpen} onOpenChange={setIsTypographyModalOpen}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">智能排版规则</ModalHeader>
+                            <ModalBody>
+                                <p>输入以下字符时，它们会自动转换为更符合排版规范的符号：</p>
+                                <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+                                    <li><code className="bg-gray-100 px-1 rounded">--</code> → — (破折号)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">...</code> → … (省略号)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">&lt;-</code> → ← (左箭头)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">-&gt;</code> → → (右箭头)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">(c)</code> → © (版权)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">(r)</code> → ® (注册商标)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">(tm)</code> → ™ (商标)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">1/2</code> → ½ (二分之一)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">1/4</code> → ¼ (四分之一)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">3/4</code> → ¾ (四分之三)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">+/-</code> → ± (正负号)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">!=</code> → ≠ (不等号)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">&lt;&lt;</code> → « (左书名号)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">&gt;&gt;</code> → » (右书名号)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">2*3</code> 或 <code className="bg-gray-100 px-1 rounded">2x3</code> → 2×3 (乘号)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">^2</code> → ² (上标2)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">^3</code> → ³ (上标3)</li>
+                                    <li>智能引号 (‘’, “”)</li>
+                                </ul>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button color="primary" onPress={onClose}>
+                                    关闭
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+
+            {/* 新增：快捷键说明模态框 */}
+            <Modal isOpen={isShortcutModalOpen} onOpenChange={setIsShortcutModalOpen} size="2xl">
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex items-center gap-2">
+                                <Keyboard size={18} /> 键盘快捷键
+                            </ModalHeader>
+                            <ModalBody className="max-h-[70vh] overflow-y-auto">
+                                <div className="space-y-4">
+                                    {shortcuts.map((group) => (
+                                        <div key={group.category}>
+                                            <h4 className="text-sm font-semibold mb-2 text-gray-600">{group.category}</h4>
+                                            <table className="w-full text-sm border-collapse">
+                                                <tbody>
+                                                    {group.items.map((item) => (
+                                                        <tr key={item.action} className="border-b border-gray-100">
+                                                            <td className="py-2 pr-4 text-gray-700">{item.action}</td>
+                                                            <td className="py-2 pl-4 text-right">
+                                                                <div className="flex justify-end items-center gap-1">
+                                                                    {(isMac ? item.mac : item.win).split(' 或 ').map((combo, idx, arr) => (
+                                                                        <span key={combo} className="flex items-center gap-1">
+                                                                            {combo.split(' + ').map(key => <ShortcutKey key={key}>{key}</ShortcutKey>)}
+                                                                            {idx < arr.length - 1 && <span className="text-gray-400 mx-1">或</span>}
+                                                                        </span>
+                                                                    ))}
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button color="primary" onPress={onClose}>
+                                    关闭
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     );
 } 

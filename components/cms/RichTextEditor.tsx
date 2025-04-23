@@ -10,23 +10,28 @@ import {
 import { type Editor as EditorType } from '@tiptap/core';
 import CharacterCount from '@tiptap/extension-character-count';
 import Color from '@tiptap/extension-color';
+import Dropcursor from '@tiptap/extension-dropcursor';
+import Focus from '@tiptap/extension-focus';
 import Highlight from '@tiptap/extension-highlight';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
+import ListKeymap from '@tiptap/extension-list-keymap';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import TextStyle from '@tiptap/extension-text-style';
 import Typography from '@tiptap/extension-typography';
 import Underline from '@tiptap/extension-underline';
+import Youtube from '@tiptap/extension-youtube';
 import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
     Bold, Italic, List, ListOrdered,
     Link as LinkIcon, Image as ImageIcon, Tag, Heading1, Heading2,
-    Strikethrough, Code, Quote, Eye, Edit3, Highlighter, Palette
+    Strikethrough, Code, Quote, Highlighter, Palette
 } from 'lucide-react';
 import { useState, useEffect, useCallback, type MouseEvent } from 'react';
 
+import { ColorPickerPopover } from './ColorPickerPopover';
 import { ProductBlot, type ProductAttributes } from './ProductBlot';
 import { ProductSelector, type Product } from './ProductSelector';
 import { TiptapToolbar } from './TiptapToolbar';
@@ -38,20 +43,6 @@ interface ProductCommands {
 
 // 默认字符限制
 const DEFAULT_CHAR_LIMIT = 10000;
-
-// 预设文本颜色
-const TEXT_COLORS = {
-    default: '#000000',
-    gray: '#64748b',
-    brown: '#78350f',
-    red: '#dc2626',
-    orange: '#ea580c',
-    yellow: '#ca8a04',
-    green: '#16a34a',
-    blue: '#2563eb',
-    purple: '#9333ea',
-    pink: '#db2777',
-};
 
 interface RichTextEditorProps {
     value: string;
@@ -74,7 +65,6 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
     const [showProductSelector, setShowProductSelector] = useState(false);
     const [isClient, setIsClient] = useState(false);
-    const [isPreviewMode, setIsPreviewMode] = useState(false);
     const [charactersCount, setCharactersCount] = useState(0);
     const [wordsCount, setWordsCount] = useState(0);
     const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false);
@@ -189,6 +179,17 @@ export function RichTextEditor({
                     return wordCount;
                 }
             }),
+            Dropcursor,
+            Focus.configure({ className: 'has-focus', mode: 'all' }),
+            ListKeymap,
+            Youtube.configure({
+                // 可以根据需要添加配置，例如：
+                // width: 640,
+                // height: 480,
+                // nocookie: true,
+                // controls: false,
+                // allowFullscreen: false,
+            }),
         ],
         content: value,
         onUpdate: ({ editor }) => {
@@ -271,11 +272,15 @@ export function RichTextEditor({
         const commands = editor.commands as unknown as ProductCommands;
 
         commands.insertProduct({
-            id: product.id,
+            id: product.id || '',
             title: product.title,
-            price: product.price,
-            image: product.image || '',
-            sku: product.sku || '',
+            price: product.price || 0,
+            // 图片处理：优先使用 main_image，其次是image
+            image: product.main_image || product.image_url || '',
+            // asin处理：直接使用asin或默认为空字符串
+            asin: product.asin || '',
+            // 样式处理：使用产品提供的样式或默认为卡片样式
+            style: product.style || 'card'
         });
 
         editor.commands.focus();
@@ -323,27 +328,6 @@ export function RichTextEditor({
         editor.chain().focus().toggleHighlight().run();
     }, [editor]);
 
-    // 处理文本颜色
-    const handleTextColor = useCallback((e: MouseEvent<HTMLButtonElement>, color: string | null) => {
-        // 阻止事件冒泡，防止触发表单提交
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (!editor) return;
-
-        try {
-            if (color === null) {
-                // 移除颜色，使用unsetColor命令
-                editor.chain().focus().unsetColor().run();
-            } else {
-                // 设置颜色，使用setColor命令
-                editor.chain().focus().setColor(color).run();
-            }
-        } catch {
-            return
-        }
-    }, [editor]);
-
     // 处理 FloatingMenu 中的图片添加
     const handleFloatingImageAdd = useCallback((e: MouseEvent<HTMLButtonElement>) => {
         // 阻止事件冒泡，防止触发表单提交
@@ -367,11 +351,6 @@ export function RichTextEditor({
         setShowProductSelector(true);
     }, []);
 
-    // 切换编辑/预览模式
-    const togglePreviewMode = useCallback(() => {
-        setIsPreviewMode(!isPreviewMode);
-    }, [isPreviewMode]);
-
     // 或者你可能需要创建一个新的工具栏调用包装器
     const handleAddProductWrapper = () => {
         setShowProductSelector(true);
@@ -386,42 +365,14 @@ export function RichTextEditor({
         <div className={`rich-text-editor ${className} border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-150 ${isOverLimit ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-500' : ''}`}>
             {/* 编辑器顶部工具栏 */}
             <div className="flex justify-between items-center border-b border-gray-300 bg-gray-50">
-                {!isPreviewMode ? (
-                    <TiptapToolbar editor={editor} onAddProduct={handleAddProductWrapper} />
-                ) : (
-                    <div className="px-3 py-2 font-medium text-gray-700">
-                        预览模式
-                    </div>
-                )}
-
-                <div className="flex items-center py-1 px-3">
-                    <button
-                        type="button"
-                        onClick={togglePreviewMode}
-                        className={`px-3 py-1.5 rounded hover:bg-gray-100 text-gray-700 flex items-center ${isPreviewMode ? 'bg-gray-200' : ''}`}
-                        title={isPreviewMode ? "切换到编辑模式" : "切换到预览模式"}
-                    >
-                        {isPreviewMode ? (
-                            <>
-                                <Edit3 size={16} className="mr-1" />
-                                <span>编辑</span>
-                            </>
-                        ) : (
-                            <>
-                                <Eye size={16} className="mr-1" />
-                                <span>预览</span>
-                            </>
-                        )}
-                    </button>
-                </div>
+                <TiptapToolbar editor={editor} onAddProduct={handleAddProductWrapper} />
             </div>
 
             {/* 编辑器内容区域 */}
-            <div className={`relative ${isPreviewMode ? 'bg-white' : ''}`}>
+            <div className="relative">
                 <EditorContent
                     editor={editor}
-                    className={`prose max-w-none p-4 min-h-[300px] overflow-y-auto ${editorClass} ${isPreviewMode ? 'prose-sm sm:prose lg:prose-lg' : ''}`}
-                    readOnly={isPreviewMode}
+                    className={`prose max-w-none p-4 min-h-[300px] overflow-y-auto ${editorClass}`}
                     translate="no"
                 />
 
@@ -470,7 +421,7 @@ export function RichTextEditor({
                 `}</style>
 
                 {/* Markdown快捷方式提示 */}
-                {!isPreviewMode && !editor?.getText() && (
+                {!editor?.getText() && (
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400 text-center pointer-events-none">
                         <p className="mb-2">Markdown快捷方式可用</p>
                         <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
@@ -529,8 +480,8 @@ export function RichTextEditor({
                 </div>
             )}
 
-            {/* Bubble Menu: 用于内联格式化 (仅编辑模式) */}
-            {editor && !isPreviewMode && (
+            {/* Bubble Menu: 用于内联格式化 */}
+            {editor && (
                 <BubbleMenu
                     editor={editor}
                     tippyOptions={{
@@ -629,9 +580,10 @@ export function RichTextEditor({
                         </PopoverContent>
                     </Popover>
 
-                    {/* 文本颜色下拉 - 使用 Popover 替换 */}
-                    <Popover placement="bottom" showArrow>
-                        <PopoverTrigger>
+                    {/* 文本颜色选择器 - 替换为 ColorPickerPopover */}
+                    <ColorPickerPopover
+                        editor={editor}
+                        trigger={
                             <button
                                 type="button"
                                 className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('textStyle') ? 'bg-blue-100 text-blue-600' : ''}`}
@@ -639,38 +591,13 @@ export function RichTextEditor({
                             >
                                 <Palette size={16} />
                             </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="p-1">
-                            <div className="grid grid-cols-5 gap-1 p-1 bg-gray-50 rounded">
-                                {/* 默认颜色 */}
-                                <button
-                                    type="button"
-                                    onClick={(e) => handleTextColor(e, null)}
-                                    className={`w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center hover:shadow-sm ${!editor?.isActive('textStyle') ? 'ring-2 ring-blue-500' : ''}`}
-                                    title="默认颜色"
-                                >
-                                    <span className="text-xs">Aa</span>
-                                </button>
-
-                                {/* 文本颜色选项 */}
-                                {Object.entries(TEXT_COLORS).filter(([name]) => name !== 'default').map(([name, color]) => (
-                                    <button
-                                        key={name}
-                                        type="button"
-                                        onClick={(e) => handleTextColor(e, color)}
-                                        className={`w-6 h-6 rounded-full border border-gray-300 hover:shadow-sm ${editor?.isActive('textStyle', { color }) ? 'ring-2 ring-blue-500' : ''}`}
-                                        style={{ backgroundColor: color }}
-                                        title={`文本颜色 (${name})`}
-                                    />
-                                ))}
-                            </div>
-                        </PopoverContent>
-                    </Popover>
+                        }
+                    />
                 </BubbleMenu>
             )}
 
-            {/* Floating Menu: 用于插入块级元素 (仅编辑模式) */}
-            {editor && !isPreviewMode && (
+            {/* Floating Menu: 用于插入块级元素 */}
+            {editor && (
                 <FloatingMenu
                     editor={editor}
                     tippyOptions={{

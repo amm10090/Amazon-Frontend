@@ -442,6 +442,40 @@ export const cmsApi = {
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
     }) => api.get<ApiResponse<ProductSelectionResponse>>('/cms/products', { params }),
+
+    // 新增：使用search/products端点的产品选择函数，替代上面的函数
+    getProductsForSearch: (params?: {
+        page?: number;
+        limit?: number;
+        search?: string;
+        category?: string;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+    }) => {
+        // 创建sortBy到sort_by的映射函数
+        const mapSortBy = (sortBy?: string): 'relevance' | 'price' | 'discount' | 'created' | undefined => {
+            if (!sortBy) return undefined;
+            // 映射常见的排序字段
+            switch (sortBy.toLowerCase()) {
+                case 'title': return 'relevance';
+                case 'price': return 'price';
+                case 'discount': return 'discount';
+                case 'created': case 'createdat': return 'created';
+                default: return 'relevance';
+            }
+        };
+
+        // 将参数映射到searchProducts所需格式
+        return productsApi.searchProducts({
+            keyword: params?.search || '',
+            page: params?.page,
+            page_size: params?.limit,
+            sort_by: mapSortBy(params?.sortBy),
+            sort_order: params?.sortOrder,
+            // 如果有category参数，则转换为product_groups
+            ...(params?.category && { product_groups: params.category })
+        });
+    },
 };
 
 export default api; 

@@ -6,24 +6,30 @@ import {
     Button,
     ScrollShadow
 } from '@heroui/react';
+import { debounce } from 'lodash';
 import { Search } from 'lucide-react';
 import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
+import useSWR from 'swr';
 
 import { showErrorToast } from '@/lib/toast';
 import { formatPrice } from '@/lib/utils';
+import type { Product as ApiProduct, ListResponse } from '@/types/api';
 
 import type { ProductAttributes } from './ProductBlot';
 
 /**
- * 产品数据接口 
+ * 产品数据接口 (与 API 响应对齐)
  */
 interface Product {
-    id: string;
+    id?: string; // 通常是 asin，使其可选以匹配 API 类型
     title: string;
-    price: number;
-    image: string;
-    sku: string;
+    price?: number;
+    main_image?: string; // 可能的图片字段
+    image_url?: string; // 可能的图片字段
+    image?: string; // 可能的图片字段
+    sku?: string;
+    asin?: string;
 }
 
 /**
@@ -45,89 +51,74 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
     onProductSelect
 }) => {
     // 产品列表和搜索状态
-    const [products, setProducts] = useState<Product[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
-    // 模拟从API获取产品数据
-    useEffect(() => {
-        if (isOpen) {
-            fetchProducts();
+    // 新增：使用 SWR 获取数据
+    const fetcher = async (url: string) => {
+        const res = await fetch(url);
+
+        if (!res.ok) {
+            const error = new Error('An error occurred while fetching the data.');
+
+            // Attach extra info to the error object.
+            error.message = await res.text();
+            throw error;
         }
-    }, [isOpen]);
 
-    // 模拟获取产品数据的函数
-    const fetchProducts = async () => {
-        setIsLoading(true);
-        try {
-            // 实际项目中，这里应该从API获取真实数据
-            // 模拟API调用延迟
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // 模拟产品数据
-            const mockProducts: Product[] = [
-                {
-                    id: '1',
-                    title: '高级机械键盘',
-                    price: 799.99,
-                    image: '/images/products/keyboard.jpg',
-                    sku: 'KB-001'
-                },
-                {
-                    id: '2',
-                    title: '无线蓝牙耳机',
-                    price: 299.99,
-                    image: '/images/products/headphones.jpg',
-                    sku: 'HP-002'
-                },
-                {
-                    id: '3',
-                    title: '超薄笔记本电脑',
-                    price: 5999.99,
-                    image: '/images/products/laptop.jpg',
-                    sku: 'LP-003'
-                },
-                {
-                    id: '4',
-                    title: '智能手表',
-                    price: 1299.99,
-                    image: '/images/products/smartwatch.jpg',
-                    sku: 'SW-004'
-                },
-                {
-                    id: '5',
-                    title: '无线充电器',
-                    price: 159.99,
-                    image: '/images/products/charger.jpg',
-                    sku: 'CH-005'
-                }
-            ];
-
-            setProducts(mockProducts);
-        } catch {
-            showErrorToast({
-                title: '获取产品失败',
-                description: '无法获取产品数据'
-            });
-        } finally {
-            setIsLoading(false);
-        }
+        return res.json();
     };
 
-    // 过滤产品基于搜索词
-    const filteredProducts = products.filter(product =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // 构建请求 URL
+    const apiUrl = debouncedSearchTerm
+        ? `/api/search/products?keyword=${encodeURIComponent(debouncedSearchTerm)}&limit=50`
+        : null; // 如果没有搜索词，则不请求
 
-    // 处理产品选择
+    const { data, error, isLoading } = useSWR<ApiResponse<ListResponse<ApiProduct>>>(apiUrl, fetcher, {
+        revalidateOnFocus: false, // 聚焦时不重新验证
+        dedupingInterval: 2000, // 2秒内重复请求去重
+    });
+
+    // 处理 SWR 错误
+    useEffect(() => {
+        if (error) {
+            showErrorToast({
+                title: '获取产品失败',
+                description: error.message || '无法获取产品数据'
+            });
+        }
+    }, [error]);
+
+    // 从 SWR 数据中提取产品列表
+    const products: Product[] = data?.data?.items || [];
+
+    // 新增：防抖处理搜索输入
+    useEffect(() => {
+        const handler = debounce(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500); // 500ms 防抖
+
+        handler();
+
+        // 清理函数
+        return () => {
+            handler.cancel();
+        };
+    }, [searchTerm]);
+
+    // 处理产品选择 (更新 image 和 asin 的获取方式)
     const handleProductSelect = (product: Product) => {
+        // 优先使用 asin，其次是 sku，最后是 id，并提供后备空字符串
+        const identifier = product.asin || product.sku || product.id || '';
+        // 获取图片，考虑多种可能的字段名
+        const productImage = product.main_image || product.image_url || product.image || '/placeholder-product.jpg';
+
         onProductSelect({
-            id: product.id,
+            id: identifier, // 使用确保为 string 的标识符
             title: product.title,
-            price: product.price,
-            image: product.image,
-            sku: product.sku
+            price: product.price || 0, // 处理可能的 undefined
+            image: productImage,
+            asin: identifier // 使用确保为 string 的标识符
         });
         onClose();
     };
@@ -156,21 +147,25 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
                         <div className="flex justify-center items-center h-full">
                             <p>加载中...</p>
                         </div>
-                    ) : filteredProducts.length === 0 ? (
+                    ) : products.length === 0 && debouncedSearchTerm ? (
                         <div className="flex justify-center items-center h-full">
                             <p>未找到产品</p>
                         </div>
+                    ) : products.length === 0 && !debouncedSearchTerm ? (
+                        <div className="flex justify-center items-center h-full">
+                            <p>请输入关键词搜索产品</p>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-4">
-                            {filteredProducts.map((product) => (
+                            {products.map((product) => (
                                 <button
-                                    key={product.id}
+                                    key={product.id || product.asin || product.sku || product.title}
                                     className="border rounded-md p-3 cursor-pointer hover:border-primary transition-colors text-left"
                                     onClick={() => handleProductSelect(product)}
                                 >
                                     <div className="aspect-square relative mb-2 bg-muted rounded-md overflow-hidden">
                                         <Image
-                                            src={product.image}
+                                            src={product.main_image || product.image_url || product.image || '/placeholder-product.jpg'}
                                             alt={product.title}
                                             fill
                                             className="object-cover"
@@ -179,10 +174,10 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
                                     <h3 className="font-medium text-sm line-clamp-1">{product.title}</h3>
                                     <div className="flex justify-between items-center mt-1">
                                         <span className="text-sm font-semibold text-primary">
-                                            {formatPrice(product.price)}
+                                            {formatPrice(product.price || 0)}
                                         </span>
                                         <span className="text-xs text-muted-foreground">
-                                            {product.sku}
+                                            {product.asin || product.sku}
                                         </span>
                                     </div>
                                 </button>
@@ -201,4 +196,11 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
     );
 };
 
-export default ProductPickerModal; 
+export default ProductPickerModal;
+
+interface ApiResponse<T> {
+    status: boolean;
+    message?: string;
+    data: T;
+    error?: string;
+} 

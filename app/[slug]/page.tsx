@@ -1,6 +1,8 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import ContentRenderer from '@/components/cms/ContentRenderer';
+
 // 假设你有一个函数或API客户端来获取页面数据
 // 例如，从你的 API 路由 /api/cms/content/[slug] 获取
 async function getPageData(slug: string): Promise<PageData | null> {
@@ -127,14 +129,13 @@ export default async function ContentPage({ params }: { params: { slug: string }
         notFound();
     }
 
-
     return (
         <main className="container mx-auto px-4 py-8">
             <article className="prose lg:prose-xl max-w-none bg-white p-6 rounded shadow"> {/* 添加背景和阴影 */}
                 <h1 className="mb-4">{pageData.title}</h1>
-                {/* 使用 dangerouslySetInnerHTML 渲染从富文本编辑器保存的 HTML 内容 */}
-                {/* 确保你的 HTML 内容是经过清理和安全的 */}
-                <div dangerouslySetInnerHTML={{ __html: pageData.content }} />
+
+                {/* 使用新的ContentRenderer组件替代dangerouslySetInnerHTML */}
+                <ContentRenderer content={pageData.content} />
 
                 {/* 你可以在这里添加其他页面元素，比如关联的产品列表等 */}
                 {pageData.products && pageData.products.length > 0 && (
