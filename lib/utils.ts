@@ -7,16 +7,16 @@ import type { ComponentProduct } from '@/types';
 import type { Product } from '@/types/api';
 
 /**
- * 格式化价格
+ * 格式化价格为货币显示格式
  * @param price 价格数值
+ * @param currency 货币代码，默认CNY
  * @returns 格式化后的价格字符串
  */
-export function formatPrice(price: number): string {
-    return new Intl.NumberFormat('en-US', {
+export function formatPrice(price: number, currency: string = 'CNY'): string {
+    return new Intl.NumberFormat('zh-CN', {
         style: 'currency',
-        currency: 'USD',
+        currency,
         minimumFractionDigits: 2,
-        maximumFractionDigits: 2
     }).format(price);
 }
 
@@ -229,6 +229,20 @@ export function adaptProducts(apiProducts: Product[]): ComponentProduct[] {
             };
         }
     });
+}
+
+/**
+ * 根据文本生成URL slug
+ * @param text 要转换的文本
+ * @returns 生成的slug
+ */
+export function generateSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // 移除非单词/空格/连字符的字符
+        .replace(/[\s_-]+/g, '-') // 将空格、下划线和连字符替换为单个连字符
+        .replace(/^-+|-+$/g, ''); // 移除开头和结尾的连字符
 }
 
 export function cn(...inputs: ClassValue[]) {

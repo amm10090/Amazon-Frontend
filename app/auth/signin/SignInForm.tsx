@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AuthError } from "next-auth";
 import { signIn } from "next-auth/react";
 import { useState, type FormEvent, useEffect } from "react";
 
@@ -70,18 +69,9 @@ export default function SignInForm() {
                 router.push("/");
                 router.refresh();
             }
-        } catch (error) {
-            if (error instanceof AuthError) {
-                switch (error.type) {
-                    case "CredentialsSignin":
-                        setError("Invalid username or password");
-                        break;
-                    default:
-                        setError("An error occurred during sign in");
-                }
-            } else {
-                setError("An error occurred during sign in");
-            }
+        } catch {
+            // 保留一个通用错误处理，以防 signIn 抛出非 AuthError 的异常
+            setError("An unexpected error occurred during sign in. Please try again.");
         } finally {
             setIsLoading(false);
         }

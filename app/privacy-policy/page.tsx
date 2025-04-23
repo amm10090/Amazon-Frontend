@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export const metadata = {
     title: 'Oohunt-Privacy Policy',
     description: 'Privacy policy and data protection information',
@@ -59,7 +61,7 @@ export default function PrivacyPolicyPage() {
                             You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some portions of our Service.
                         </p>
                         <p className="mt-2">
-                            For more information about the cookies we use, please see our <a href="/legal/cookies" className="text-blue-600 hover:underline">Cookies Policy</a>.
+                            For more information about the cookies we use, please see our <Link href="/legal/cookies" className="text-blue-600 hover:underline">Cookies Policy</Link>.
                         </p>
                     </div>
                 </section>
@@ -106,7 +108,7 @@ export default function PrivacyPolicyPage() {
                 <section className="mb-8">
                     <h2 className="text-2xl font-semibold mb-4">Affiliate Disclosure</h2>
                     <p>
-                        This website uses affiliate links and does earn a commission from certain links. This does not affect your purchases or the price you may pay. For more information, please see our <a href="/legal/affiliate-disclosure" className="text-blue-600 hover:underline">Affiliate Disclosure</a>.
+                        This website uses affiliate links and does earn a commission from certain links. This does not affect your purchases or the price you may pay. For more information, please see our <Link href="/legal/affiliate-disclosure" className="text-blue-600 hover:underline">Affiliate Disclosure</Link>.
                     </p>
                 </section>
 
