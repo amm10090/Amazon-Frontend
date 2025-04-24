@@ -65,4 +65,5 @@ export interface ComponentProduct {
   couponExpirationDate?: string | null;
   couponTerms?: string | null;
   source?: string | null;
+  asin?: string;
 }

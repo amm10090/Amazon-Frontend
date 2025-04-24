@@ -365,7 +365,7 @@ export function RichTextEditor({
     return (
         <div className={`rich-text-editor ${className} border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-150 ${isOverLimit ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-500' : ''}`}>
             {/* 编辑器顶部工具栏 */}
-            <div className="flex justify-between items-center border-b border-gray-300 bg-gray-50">
+            <div className="p-2 border-b border-gray-300 flex flex-wrap items-center gap-1 bg-white sticky top-0 z-10">
                 <TiptapToolbar editor={editor} onAddProduct={handleAddProductWrapper} />
             </div>
 

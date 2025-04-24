@@ -19,17 +19,28 @@ import type { Product as ApiProduct, ListResponse } from '@/types/api';
 import type { ProductAttributes } from './ProductBlot';
 
 /**
- * 产品数据接口 (与 API 响应对齐)
+ * 产品数据接口 (显式定义所需字段，并使其可选)
  */
-interface Product {
-    id?: string; // 通常是 asin，使其可选以匹配 API 类型
-    title: string;
+interface Product { // 不再继承 ApiProduct，显式定义
+    id?: string;
+    title?: string;
     price?: number;
-    main_image?: string; // 可能的图片字段
-    image_url?: string; // 可能的图片字段
-    image?: string; // 可能的图片字段
+    main_image?: string;
+    image_url?: string;
+    image?: string; // 保持以防万一
+    images?: string[];
     sku?: string;
     asin?: string;
+    url?: string;
+    cj_url?: string | null; // 允许 null
+    brand?: string | null;
+    original_price?: number | null;
+    discount?: number | null;
+    coupon_type?: 'percentage' | 'fixed' | null;
+    coupon_value?: number | null;
+    coupon_expiration_date?: string | null;
+    is_prime?: boolean | null;
+    is_free_shipping?: boolean | null;
 }
 
 /**
@@ -69,10 +80,8 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
         return res.json();
     };
 
-    // 构建请求 URL
-    const apiUrl = debouncedSearchTerm
-        ? `/api/search/products?keyword=${encodeURIComponent(debouncedSearchTerm)}&limit=50`
-        : null; // 如果没有搜索词，则不请求
+    // 构建请求 URL - 始终调用 /api/search/products
+    const apiUrl = `/api/search/products?keyword=${encodeURIComponent(debouncedSearchTerm || '')}&limit=50`; // 始终构建 URL，无搜索词时 keyword 为空
 
     const { data, error, isLoading } = useSWR<ApiResponse<ListResponse<ApiProduct>>>(apiUrl, fetcher, {
         revalidateOnFocus: false, // 聚焦时不重新验证
@@ -89,7 +98,7 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
         }
     }, [error]);
 
-    // 从 SWR 数据中提取产品列表
+    // 从 SWR 数据中提取产品列表 - 确保类型匹配
     const products: Product[] = data?.data?.items || [];
 
     // 新增：防抖处理搜索输入
@@ -106,20 +115,29 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
         };
     }, [searchTerm]);
 
-    // 处理产品选择 (更新 image 和 asin 的获取方式)
+    // 处理产品选择 (传递所有需要的属性，使用修正后的字段名)
     const handleProductSelect = (product: Product) => {
-        // 优先使用 asin，其次是 sku，最后是 id，并提供后备空字符串
-        const identifier = product.asin || product.sku || product.id || '';
-        // 获取图片，考虑多种可能的字段名
-        const productImage = product.main_image || product.image_url || product.image || '/placeholder-product.jpg';
+        // 提取所有需要的属性，提供默认值
+        const attributes: ProductAttributes = {
+            id: product.id || product.asin || '',
+            title: product.title || '未命名产品',
+            price: product.price || 0,
+            image: product.main_image || product.image_url || product.images?.[0] || '/placeholder-product.jpg',
+            asin: product.asin || '',
+            style: 'card', // 默认样式，可以后续提供选择
+            url: product.url || '',
+            cj_url: product.cj_url || '', // 处理 null -> '' (传递给 ProductAttributes 时，它接受 null)
+            brand: product.brand ?? null,
+            originalPrice: product.original_price ?? null,
+            discount: product.discount ?? null,
+            couponType: product.coupon_type ?? null,
+            couponValue: product.coupon_value ?? null,
+            couponExpirationDate: product.coupon_expiration_date ?? null,
+            isPrime: product.is_prime ?? null,
+            isFreeShipping: product.is_free_shipping ?? null
+        };
 
-        onProductSelect({
-            id: identifier, // 使用确保为 string 的标识符
-            title: product.title,
-            price: product.price || 0, // 处理可能的 undefined
-            image: productImage,
-            asin: identifier // 使用确保为 string 的标识符
-        });
+        onProductSelect(attributes);
         onClose();
     };
 
@@ -159,19 +177,19 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
                         <div className="grid grid-cols-2 gap-4">
                             {products.map((product) => (
                                 <button
-                                    key={product.id || product.asin || product.sku || product.title}
+                                    key={product.id || product.asin || product.sku || product.title || Math.random().toString()}
                                     className="border rounded-md p-3 cursor-pointer hover:border-primary transition-colors text-left"
                                     onClick={() => handleProductSelect(product)}
                                 >
                                     <div className="aspect-square relative mb-2 bg-muted rounded-md overflow-hidden">
                                         <Image
-                                            src={product.main_image || product.image_url || product.image || '/placeholder-product.jpg'}
-                                            alt={product.title}
+                                            src={product.main_image || product.image_url || product.images?.[0] || '/placeholder-product.jpg'}
+                                            alt={product.title || 'Product'}
                                             fill
                                             className="object-cover"
                                         />
                                     </div>
-                                    <h3 className="font-medium text-sm line-clamp-1">{product.title}</h3>
+                                    <h3 className="font-medium text-sm line-clamp-1">{product.title || 'No Title'}</h3>
                                     <div className="flex justify-between items-center mt-1">
                                         <span className="text-sm font-semibold text-primary">
                                             {formatPrice(product.price || 0)}

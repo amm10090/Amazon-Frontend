@@ -1,0 +1,44 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
+
+import { StoreIdentifier } from '@/lib/store';
+import { formatPrice } from '@/lib/utils';
+import type { ComponentProduct } from '@/types';
+
+// 迷你风格的产品组件
+const MiniProductElement = ({ product }: { product: ComponentProduct }) => {
+    const { id, title, price, image, url, cj_url } = product;
+    const effectiveUrl = cj_url || url || '';
+    const productUrl = `/product/${id}`;
+
+    return (
+        <Link href={productUrl} className="inline-block no-underline max-w-full">
+            <motion.div
+                className="inline-flex items-center my-2 p-2 border rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm max-w-full w-64 overflow-hidden"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.2 }}
+            >
+                <div className="relative w-10 h-10 mr-2 rounded overflow-hidden flex-shrink-0">
+                    <Image
+                        src={image || '/placeholder-product.jpg'}
+                        alt={title}
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                        onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
+                    />
+                </div>
+                <div className="flex-grow min-w-0 max-w-[calc(100%-60px)]">
+                    <div className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate" title={title}>{title}</div>
+                    <div className="text-xs text-primary dark:text-primary-light">{formatPrice(price)}</div>
+                </div>
+                <StoreIdentifier url={effectiveUrl} showName={false} className="mb-0 ml-2 flex-shrink-0" />
+            </motion.div>
+        </Link>
+    );
+};
+
+export default MiniProductElement; 

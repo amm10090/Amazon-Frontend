@@ -15,6 +15,12 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* 移除所有链接的下划线 */
+a, a:hover, a:focus, a:active, a:visited,
+Link, Link:hover, Link:focus, Link:active, Link:visited {
+  text-decoration: none !important;
+}
+
 @theme {
   --color-primary: #3d5a80;
   --color-primary-background: oklch(0.588 0.158 241.966);
@@ -162,6 +168,7 @@ body {
   
   button, a {
     @apply transition-all duration-300;
+    text-decoration: none;
   }
 }
 

@@ -6,6 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 
+import ContentRenderer from '@/components/cms/ContentRenderer';
 import { RichTextEditor } from '@/components/cms/RichTextEditor';
 import { cmsApi } from '@/lib/api';
 import { generateSlug } from '@/lib/utils';
@@ -277,16 +278,25 @@ const PageEditorContent = () => {
 
     // 渲染页面预览
     const renderPreview = () => {
+        const currentDate = new Date().toLocaleDateString();
+
         return (
-            <div className="bg-white border rounded-md shadow-sm p-8">
-                <div className="max-w-3xl mx-auto">
-                    <h1 className="text-3xl font-bold mb-4">{formData.title}</h1>
+            <main className="container mx-auto px-4 py-8">
+                <article className="prose lg:prose-xl max-w-none bg-white p-6 rounded shadow">
+                    <h1 className="mb-4">{formData.title}</h1>
+
                     {formData.excerpt && (
                         <p className="text-gray-600 mb-6 italic">{formData.excerpt}</p>
                     )}
-                    <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: formData.content }} />
-                </div>
-            </div>
+
+                    <ContentRenderer content={formData.content} className="prose max-w-none" />
+
+                    <div className="mt-8 text-sm text-gray-500 pt-4 border-t">
+                        <span>作者: {session?.user?.name || session?.user?.email || '未知'}</span> |
+                        <span> 最后更新: {currentDate}</span>
+                    </div>
+                </article>
+            </main>
         );
     };
 

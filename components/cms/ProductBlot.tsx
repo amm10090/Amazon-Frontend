@@ -3,28 +3,99 @@
 import { Node, mergeAttributes, type ChainedCommands } from '@tiptap/core';
 import { DOMSerializer, type Node as ProseMirrorNodeType } from '@tiptap/pm/model';
 import { ReactNodeViewRenderer, NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
-import Image from 'next/image';
 import { type FC, useState } from 'react';
+import useSWR from 'swr'; // Import useSWR
+
 // 从 @tiptap/pm/model 导入需要的类型和类
+type ExtendedFromSchema = typeof DOMSerializer.fromSchema & {
+    __customProductSerializerAttached?: boolean;
+};
 
-import { formatPrice } from '@/lib/utils';
-
-// 产品节点的属性接口
-export interface ProductAttributes {
-    id: string;
-    title: string;
-    price: number;
-    image: string;
-    asin: string;
-    style?: string; // 添加样式属性
+interface InsertContentPayload {
+    type: string;
+    attrs: Required<ProductAttributes>;
 }
 
-// 产品节点组件Props - 现在使用 NodeViewProps
-// type ProductComponentProps = NodeViewProps;
-// 或者，如果需要扩展：
-type ProductComponentProps = NodeViewProps
+// Import necessary functions and types
+import { productsApi } from '@/lib/api';
+import { adaptProducts } from '@/lib/utils'; // Import adaptProducts
+import type { ComponentProduct, Product } from '@/types'; // Import ComponentProduct
 
-// 产品样式选项
+// Import the actual display components
+import CardProductElement from './Template/CardProductElement';
+import HorizontalProductElement from './Template/HorizontalProductElement';
+import MiniProductElement from './Template/MiniProductElement';
+import SimpleProductElement from './Template/SimpleProductElement';
+
+// Define a similar skeleton placeholder for the editor preview
+const ProductSkeletonPlaceholder = ({ style }: { style: string }) => {
+    let className = "w-full h-24 my-2 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md";
+
+    if (style === 'card') {
+        className = "my-2 w-full max-w-[280px] mx-auto h-96 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg shadow-md";
+    } else if (style === 'horizontal') {
+        className = "flex w-full h-28 my-2 border rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse p-3 items-center";
+    } else if (style === 'mini') {
+        className = "inline-flex items-center my-2 border rounded-lg p-2 bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse max-w-full w-64 overflow-hidden";
+    }
+
+    return <div className={className} />;
+};
+
+
+// Fetcher function for SWR (similar to DynamicProductLoader)
+const fetchEditorProduct = async (productIdOrAsin: string): Promise<ComponentProduct | null> => {
+    if (!productIdOrAsin) return null;
+    try {
+        const isAsin = /^[A-Z0-9]{10,13}$/.test(productIdOrAsin.toUpperCase());
+        let apiResponse;
+
+        if (isAsin) {
+            // console.log(`[Editor Fetch] ASIN: ${productIdOrAsin}`);
+            apiResponse = await productsApi.queryProduct({ asins: [productIdOrAsin.toUpperCase()], include_browse_nodes: null });
+        } else {
+            // console.log(`[Editor Fetch] ID: ${productIdOrAsin}`);
+            apiResponse = await productsApi.getProductById(productIdOrAsin);
+        }
+
+        if (apiResponse?.data) {
+            const productData = Array.isArray(apiResponse.data) ? apiResponse.data[0] : apiResponse.data;
+
+            if (!productData) return null;
+            const adapted = adaptProducts([productData as Product]);
+
+            return adapted[0] || null;
+        }
+
+        return null;
+    } catch (error) {
+        throw error; // Let SWR handle the error state
+    }
+};
+
+
+// 产品节点的属性接口 (Keep this as it defines node attributes for saving)
+export interface ProductAttributes {
+    id: string; // Keep ID as the primary identifier
+    title?: string; // Make others optional, mainly for initial insertion/fallback
+    price?: number;
+    image?: string;
+    asin?: string;
+    style?: string;
+    url?: string;
+    cj_url?: string;
+    originalPrice?: number | null;
+    discount?: number | null;
+    couponType?: 'percentage' | 'fixed' | null;
+    couponValue?: number | null;
+    couponExpirationDate?: string | null;
+    isPrime?: boolean | null;
+    isFreeShipping?: boolean | null;
+    brand?: string | null;
+}
+
+type ProductComponentProps = NodeViewProps;
+
 const PRODUCT_STYLES = [
     { id: 'simple', name: '简单布局' },
     { id: 'card', name: '卡片布局' },
@@ -32,11 +103,21 @@ const PRODUCT_STYLES = [
     { id: 'mini', name: '迷你布局' }
 ];
 
-// 产品节点组件
+// 产品节点组件 - Now fetches data
 const ProductComponent: FC<ProductComponentProps> = ({ node, selected, updateAttributes }) => {
-    // 直接访问 attrs，类型应该匹配了
-    const { id, title, price, image, asin, style = 'simple' } = node.attrs as ProductAttributes;
+    const { id: productId, style = 'simple' } = node.attrs as ProductAttributes; // Primarily need id and style
     const [showStyleSelector, setShowStyleSelector] = useState(false);
+
+    // Fetch data using SWR based on the product ID
+    const { data: product, error, isLoading } = useSWR<ComponentProduct | null>(
+        productId ? ['editor-product', productId] : null, // Unique key for editor product
+        () => fetchEditorProduct(productId),
+        {
+            revalidateOnFocus: false,
+            shouldRetryOnError: false,
+            dedupingInterval: 60000, // Cache for 1 minute
+        }
+    );
 
     // 样式选择处理函数
     const handleStyleChange = (newStyle: string) => {
@@ -44,211 +125,84 @@ const ProductComponent: FC<ProductComponentProps> = ({ node, selected, updateAtt
         setShowStyleSelector(false);
     };
 
-    // 根据样式渲染不同的商品布局
-    const renderProductContent = () => {
+    // Renders the actual product based on fetched data and style
+    const renderFetchedProduct = () => {
+        if (isLoading) {
+            return <ProductSkeletonPlaceholder style={style} />;
+        }
+
+        if (error || !product) {
+            return (
+                <div className="flex items-center justify-center my-2 p-3 border rounded-md bg-red-50 text-red-700 shadow-sm text-xs">
+                    无法加载产品预览 (ID: {productId})。
+                </div>
+            );
+        }
+
+        // Render the correct component based on style attribute
         switch (style) {
             case 'card':
-                // 更新卡片样式，使其与ContentRenderer.tsx保持一致
-                return (
-                    <div className="my-4 w-full max-w-[280px] mx-auto">
-                        {/* 收藏按钮位置标记 - 在编辑器预览中仅作为UI指示 */}
-                        <div className="absolute top-3 right-3 z-20">
-                            <div className="w-8 h-8 rounded-full bg-white/80 shadow-sm flex items-center justify-center">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
-                            {/* 产品图片 */}
-                            <div className="relative w-full aspect-[1/1] bg-white pt-0.5">
-                                <div className="h-full w-full relative">
-                                    {image ? (
-                                        <Image
-                                            src={image}
-                                            alt={title}
-                                            fill
-                                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
-                                            className="object-cover p-2"
-                                            onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
-                                        />
-                                    ) : (
-                                        <div className="h-full w-full flex items-center justify-center text-gray-400 bg-white">
-                                            无图片
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* 产品信息 */}
-                            <div className="p-3 flex-grow flex flex-col">
-                                {/* 品牌信息和商店标识 */}
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-xs font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded inline-block">
-                                        品牌
-                                    </span>
-                                    <span className="text-xs px-1.5 py-0.5 bg-gray-100 rounded">商店</span>
-                                </div>
-
-                                <h3 className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark">
-                                    {title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
-                                </h3>
-
-                                {/* 价格和折扣 */}
-                                <div className="flex items-center justify-between mt-1 mb-2">
-                                    <div className="flex items-baseline min-w-0 overflow-hidden mr-2">
-                                        <span className="text-lg font-semibold text-primary whitespace-nowrap">
-                                            {formatPrice(price)}
-                                        </span>
-                                        <span className="text-xs text-secondary line-through whitespace-nowrap ml-1.5">
-                                            {formatPrice(price * 1.2)}
-                                        </span>
-                                    </div>
-                                    <span className="text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 bg-primary-badge">
-                                        -20%
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* 查看详情按钮 */}
-                            <div className="px-3 pb-3">
-                                <div className="w-full py-2 bg-primary-button hover:bg-primary-button-hover text-white text-center rounded-full font-medium shadow-sm transition-colors">
-                                    查看详情
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-
+                return <CardProductElement product={product} />;
             case 'horizontal':
-                return (
-                    <div className="flex w-full border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
-                        {image && (
-                            <div className="relative w-32 h-32 bg-gray-100 flex-shrink-0">
-                                <Image
-                                    src={image}
-                                    alt={title}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, 128px"
-                                    className="object-cover"
-                                    onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
-                                />
-                            </div>
-                        )}
-                        <div className="p-3 flex-1">
-                            <div className="font-medium text-gray-900 mb-1">{title}</div>
-                            <div className="flex justify-between items-end h-full">
-                                <span className="text-lg font-bold text-green-600">{formatPrice(price)}</span>
-                                {asin && <span className="text-xs text-gray-500">ASIN: {asin}</span>}
-                            </div>
-                        </div>
-                    </div>
-                );
-
+                return <HorizontalProductElement product={product} />;
             case 'mini':
-                return (
-                    <div className="flex items-center space-x-2 w-full border rounded-md p-2 bg-white">
-                        {image && (
-                            <div className="relative w-10 h-10 bg-gray-100 rounded">
-                                <Image
-                                    src={image}
-                                    alt={title}
-                                    fill
-                                    sizes="40px"
-                                    className="object-cover rounded"
-                                    onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
-                                />
-                            </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-gray-900 truncate">{title}</div>
-                            <div className="text-xs text-green-600">{formatPrice(price)}</div>
-                        </div>
-                    </div>
-                );
-
+                return <MiniProductElement product={product} />;
             case 'simple':
             default:
-                return (
-                    <div className="flex items-center w-full p-2 border rounded-md bg-white">
-                        {image && (
-                            <div className="relative w-16 h-16 mr-3 border rounded-md overflow-hidden flex-shrink-0">
-                                <Image
-                                    src={image}
-                                    alt={title}
-                                    fill
-                                    sizes="(max-width: 768px) 10vw, 64px"
-                                    className="object-cover"
-                                    onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
-                                />
-                            </div>
-                        )}
-                        <div className="flex-grow min-w-0">
-                            <div className="font-medium text-gray-900 truncate">{title}</div>
-                            <div className="flex gap-2 text-sm text-gray-500">
-                                <span>{formatPrice(price)}</span>
-                                {asin && <span>ASIN: {asin}</span>}
-                            </div>
-                        </div>
-                    </div>
-                );
+                return <SimpleProductElement product={product} />;
         }
     };
 
     return (
-        <NodeViewWrapper className="product-node-wrapper my-2 relative">
+        <NodeViewWrapper className="product-node-wrapper my-2 relative group overflow-hidden">
             <div
-                data-product-id={id}
+                data-product-id={productId}
                 data-node-type="product"
-                data-title={title}
-                data-price={price}
-                data-image={image}
-                data-asin={asin}
                 data-style={style}
-                className={`relative ${selected ? 'ring-2 ring-blue-500' : ''}`}
+                className={`relative p-1 border ${selected ? 'ring-2 ring-blue-500 rounded-lg border-transparent' : 'border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-200 dark:hover:border-blue-800'}`}
             >
-                {renderProductContent()}
+                {renderFetchedProduct()}
 
-                <div className="absolute top-2 right-2 flex items-center gap-1 z-10">
-                    {/* 样式标签 */}
-                    <div className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded-full cursor-pointer shadow-sm"
-                        onClick={() => setShowStyleSelector(!showStyleSelector)}
+                <div className={`absolute top-1 right-1 flex items-center gap-1 z-10 transition-opacity duration-200 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                    <div
+                        className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 rounded-full cursor-pointer shadow-sm hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                        onClick={(e) => { e.stopPropagation(); setShowStyleSelector(!showStyleSelector); }}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
+                                e.stopPropagation();
                                 setShowStyleSelector(!showStyleSelector);
                             }
                         }}
                         role="button"
                         tabIndex={0}
+                        contentEditable={false}
                     >
-                        {PRODUCT_STYLES.find(s => s.id === style)?.name || '样式选择'}
+                        {PRODUCT_STYLES.find(s => s.id === style)?.name || '样式'}
                     </div>
-
-                    <div className="text-xs px-2 py-1 bg-gray-100 rounded-full shadow-sm">产品</div>
+                    <div className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 rounded-full shadow-sm transition-colors" contentEditable={false}>产品</div>
                 </div>
             </div>
 
-            {/* 样式选择器弹出框 */}
             {showStyleSelector && (
-                <div className="absolute top-10 right-2 mt-1 bg-white border rounded-md shadow-lg z-50 p-2">
-                    <div className="text-xs font-medium mb-1 px-2 py-1 bg-gray-50">选择产品展示样式</div>
+                <div className="absolute top-10 right-1 mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 p-2 w-36">
+                    <div className="text-xs font-medium mb-1 px-2 py-1 text-gray-500 dark:text-gray-400">选择样式</div>
                     {PRODUCT_STYLES.map((styleOption) => (
-                        <div
+                        <button
                             key={styleOption.id}
-                            className={`px-4 py-2 text-sm cursor-pointer rounded hover:bg-gray-50 ${style === styleOption.id ? 'bg-blue-50 text-blue-600' : ''}`}
-                            onClick={() => handleStyleChange(styleOption.id)}
+                            className={`block w-full text-left px-3 py-1.5 text-sm cursor-pointer rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${style === styleOption.id ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-200' : 'text-gray-700 dark:text-gray-200'}`}
+                            onClick={(e) => { e.stopPropagation(); handleStyleChange(styleOption.id); }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === ' ') {
                                     e.preventDefault();
+                                    e.stopPropagation();
                                     handleStyleChange(styleOption.id);
                                 }
                             }}
-
+                            contentEditable={false}
                         >
                             {styleOption.name}
-                        </div>
+                        </button>
                     ))}
                 </div>
             )}
@@ -261,172 +215,325 @@ interface CommandProps {
     commands: ChainedCommands;
 }
 
-// 创建一个自定义的序列化函数，用于序列化产品节点
+// 创建一个自定义的序列化函数，用于序列化产品节点 - Keep for saving
 const createProductSerializer = () => {
     // 序列化函数，将节点转换为DOM元素
     const productNodeToDom = (node: ProseMirrorNodeType) => {
         const el = document.createElement('div');
 
         el.setAttribute('data-node-type', 'product');
+        // Primarily save ID and Style for frontend rendering
         el.setAttribute('data-product-id', node.attrs.id || '');
-        el.setAttribute('data-title', node.attrs.title || '未命名产品');
-        el.setAttribute('data-price', String(node.attrs.price || 0));
-        el.setAttribute('data-image', node.attrs.image || '/placeholder-product.jpg');
-        el.setAttribute('data-asin', node.attrs.asin || '');
         el.setAttribute('data-style', node.attrs.style || 'simple'); // 添加样式属性
 
+        // Optionally save other attributes if needed for backend/other purposes
+        // or as fallback data if dynamic loading fails? (decision needed)
+        // Example: keeping title as fallback
+        if (node.attrs.title) el.setAttribute('data-title', node.attrs.title);
+        if (node.attrs.price) el.setAttribute('data-price', String(node.attrs.price));
+        if (node.attrs.image) el.setAttribute('data-image', node.attrs.image);
+        if (node.attrs.asin) el.setAttribute('data-asin', node.attrs.asin);
+        if (node.attrs.url) el.setAttribute('data-url', node.attrs.url);
+        if (node.attrs.cj_url) el.setAttribute('data-cj-url', node.attrs.cj_url);
+        if (node.attrs.brand) el.setAttribute('data-brand', node.attrs.brand);
+        if (node.attrs.originalPrice) el.setAttribute('data-original-price', String(node.attrs.originalPrice));
+        if (node.attrs.discount) el.setAttribute('data-discount', String(node.attrs.discount));
+        if (node.attrs.couponType) el.setAttribute('data-coupon-type', node.attrs.couponType);
+        if (node.attrs.couponValue) el.setAttribute('data-coupon-value', String(node.attrs.couponValue));
+        if (node.attrs.couponExpirationDate) el.setAttribute('data-coupon-expiration-date', node.attrs.couponExpirationDate);
+        if (typeof node.attrs.isPrime === 'boolean') el.setAttribute('data-is-prime', String(node.attrs.isPrime));
+        if (typeof node.attrs.isFreeShipping === 'boolean') el.setAttribute('data-is-free-shipping', String(node.attrs.isFreeShipping));
+
+        // 对于叶子节点，创建自闭合的HTML元素
         return el;
     };
 
     // 扩展DOMSerializer，添加对产品节点的支持
     const originalFromSchema = DOMSerializer.fromSchema;
 
-    DOMSerializer.fromSchema = function (schema) {
-        const serializer = originalFromSchema.call(this, schema);
+    // Check if already modified to prevent infinite loops or errors
+    if (!(DOMSerializer.fromSchema as ExtendedFromSchema).__customProductSerializerAttached) {
+        DOMSerializer.fromSchema = function (schema) {
+            const serializer = originalFromSchema.call(this, schema);
+            const productNodeType = schema.nodes.product;
 
-        // 找到产品节点类型并添加自定义序列化函数
-        const productNodeType = schema.nodes.product;
+            if (productNodeType && !serializer.nodes.product) { // Attach only if not present
+                serializer.nodes.product = productNodeToDom;
+            }
 
-        if (productNodeType) {
-            serializer.nodes.product = productNodeToDom;
-        }
-
-        return serializer;
-    };
+            return serializer;
+        };
+        (DOMSerializer.fromSchema as ExtendedFromSchema).__customProductSerializerAttached = true;
+    }
 };
 
-// 标准的 ProseMirror 节点规范中的 toDOM 函数
+
+// 标准的 ProseMirror 节点规范中的 toDOM 函数 - Keep for node spec
 const productToDOM = (node: ProseMirrorNodeType) => {
-    return [
-        'div',
-        {
-            'data-node-type': 'product',
-            'data-product-id': node.attrs.id || '',
-            'data-title': node.attrs.title || '未命名产品',
-            'data-price': String(node.attrs.price || 0),
-            'data-image': node.attrs.image || '/placeholder-product.jpg',
-            'data-asin': node.attrs.asin || '',
-            'data-style': node.attrs.style || 'simple', // 添加样式属性
-        },
-        0
-    ];
+    // This defines how the node is represented *internally* in ProseMirror's DOM view,
+    // and is also used by renderHTML. Keep saving necessary attributes.
+    const attrs: Record<string, string | number | boolean | null | undefined> = {
+        'data-node-type': 'product',
+        'data-product-id': node.attrs.id || '',
+        'data-style': node.attrs.style || 'simple',
+        // Include other attributes needed for saving/parsing
+        'data-title': node.attrs.title,
+        'data-price': node.attrs.price,
+        'data-image': node.attrs.image,
+        'data-asin': node.attrs.asin,
+        'data-url': node.attrs.url,
+        'data-cj-url': node.attrs.cj_url,
+        'data-brand': node.attrs.brand,
+        'data-original-price': node.attrs.originalPrice,
+        'data-discount': node.attrs.discount,
+        'data-coupon-type': node.attrs.couponType,
+        'data-coupon-value': node.attrs.couponValue,
+        'data-coupon-expiration-date': node.attrs.couponExpirationDate,
+        'data-is-prime': node.attrs.isPrime,
+        'data-is-free-shipping': node.attrs.isFreeShipping
+    };
+
+    // Clean up null/undefined and convert booleans (same as before)
+    Object.keys(attrs).forEach(key => {
+        if (attrs[key] === undefined || attrs[key] === null) {
+            delete attrs[key];
+        } else if (typeof attrs[key] === 'boolean') {
+            attrs[key] = String(attrs[key]);
+        } else if (typeof attrs[key] === 'number') {
+            attrs[key] = String(attrs[key]); // Ensure numbers are strings for HTML attributes
+        }
+    });
+
+    // 修改: 确保返回值格式正确 - 对于叶子节点, 不能有"内容洞"(content hole)
+    // 返回空数组表示没有子内容，不要返回0或null，这可能会被解释为内容洞
+    return ['div', attrs as Record<string, string>];
 };
 
 // TipTap产品节点扩展
 export const ProductBlot = Node.create<ProductAttributes>({
     name: 'product',
     group: 'block',
-    atom: true,
+    atom: true, // atom: true means it's treated as a single block, content not directly editable
     inline: false,
     draggable: true,
+    content: '', // 显式声明为空内容
 
-    // 明确定义spec扩展，包含toDOM方法
+    // Keep extending spec with toDOM
     extending: {
         spec: {
             toDOM: productToDOM
         }
     },
 
-    // 初始化扩展时调用，确保序列化器被正确设置
+    // Keep onTransaction to ensure serializer (though its necessity is reduced now)
     onTransaction() {
         createProductSerializer();
 
-        return false;
+        return false; // return false means transaction is not stopped
     },
 
+
+    // addAttributes: Keep ALL attributes defined here.
+    // They define the node's schema and are used by parseHTML and insertProduct.
     addAttributes() {
         return {
-            id: {
+            id: { // Essential
                 default: '',
                 parseHTML: element => element.getAttribute('data-product-id'),
-                renderHTML: attributes => ({
-                    'data-product-id': attributes.id,
-                }),
+                renderHTML: attributes => ({ 'data-product-id': attributes.id }),
             },
+            style: { // Essential for rendering
+                default: 'simple',
+                parseHTML: element => element.getAttribute('data-style'),
+                renderHTML: attributes => ({ 'data-style': attributes.style }),
+            },
+            // Keep other attributes for node structure, insertion, and parsing
             title: {
                 default: '未命名产品',
                 parseHTML: element => element.getAttribute('data-title'),
-                renderHTML: attributes => ({
-                    'data-title': attributes.title,
-                }),
+                renderHTML: attributes => attributes.title ? { 'data-title': attributes.title } : {},
             },
             price: {
                 default: 0,
                 parseHTML: element => parseFloat(element.getAttribute('data-price') || '0'),
-                renderHTML: attributes => ({
-                    'data-price': attributes.price,
-                }),
+                renderHTML: attributes => typeof attributes.price === 'number' ? { 'data-price': String(attributes.price) } : {},
             },
             image: {
                 default: '/placeholder-product.jpg',
                 parseHTML: element => element.getAttribute('data-image'),
-                renderHTML: attributes => ({
-                    'data-image': attributes.image,
-                }),
+                renderHTML: attributes => attributes.image ? { 'data-image': attributes.image } : {},
             },
             asin: {
                 default: '',
                 parseHTML: element => element.getAttribute('data-asin'),
-                renderHTML: attributes => ({
-                    'data-asin': attributes.asin,
-                }),
+                renderHTML: attributes => attributes.asin ? { 'data-asin': attributes.asin } : {},
             },
-            style: { // 添加样式属性
-                default: 'simple',
-                parseHTML: element => element.getAttribute('data-style'),
-                renderHTML: attributes => ({
-                    'data-style': attributes.style,
-                }),
+            url: {
+                default: '',
+                parseHTML: element => element.getAttribute('data-url'),
+                renderHTML: attributes => attributes.url ? { 'data-url': attributes.url } : {},
+            },
+            cj_url: {
+                default: '',
+                parseHTML: element => element.getAttribute('data-cj-url'),
+                renderHTML: attributes => attributes.cj_url ? { 'data-cj-url': attributes.cj_url } : {},
+            },
+            brand: {
+                default: null,
+                parseHTML: element => element.getAttribute('data-brand'),
+                renderHTML: attributes => attributes.brand ? { 'data-brand': attributes.brand } : {},
+            },
+            originalPrice: {
+                default: null,
+                parseHTML: element => {
+                    const v = element.getAttribute('data-original-price');
+
+                    return v ? parseFloat(v) : null;
+                },
+                renderHTML: attributes => attributes.originalPrice ? { 'data-original-price': String(attributes.originalPrice) } : {},
+            },
+            discount: {
+                default: null,
+                parseHTML: element => {
+                    const v = element.getAttribute('data-discount');
+
+                    return v ? parseFloat(v) : null;
+                },
+                renderHTML: attributes => attributes.discount ? { 'data-discount': String(attributes.discount) } : {},
+            },
+            couponType: {
+                default: null,
+                parseHTML: element => element.getAttribute('data-coupon-type') as ProductAttributes['couponType'],
+                renderHTML: attributes => attributes.couponType ? { 'data-coupon-type': attributes.couponType } : {},
+            },
+            couponValue: {
+                default: null,
+                parseHTML: element => {
+                    const v = element.getAttribute('data-coupon-value');
+
+                    return v ? parseFloat(v) : null;
+                },
+                renderHTML: attributes => attributes.couponValue ? { 'data-coupon-value': String(attributes.couponValue) } : {},
+            },
+            couponExpirationDate: {
+                default: null,
+                parseHTML: element => element.getAttribute('data-coupon-expiration-date'),
+                renderHTML: attributes => attributes.couponExpirationDate ? { 'data-coupon-expiration-date': attributes.couponExpirationDate } : {},
+            },
+            isPrime: {
+                default: null,
+                parseHTML: element => element.getAttribute('data-is-prime') === 'true',
+                renderHTML: attributes => typeof attributes.isPrime === 'boolean' ? { 'data-is-prime': String(attributes.isPrime) } : {},
+            },
+            isFreeShipping: {
+                default: null,
+                parseHTML: element => element.getAttribute('data-is-free-shipping') === 'true',
+                renderHTML: attributes => typeof attributes.isFreeShipping === 'boolean' ? { 'data-is-free-shipping': String(attributes.isFreeShipping) } : {},
             },
         };
     },
 
+    // parseHTML: Keep this. It defines how to read attributes from saved HTML
+    // back into node attributes when loading content into the editor.
     parseHTML() {
         return [
             {
                 tag: 'div[data-node-type="product"]',
+                // getAttrs needs to read all attributes defined in addAttributes
+                getAttrs: (dom) => {
+                    const element = dom as HTMLElement;
+                    const getNullableFloat = (attr: string) => {
+                        const v = element.getAttribute(attr);
+
+                        return v ? parseFloat(v) : null;
+                    };
+                    const getNullableString = (attr: string) => element.getAttribute(attr) || null;
+                    const getBoolean = (attr: string) => element.getAttribute(attr) === 'true';
+
+                    return {
+                        id: element.getAttribute('data-product-id') || '',
+                        style: element.getAttribute('data-style') || 'simple',
+                        // Parse all other attributes back into the node
+                        title: element.getAttribute('data-title') || '未命名产品',
+                        price: parseFloat(element.getAttribute('data-price') || '0'),
+                        image: element.getAttribute('data-image') || '/placeholder-product.jpg',
+                        asin: element.getAttribute('data-asin') || '',
+                        url: element.getAttribute('data-url') || '',
+                        cj_url: element.getAttribute('data-cj-url') || '',
+                        brand: getNullableString('data-brand'),
+                        originalPrice: getNullableFloat('data-original-price'),
+                        discount: getNullableFloat('data-discount'),
+                        couponType: getNullableString('data-coupon-type') as ProductAttributes['couponType'],
+                        couponValue: getNullableFloat('data-coupon-value'),
+                        couponExpirationDate: getNullableString('data-coupon-expiration-date'),
+                        isPrime: getBoolean('data-is-prime'),
+                        isFreeShipping: getBoolean('data-is-free-shipping'),
+                    };
+                }
             },
         ];
     },
 
+    // renderHTML: Keep this. It uses the result of renderHTML from addAttributes
+    // and merges them with the node type attribute. Crucial for saving.
     renderHTML({ HTMLAttributes }) {
-        // 确保返回正确的DOM结构
+        // HTMLAttributes here are the result of calling renderHTML for each attribute in addAttributes
         return [
             'div',
-            mergeAttributes({ 'data-node-type': 'product' }, HTMLAttributes),
-            0
+            mergeAttributes({ 'data-node-type': 'product' }, HTMLAttributes)
+            // 修改: 移除内容洞标记，保持与toDOM一致，避免使用null或数字
         ];
     },
 
-    // 此方法将被用于序列化节点到HTML
-    toDOM: productToDOM,
-
+    // Keep addNodeView using the (now modified) ProductComponent
     addNodeView() {
         return ReactNodeViewRenderer(ProductComponent);
     },
 
+    // addCommands: Keep this. It's how products are inserted initially.
+    // It MUST provide all attributes defined in addAttributes.
     addCommands() {
         return {
             insertProduct: (attributes: Partial<ProductAttributes>) => ({ commands }: CommandProps) => {
-                const fullAttributes: ProductAttributes = {
+                // Ensure ALL attributes defined in addAttributes() have a default or passed value
+                const fullAttributes: Required<ProductAttributes> = {
                     id: attributes.id || '',
                     title: attributes.title || '未命名产品',
                     price: attributes.price || 0,
                     image: attributes.image || '/placeholder-product.jpg',
                     asin: attributes.asin || '',
-                    style: attributes.style || 'simple', // 添加样式默认值
+                    style: attributes.style || 'simple',
+                    url: attributes.url || '',
+                    cj_url: attributes.cj_url || '',
+                    brand: attributes.brand ?? null,
+                    originalPrice: attributes.originalPrice ?? null,
+                    discount: attributes.discount ?? null,
+                    couponType: attributes.couponType ?? null,
+                    couponValue: attributes.couponValue ?? null,
+                    couponExpirationDate: attributes.couponExpirationDate ?? null,
+                    isPrime: attributes.isPrime ?? null,
+                    isFreeShipping: attributes.isFreeShipping ?? null,
                 };
+
+                // Ensure nulls are handled if the attribute definition expects string/number
+                Object.keys(fullAttributes).forEach(key => {
+                    if (fullAttributes[key as keyof ProductAttributes] === null) {
+                        // If default is non-null, provide it? Or ensure type allows null
+                        // For simplicity, we assume the receiving end handles null appropriately for now
+                    }
+                });
+
 
                 return commands.insertContent({
                     type: this.name,
-                    attrs: fullAttributes,
-                });
+                    attrs: fullAttributes
+                } satisfies InsertContentPayload);
             },
         } as unknown as Record<string, (...args: unknown[]) => (props: { commands: ChainedCommands }) => boolean>;
     },
 });
 
-// 初始化时注册序列化器
+// Initialize serializer (if still needed, its role is less critical now for frontend render)
 createProductSerializer();
 
 export default ProductBlot; 

@@ -6,7 +6,7 @@ import {
     AlignLeft, AlignCenter, AlignRight, Code, Quote,
     Trash2, Highlighter, Type, Palette,
     CornerDownLeft,
-    Youtube as YoutubeIcon,
+    Video as YoutubeIcon, // 使用 Video 图标替代已弃用的 Youtube 图标
     Keyboard
 } from 'lucide-react';
 import { useState, useCallback } from 'react';
@@ -218,67 +218,67 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
     const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
     return (
-        <div className="p-2 border-b border-gray-300 flex flex-wrap items-center gap-1 bg-white sticky top-0 z-10">
-            {/* 撤销/重做 */}
-            <div className="flex items-center mr-1">
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().undo().run()}
-                    className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="撤销 (Ctrl+Z)"
-                    disabled={!editor.can().undo()}
-                >
-                    <Undo size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().redo().run()}
-                    className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="重做 (Ctrl+Shift+Z)"
-                    disabled={!editor.can().redo()}
-                >
-                    <Redo size={16} />
-                </button>
-            </div>
-            <div className="mx-1 w-px h-6 bg-gray-300" />
+        <div className="p-2 border-b border-gray-300 flex items-center justify-between bg-white sticky top-0 z-10 w-full">
+            <div className="flex flex-1 flex-wrap items-center gap-2">
+                {/* 撤销/重做 */}
+                <div className="flex items-center gap-1">
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().undo().run()}
+                        className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="撤销 (Ctrl+Z)"
+                        disabled={!editor.can().undo()}
+                    >
+                        <Undo size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().redo().run()}
+                        className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="重做 (Ctrl+Shift+Z)"
+                        disabled={!editor.can().redo()}
+                    >
+                        <Redo size={16} />
+                    </button>
+                </div>
+                <div className="h-6 w-px bg-gray-300" />
 
-            {/* 文本格式化 */}
-            <div className="flex items-center mr-1">
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleBold().run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bold') ? 'bg-gray-200' : ''}`}
-                    title="加粗 (Ctrl+B)"
-                >
-                    <Bold size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleItalic().run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('italic') ? 'bg-gray-200' : ''}`}
-                    title="斜体 (Ctrl+I)"
-                >
-                    <Italic size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleUnderline().run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('underline') ? 'bg-gray-200' : ''}`}
-                    title="下划线 (Ctrl+U)"
-                >
-                    <Underline size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleStrike().run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('strike') ? 'bg-gray-200' : ''}`}
-                    title="删除线 (Ctrl+Shift+S)"
-                >
-                    <Strikethrough size={16} />
-                </button>
+                {/* 文本格式化 */}
+                <div className="flex items-center space-x-1">
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleBold().run()}
+                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bold') ? 'bg-gray-200' : ''}`}
+                        title="加粗 (Ctrl+B)"
+                    >
+                        <Bold size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleItalic().run()}
+                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('italic') ? 'bg-gray-200' : ''}`}
+                        title="斜体 (Ctrl+I)"
+                    >
+                        <Italic size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleUnderline().run()}
+                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('underline') ? 'bg-gray-200' : ''}`}
+                        title="下划线 (Ctrl+U)"
+                    >
+                        <Underline size={16} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleStrike().run()}
+                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('strike') ? 'bg-gray-200' : ''}`}
+                        title="删除线 (Ctrl+Shift+S)"
+                    >
+                        <Strikethrough size={16} />
+                    </button>
 
-                {/* 高亮颜色选择器 Popover */}
-                <div className="ml-1 border-l pl-1">
+                    {/* 高亮颜色选择器 Popover */}
                     <ColorPickerPopover
                         editor={editor}
                         mode="highlight"
@@ -295,7 +295,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                 </div>
 
                 {/* 文本颜色选择器 Popover */}
-                <div className="ml-1 border-l pl-1">
+                <div className="flex items-center">
                     <ColorPickerPopover
                         editor={editor}
                         mode="textColor"
@@ -320,10 +320,10 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     <Trash2 size={16} />
                 </button>
             </div>
-            <div className="mx-1 w-px h-6 bg-gray-300" />
+            <div className="h-6 w-px bg-gray-300" />
 
             {/* 标题 */}
-            <div className="flex items-center mr-1">
+            <div className="flex items-center space-x-1">
                 <button
                     type="button"
                     onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -357,10 +357,10 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     <Type size={16} />
                 </button>
             </div>
-            <div className="mx-1 w-px h-6 bg-gray-300" />
+            <div className="h-6 w-px bg-gray-300" />
 
             {/* 对齐方式 */}
-            <div className="flex items-center mr-1">
+            <div className="flex items-center space-x-1">
                 <button
                     type="button"
                     onClick={() => editor.chain().focus().setTextAlign('left').run()}
@@ -386,10 +386,10 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     <AlignRight size={16} />
                 </button>
             </div>
-            <div className="mx-1 w-px h-6 bg-gray-300" />
+            <div className="h-6 w-px bg-gray-300" />
 
             {/* 列表 */}
-            <div className="flex items-center mr-1">
+            <div className="flex items-center space-x-1">
                 <button
                     type="button"
                     onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -407,10 +407,10 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     <ListOrdered size={16} />
                 </button>
             </div>
-            <div className="mx-1 w-px h-6 bg-gray-300" />
+            <div className="h-6 w-px bg-gray-300" />
 
             {/* 引用和代码块 */}
-            <div className="flex items-center mr-1">
+            <div className="flex items-center space-x-1">
                 <button
                     type="button"
                     onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -436,10 +436,10 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     <CornerDownLeft size={16} />
                 </button>
             </div>
-            <div className="mx-1 w-px h-6 bg-gray-300" />
+            <div className="h-6 w-px bg-gray-300" />
 
             {/* 链接、图片、产品、YouTube */}
-            <div className="flex items-center mr-1">
+            <div className="flex items-center space-x-1">
                 {/* 链接 Popover */}
                 <Popover placement="bottom" isOpen={isLinkPopoverOpen} onOpenChange={setIsLinkPopoverOpen}>
                     <PopoverTrigger>
@@ -606,10 +606,9 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     <Tag size={16} />
                 </button>
             </div>
-            <div className="mx-1 w-px h-6 bg-gray-300" />
 
             {/* 新增：快捷键说明按钮 */}
-            <div className="flex items-center">
+            <div className="flex items-center ml-4">
                 <button
                     type="button"
                     onClick={toggleShortcutModal}
@@ -706,4 +705,4 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
             </Modal>
         </div>
     );
-} 
+}

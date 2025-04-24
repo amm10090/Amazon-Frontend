@@ -38,9 +38,9 @@ const CmsPagesContent = () => {
                 const params: Record<string, string | number> = {
                     page: currentPage,
                     limit: 10,
-                    sortBy: sortBy,
-                    sortOrder: sortOrder
-                };
+                        sortBy: sortBy,
+                        sortOrder: sortOrder
+                };      
 
                 // 添加搜索条件
                 if (search) {
