@@ -1,5 +1,5 @@
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Popover, PopoverTrigger, PopoverContent, Input, Kbd } from '@heroui/react';
-import type { Editor } from '@tiptap/react';
+import type { Editor } from '@tiptap/core';
 import {
     Bold, Italic, Underline, Strikethrough, List, ListOrdered, Undo, Redo,
     Link as LinkIcon, Image as ImageIcon, Tag, Heading1, Heading2, Heading3,
@@ -7,15 +7,26 @@ import {
     Trash2, Highlighter, Type, Palette,
     CornerDownLeft,
     Video as YoutubeIcon, // 使用 Video 图标替代已弃用的 Youtube 图标
-    Keyboard
+    Keyboard,
+    Database
 } from 'lucide-react';
 import { useState, useCallback } from 'react';
 
+import type { ComponentProduct } from '@/types';
+
 import { ColorPickerPopover } from './ColorPickerPopover';
+import type { ProductMetadataAttributes } from './ProductMetadataBlot';
+import { ProductMetadataSelector } from './ProductMetadataSelector';
+import { ProductSelector } from './ProductSelector';
+
+// 为编辑器链定义扩展接口
+interface ExtendedChain {
+    insertProductMetadata: (attributes: ProductMetadataAttributes) => { run: () => boolean };
+}
 
 interface TiptapToolbarProps {
     editor: Editor | null;
-    onAddProduct: (e: React.MouseEvent<HTMLButtonElement>) => void; // 更新回调函数类型
+    onAddProduct: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 // 辅助函数，用于生成 Kbd 标签
@@ -36,6 +47,9 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
     const [imageUrl, setImageUrl] = useState('');
     // 新增：快捷键模态框状态
     const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<ComponentProduct | null>(null);
+    const [isMetadataSelectorOpen, setIsMetadataSelectorOpen] = useState(false);
+    const [isProductSelectorOpen, setIsProductSelectorOpen] = useState(false);
 
     // 新增：切换快捷键模态框
     const toggleShortcutModal = useCallback(() => {
@@ -167,6 +181,32 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
     const handleImageCancel = useCallback(() => {
         setIsImagePopoverOpen(false);
         setImageUrl(''); // 取消时清空
+    }, []);
+
+    // 修改 handleMetadataSelect 函数
+    const handleMetadataSelect = useCallback((fieldId: string) => {
+        if (!editor || !selectedProduct) return;
+
+        const attributes: ProductMetadataAttributes = {
+            productId: selectedProduct.id || selectedProduct.asin || '',
+            fieldId
+        };
+
+        // 使用 chain() 方法
+        const chain = editor.chain().focus();
+
+        (chain as unknown as ExtendedChain).insertProductMetadata(attributes).run();
+    }, [editor, selectedProduct]);
+
+    // 修改 handleProductSelect 函数
+    const handleProductSelect = useCallback((product: ComponentProduct) => {
+        setSelectedProduct(product);
+        setIsMetadataSelectorOpen(true);
+    }, []);
+
+    // 新增处理数据库按钮点击的函数
+    const handleMetadataButtonClick = useCallback(() => {
+        setIsProductSelectorOpen(true);
     }, []);
 
     if (!editor) {
@@ -605,6 +645,14 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                 >
                     <Tag size={16} />
                 </button>
+                <button
+                    type="button"
+                    onClick={handleMetadataButtonClick}
+                    className="p-1.5 rounded hover:bg-gray-100"
+                    title="插入产品元数据"
+                >
+                    <Database size={16} />
+                </button>
             </div>
 
             {/* 新增：快捷键说明按钮 */}
@@ -703,6 +751,26 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     )}
                 </ModalContent>
             </Modal>
+
+            {/* 产品选择器 (用于选择产品后插入元数据) */}
+            <ProductSelector
+                isOpen={isProductSelectorOpen}
+                onClose={() => setIsProductSelectorOpen(false)}
+                onSelect={handleProductSelect}
+            />
+
+            {/* 在组件末尾添加 */}
+            {selectedProduct && (
+                <ProductMetadataSelector
+                    isOpen={isMetadataSelectorOpen}
+                    onClose={() => {
+                        setIsMetadataSelectorOpen(false);
+                        setSelectedProduct(null);
+                    }}
+                    product={selectedProduct}
+                    onSelect={handleMetadataSelect}
+                />
+            )}
         </div>
     );
 }

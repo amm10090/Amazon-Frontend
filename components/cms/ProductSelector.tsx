@@ -15,7 +15,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import { productsApi } from '@/lib/api'; // 更新导入
 import { showErrorToast } from '@/lib/toast';
-import type { Product as ApiProduct, } from '@/types/api'; // 导入API产品类型
+import { adaptProducts } from '@/lib/utils';
+import type { ComponentProduct } from '@/types';
+import type { Product as ApiProduct } from '@/types/api';
 
 // 添加产品样式选项
 const PRODUCT_STYLES = [
@@ -41,17 +43,13 @@ export interface Product {
 interface ProductSelectorProps {
     isOpen: boolean;
     onClose: () => void;
-    // 确保 onSelect 的参数类型与 ProductBlot 期望的 ProductAttributes 兼容
-    // ProductBlot 需要: id, title, price, image, sku
-    // 这里 Product 接口包含这些，类型上兼容
-    onSelect: (product: Product) => void;
+    onSelect: (product: ComponentProduct) => void;
 }
 
 // 产品选择器组件
 export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorProps) {
     // 状态管理
-    const [products, setProducts] = useState<Product[]>([]); // 存储适配后的产品数据
-    // 移除 filteredProducts 状态，因为过滤将通过 API 完成
+    const [products, setProducts] = useState<ComponentProduct[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
@@ -69,78 +67,50 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
             let pageSize = limit;
 
             if (!query) {
-                // 没有搜索词，调用 getProducts
                 response = await productsApi.getProducts({
                     page: page,
                     limit: limit,
-                    sort_by: 'created', // 默认按创建时间排序或选择其他合适的默认排序
+                    sort_by: 'created',
                     sort_order: 'desc'
                 });
-                // 注意：getProducts 的响应结构被 api.ts 中的函数包装了一层 data
                 if (response.data?.data?.items) {
-                    apiProducts = response.data.data.items as ApiProduct[];
+                    apiProducts = response.data.data.items;
                     totalItems = response.data.data.total || 0;
                     pageSize = response.data.data.page_size || limit;
                 }
             } else {
-                // 有搜索词，调用 searchProducts
                 response = await productsApi.searchProducts({
                     keyword: query,
                     page: page,
                     page_size: limit,
-                    sort_by: 'relevance' // 搜索时使用相关性排序
+                    sort_by: 'relevance'
                 });
-                // searchProducts 的响应嵌套在 data.data 中
                 if (response.data?.data?.items) {
-                    apiProducts = response.data.data.items as ApiProduct[];
+                    apiProducts = response.data.data.items;
                     totalItems = response.data.data.total || 0;
                     pageSize = response.data.data.page_size || limit;
                 }
             }
 
+            // 使用 adaptProducts 转换 API 响应
+            const adaptedProducts = adaptProducts(apiProducts);
 
-            // 统一适配API返回的数据到组件内部的Product接口
-            const adaptedProducts: Product[] = apiProducts.map(p => {
-                // 尝试从 offers 获取价格
-                const priceFromOffers = p.offers && p.offers.length > 0 ? p.offers[0].price : undefined;
-
-                // 使用解构，明确添加style属性
-                return {
-                    id: p.id || p.asin || '', // 优先使用 id，然后是 asin
-                    title: p.title || '',
-                    // 优先使用 offers 中的价格，然后是顶层 price，最后是 0
-                    price: priceFromOffers !== undefined ? priceFromOffers : (p.price || 0),
-                    // 确保优先使用 main_image，其次 image_url
-                    main_image: p.main_image || p.image_url || '/placeholder-product.jpg',
-                    image_url: p.image_url, // 保留原始字段（如果需要）
-                    asin: p.asin || '',
-                    style: 'card' // 直接设置默认样式值
-                }
-            });
-
-
-            // 如果是第一页，则替换现有产品；否则追加
             setProducts(prev => page === 1 ? adaptedProducts : [...prev, ...adaptedProducts]);
-
-            // 分页信息
-            const calculatedTotalPages = Math.ceil(totalItems / pageSize);
-
-            setTotalPages(calculatedTotalPages || 1);
+            setTotalPages(Math.ceil(totalItems / pageSize) || 1);
             setCurrentPage(page);
 
-        } catch (err) { // 捕获更具体的错误信息
+        } catch (error) {
             showErrorToast({
                 title: '获取产品失败',
-                description: err instanceof Error ? err.message : '无法连接到服务器或发生错误'
+                description: error instanceof Error ? error.message : '无法连接到服务器或发生错误'
             });
-            // 出错时重置状态，使用函数式更新避免依赖
-            setProducts(prevProducts => page === 1 ? [] : prevProducts);
-            setTotalPages(prevTotalPages => page === 1 ? 1 : prevTotalPages);
-            setCurrentPage(prevCurrentPage => page === 1 ? 1 : prevCurrentPage);
+            setProducts(prev => page === 1 ? [] : prev);
+            setTotalPages(prev => page === 1 ? 1 : prev);
+            setCurrentPage(prev => page === 1 ? 1 : prev);
         } finally {
             setIsLoading(false);
         }
-    }, [limit]); // 更新依赖项，移除 products, totalPages, currentPage
+    }, [limit]);
 
     // 创建防抖函数，直接使用lodash的debounce
     const debouncedFetchProducts = useMemo(() =>
@@ -153,8 +123,6 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
             // 模态框打开时，获取第一页数据，清空搜索词
             setSearchQuery(''); // 清空搜索
             setCurrentPage(1);  // 重置页码
-            // setProducts([]);    // 移除：让 fetchProducts 处理第一页替换
-            // fetchProducts('', 1); // 移除：让 searchQuery 的 effect 处理初始加载
         }
     }, [isOpen, fetchProducts]); // 移除 debouncedFetchProducts - fetchProducts 引用现在稳定
 
@@ -167,31 +135,29 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
     }, [searchQuery, debouncedFetchProducts]); // 依赖搜索词和防抖函数
 
     // 处理选择产品
-    const handleSelectProduct = (product: Product) => {
-        // 这里的 product 类型已经是 ProductSelector 内部定义的 Product 接口
-        // 它与 ProductAttributes 在所需字段上兼容
+    const handleSelectProduct = useCallback((product: ComponentProduct) => {
         onSelect({
             ...product,
-            style: selectedStyle // 使用当前选择的样式
-        });
+            style: selectedStyle // 添加样式属性
+        } as ComponentProduct);
         onClose();
-    };
+    }, [selectedStyle, onClose, onSelect]);
 
     // 加载更多产品
-    const loadMoreProducts = () => {
+    const loadMoreProducts = useCallback(() => {
         if (currentPage < totalPages && !isLoading) {
             fetchProducts(searchQuery, currentPage + 1);
         }
-    };
+    }, [currentPage, totalPages, isLoading, fetchProducts, searchQuery]);
 
     // 监听滚动到底部加载更多
-    const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
         const target = event.currentTarget;
 
-        if (target.scrollHeight - target.scrollTop <= target.clientHeight + 50) { // 接近底部时加载
+        if (target.scrollHeight - target.scrollTop <= target.clientHeight + 50) {
             loadMoreProducts();
         }
-    };
+    }, [loadMoreProducts]);
 
 
     return (
@@ -242,14 +208,14 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
                                     onClick={() => handleSelectProduct(product)}
                                 >
                                     <div className="w-16 h-16 bg-gray-100 rounded-md mr-3 overflow-hidden relative flex-shrink-0">
-                                        {product.main_image && product.main_image !== '/placeholder-product.jpg' ? (
+                                        {product.image && product.image !== '/placeholder-product.jpg' ? (
                                             <Image
-                                                src={product.main_image}
+                                                src={product.image}
                                                 alt={product.title}
                                                 fill
-                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // 添加 sizes 属性
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                                 className="object-cover"
-                                                onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }} // 添加错误处理
+                                                onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs bg-gray-200">
