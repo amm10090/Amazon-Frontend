@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import useSWR from 'swr';
 
 import { productsApi } from '@/lib/api';
@@ -20,26 +21,30 @@ import SimpleProductElement from './Template/SimpleProductElement';
 // SimpleProductElement, CardProductElement, HorizontalProductElement, MiniProductElement
 // should be defined here or imported correctly.
 
-// --- Skeleton Placeholder --- (Replace with your actual Skeleton component) ---
+// --- Skeleton Placeholder ---
+// 修改 ProductSkeletonPlaceholder 返回 span
 const ProductSkeletonPlaceholder = ({ style }: { style: string }) => {
-    let className = "w-full h-24 my-4 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md";
+    const baseClasses = "my-4 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 align-middle"; // 添加 align-middle
+    let styleClasses = "inline-block w-full h-24"; // 默认 inline-block
 
     if (style === 'card') {
-        className = "my-4 w-full max-w-[280px] mx-auto h-96 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg shadow-md";
+        styleClasses = "inline-block w-full max-w-[280px] h-96 rounded-lg shadow-md mx-auto"; // card 需要特定尺寸和边距
     } else if (style === 'horizontal') {
-        className = "flex w-full h-28 my-4 border rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse p-3 items-center";
+        styleClasses = "inline-flex items-center w-full h-28 border rounded-lg overflow-hidden shadow-sm p-3"; // horizontal 使用 inline-flex
     } else if (style === 'mini') {
-        className = "inline-flex items-center space-x-2 h-16 w-60 my-2 border rounded-lg p-2 bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse";
+        styleClasses = "inline-flex items-center space-x-2 h-16 w-60 border rounded-lg p-2 shadow-sm overflow-hidden"; // mini 使用 inline-flex
     }
 
-    return <div className={className} />;
+    // 返回 span
+    return <span className={`${baseClasses} ${styleClasses}`} />;
 };
 
-// --- DynamicProductLoader --- 
+// --- DynamicProductLoader ---
 
 interface DynamicProductLoaderProps {
     productId: string;
     style?: string;
+    alignment?: 'left' | 'center' | 'right';
 }
 
 // Fetcher function for SWR
@@ -61,7 +66,6 @@ const fetchProduct = async (productId: string): Promise<ComponentProduct | null>
             const productData = Array.isArray(apiResponse.data) ? apiResponse.data[0] : apiResponse.data;
 
             if (!productData) {
-
                 return null;
             }
             // Adapt the single product data
@@ -80,44 +84,47 @@ const fetchProduct = async (productId: string): Promise<ComponentProduct | null>
 
 export default function DynamicProductLoader({ productId, style = 'simple' }: DynamicProductLoaderProps) {
     const { data: product, error, isLoading } = useSWR<ComponentProduct | null>(
-        // Use a stable key based on productId
         productId ? ['product', productId] : null,
         () => fetchProduct(productId),
         {
-            revalidateOnFocus: false, // Optional: prevent refetch on window focus
-            shouldRetryOnError: false, // Optional: prevent retries on fetch error
-            dedupingInterval: 60000, // Optional: prevent re-fetching same key within 60s
+            revalidateOnFocus: false,
+            shouldRetryOnError: false,
+            dedupingInterval: 60000,
         }
     );
 
+    // 加载状态 - 现在也需要考虑对齐
     if (isLoading) {
-        // Render skeleton based on style
-        return <ProductSkeletonPlaceholder style={style} />;
-    }
-
-    if (error || !product) {
-
         return (
-            <div className="flex items-center justify-center my-4 p-3 border rounded-md bg-red-50 text-red-700 shadow-sm text-xs">
-                无法加载产品信息 (ID: {productId})。
-            </div>
+            <span className="inline-block align-middle">
+                <ProductSkeletonPlaceholder style={style} />
+            </span>
         );
     }
 
-    // Dynamically import components to potentially optimize bundle size
-    // This is more advanced and might require Suspense boundaries
-    // For simplicity, direct rendering is used here.
-
-    // Render the correct component based on style
-    switch (style) {
-        case 'card':
-            return <CardProductElement product={product} />; // Ensure this component is imported/defined
-        case 'horizontal':
-            return <HorizontalProductElement product={product} />; // Ensure this component is imported/defined
-        case 'mini':
-            return <MiniProductElement product={product} />; // Ensure this component is imported/defined
-        case 'simple':
-        default:
-            return <SimpleProductElement product={product} />; // Ensure this component is imported/defined
+    // 错误状态 - 改用 span 并应用内联样式
+    if (error || !product) {
+        return (
+            // Change outer div to span, add inline-block and vertical-align
+            <span className="inline-block align-middle my-4 text-center"> {/* Center text within span */}
+                {/* Change inner div to span */}
+                <span className="inline-flex items-center justify-center p-3 border rounded-md bg-red-50 text-red-700 shadow-sm text-xs max-w-md">
+                    无法加载产品信息 (ID: {productId})。
+                </span>
+            </span>
+        );
     }
+
+    // 渲染产品组件 (不变)
+    let productElement: React.ReactNode | null = null;
+
+    switch (style) {
+        case 'card': productElement = <CardProductElement product={product} />; break;
+        case 'horizontal': productElement = <HorizontalProductElement product={product} />; break;
+        case 'mini': productElement = <MiniProductElement product={product} />; break;
+        case 'simple': default: productElement = <SimpleProductElement product={product} />; break;
+    }
+
+    // 直接返回产品元素，移除包裹 span
+    return productElement;
 } 

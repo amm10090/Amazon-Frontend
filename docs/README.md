@@ -7,6 +7,7 @@
 ### 组件文档
 
 - [StoreIdentifier 商店来源标识组件](./components/StoreIdentifier.md) - 用于显示商品来源店铺的标识组件
+- [产品模板系统文档](./components/ProductTemplates.md) - 包含 CardProductElement, HorizontalProductElement, MiniProductElement, SimpleProductElement 等模板的说明
 - [收藏功能](./Favorites/Favorites.md) - 收藏功能的完整使用指南，包含前端组件和API
 - [邮件订阅功能](./NewsletterSubscribe.md) - 邮件订阅功能的实现细节和使用方法
 - [仪表盘系统](./dashboard/README.md) - 后台管理仪表盘的完整文档，包含角色权限系统和组件说明

@@ -22,25 +22,25 @@ export const StoreIdentifier: React.FC<StoreIdentifierProps> = ({
 
     if (store.name === 'Amazon') {
         return (
-            <div className={`flex items-center ${align === 'right' ? 'justify-end' : ''} ${className.includes('mb-') ? '' : 'mb-2'} ${className}`}>
+            <span className={`inline-flex items-center align-middle ${align === 'right' ? 'justify-end' : ''} ${className.includes('mb-') ? '' : ''} ${className}`}>
                 {store.icon}
-            </div>
+            </span>
         );
     } else if (store.icon) {
         return (
-            <div className={`flex items-center ${align === 'right' ? 'justify-end' : ''} ${className.includes('mb-') ? '' : 'mb-2'} ${className}`}>
-                <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center mr-1.5 flex-shrink-0"
+            <span className={`inline-flex items-center align-middle ${align === 'right' ? 'justify-end' : ''} ${className.includes('mb-') ? '' : ''} ${className}`}>
+                <span
+                    className="w-5 h-5 rounded-full inline-flex items-center justify-center mr-1.5 flex-shrink-0"
                     style={{ backgroundColor: store.color }}
                 >
                     {store.icon}
-                </div>
+                </span>
                 {showName && (
                     <span className="text-xs font-medium text-secondary dark:text-gray-400">
                         {store.name}
                     </span>
                 )}
-            </div>
+            </span>
         );
     }
 

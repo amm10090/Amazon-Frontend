@@ -10,7 +10,7 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         if (!ObjectId.isValid(id)) {
             return NextResponse.json(
@@ -75,7 +75,7 @@ export async function PUT(
     { params }: { params: { id: string } }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const body: ContentPageUpdateRequest = await request.json();
 
         if (!ObjectId.isValid(id)) {
@@ -190,7 +190,7 @@ export async function DELETE(
     { params }: { params: { id: string } }
 ) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         if (!ObjectId.isValid(id)) {
             return NextResponse.json(

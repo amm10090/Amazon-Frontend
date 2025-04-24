@@ -29,6 +29,7 @@
     "@tiptap/extension-color": "2.11.7",
     "@tiptap/extension-dropcursor": "2.11.7",
     "@tiptap/extension-focus": "2.11.7",
+    "@tiptap/extension-gapcursor": "2.11.7",
     "@tiptap/extension-highlight": "2.11.7",
     "@tiptap/extension-image": "^2.11.7",
     "@tiptap/extension-link": "^2.11.7",

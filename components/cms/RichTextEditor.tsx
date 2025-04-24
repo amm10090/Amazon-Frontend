@@ -12,6 +12,7 @@ import CharacterCount from '@tiptap/extension-character-count';
 import Color from '@tiptap/extension-color';
 import Dropcursor from '@tiptap/extension-dropcursor';
 import Focus from '@tiptap/extension-focus';
+import Gapcursor from '@tiptap/extension-gapcursor';
 import Highlight from '@tiptap/extension-highlight';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
@@ -22,17 +23,17 @@ import TextStyle from '@tiptap/extension-text-style';
 import Typography from '@tiptap/extension-typography';
 import Underline from '@tiptap/extension-underline';
 import Youtube from '@tiptap/extension-youtube';
-import { useEditor, EditorContent, BubbleMenu, FloatingMenu } from '@tiptap/react';
+import { useEditor, EditorContent, BubbleMenu, FloatingMenu, isNodeSelection } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import {
     Bold, Italic, List, ListOrdered,
     Link as LinkIcon, Image as ImageIcon, Tag, Heading1, Heading2,
-    Strikethrough, Code, Quote, Highlighter, Palette
+    Strikethrough, Code, Quote, Highlighter, Palette, Minus
 } from 'lucide-react';
 import { useState, useEffect, useCallback, type MouseEvent } from 'react';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
-import { ProductBlot, type ProductAttributes } from './ProductBlot';
+import { ProductBlot, type ProductAttributes, PRODUCT_STYLES } from './ProductBlot';
 import { ProductSelector, type Product } from './ProductSelector';
 import { TiptapToolbar } from './TiptapToolbar';
 
@@ -108,7 +109,7 @@ export function RichTextEditor({
                 emptyEditorClass: 'is-editor-empty',
             }),
             Image.configure({
-                inline: false,
+                inline: true,
                 allowBase64: false,
                 HTMLAttributes: {
                     class: 'mx-auto rounded max-w-full',
@@ -191,6 +192,7 @@ export function RichTextEditor({
                 // controls: false,
                 // allowFullscreen: false,
             }),
+            Gapcursor,
         ],
         content: value,
         onUpdate: ({ editor }) => {
@@ -273,11 +275,11 @@ export function RichTextEditor({
         const commands = editor.commands as unknown as ProductCommands;
 
         commands.insertProduct({
-            id: product.id || '',
+            id: product.id || product.asin || '',
             title: product.title,
             price: product.price || 0,
             // 图片处理：优先使用 main_image，其次是image
-            image: product.main_image || product.image_url || '',
+            image: product.main_image || product.image_url || '/placeholder-product.jpg',
             // asin处理：直接使用asin或默认为空字符串
             asin: product.asin || '',
             // 样式处理：使用产品提供的样式或默认为卡片样式
@@ -356,6 +358,13 @@ export function RichTextEditor({
     const handleAddProductWrapper = () => {
         setShowProductSelector(true);
     };
+
+    // 恢复 handleProductStyleChange，因为样式按钮仍然需要它
+    const handleProductStyleChange = useCallback((style: string) => {
+        if (editor && editor.isActive('product')) {
+            editor.chain().focus().updateAttributes('product', { style }).run();
+        }
+    }, [editor]);
 
     // 如果不在客户端，返回占位符
     if (!isClient) {
@@ -481,7 +490,6 @@ export function RichTextEditor({
                 </div>
             )}
 
-            {/* Bubble Menu: 用于内联格式化 */}
             {editor && (
                 <BubbleMenu
                     editor={editor}
@@ -513,91 +521,129 @@ export function RichTextEditor({
                             }
                         }
                     }}
-                    className="bg-white border border-gray-200 rounded-lg shadow-lg p-1.5 flex gap-1.5 transition-opacity duration-150"
-                    shouldShow={({ editor }) => {
-                        const { state } = editor;
+                    className="bg-white border border-gray-200 rounded-lg shadow-lg p-1.5 flex gap-1.5 transition-opacity duration-150 items-center"
+                    shouldShow={({ state }) => {
+                        const { selection } = state;
+                        const { $from, empty } = selection;
 
-                        return !state.selection.empty && !isLinkPopoverOpen;
+                        const isTextSelection = !empty && ($from.parent.type.name === 'paragraph' || $from.parent.type.name === 'heading');
+                        const isProductNodeSelected = isNodeSelection(selection) && selection.node?.type.name === 'product';
+
+                        return (isTextSelection || isProductNodeSelected) && !isLinkPopoverOpen;
                     }}
                 >
-                    <button
-                        type="button"
-                        onClick={() => editor?.chain().focus().toggleBold().run()}
-                        className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('bold') ? 'bg-blue-100 text-blue-600' : ''}`}
-                        title="加粗"
-                    >
-                        <Bold size={16} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor?.chain().focus().toggleItalic().run()}
-                        className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('italic') ? 'bg-blue-100 text-blue-600' : ''}`}
-                        title="斜体"
-                    >
-                        <Italic size={16} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor?.chain().focus().toggleStrike().run()}
-                        className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('strike') ? 'bg-blue-100 text-blue-600' : ''}`}
-                        title="删除线"
-                    >
-                        <Strikethrough size={16} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleHighlight}
-                        className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('highlight') ? 'bg-blue-100 text-blue-600' : ''}`}
-                        title="高亮文本"
-                    >
-                        <Highlighter size={16} />
-                    </button>
-                    <Popover placement="bottom" isOpen={isLinkPopoverOpen} onOpenChange={handleLinkOpenChange}>
-                        <PopoverTrigger>
-                            <div>
-                                <button
-                                    type="button"
-                                    className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('link') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                    title="添加/编辑链接"
-                                >
-                                    <LinkIcon size={16} />
-                                </button>
-                            </div>
-                        </PopoverTrigger>
-                        <PopoverContent className="p-2 w-64">
-                            <div className="space-y-2">
-                                <Input
-                                    type="url"
-                                    placeholder="https://example.com"
-                                    value={linkUrl}
-                                    onChange={(e) => setLinkUrl(e.target.value)}
-                                    className="w-full"
-                                />
-                                <div className="flex justify-end gap-2">
-                                    <Button size="sm" onClick={handleApplyLink}>应用</Button>
-                                    <Button size="sm" onClick={handleRemoveLink}>移除</Button>
-                                </div>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
+                    {isNodeSelection(editor.state.selection) && editor.isActive('product') ? (
+                        // --- 产品节点选中时的菜单 (只有样式按钮) ---
+                        (() => {
+                            const selection = editor.state.selection;
+                            const currentNode = isNodeSelection(selection) ? selection.node : null;
+                            const currentStyle = currentNode?.attrs.style;
+                            // const currentAlignment = currentNode?.attrs.alignment || 'left'; // Alignment no longer needed here
 
-                    {/* 文本颜色选择器 - 替换为 ColorPickerPopover */}
-                    <ColorPickerPopover
-                        editor={editor}
-                        trigger={
+                            return (
+                                <div className="flex items-center gap-1.5">
+                                    {/* 样式按钮 */}
+                                    <span className="text-xs text-gray-500 mr-1">布局:</span>
+                                    {PRODUCT_STYLES.map((styleOption) => (
+                                        <button
+                                            key={styleOption.id}
+                                            type="button"
+                                            onClick={() => handleProductStyleChange(styleOption.id)}
+                                            className={`px-1.5 py-0.5 rounded text-xs hover:bg-gray-100 transition-colors ${currentStyle === styleOption.id ? 'bg-blue-100 text-blue-600' : 'text-gray-700'}`}
+                                            title={styleOption.name}
+                                        >
+                                            {styleOption.name}
+                                        </button>
+                                    ))}
+                                    {/* 移除分隔符和对齐按钮 */}
+                                    {/* <div className="h-4 w-px bg-gray-200 mx-1"></div> */}
+                                    {/* <span className="text-xs text-gray-500 mr-1">对齐:</span> */}
+                                    {/* <button ... AlignLeft ... /> */}
+                                    {/* <button ... AlignCenter ... /> */}
+                                    {/* <button ... AlignRight ... /> */}
+                                </div>
+                            );
+                        })()
+                    ) : (
+                        // --- 文本格式化工具 (保持不变) ---
+                        <>
                             <button
                                 type="button"
-                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('textStyle') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                title="文本颜色"
+                                onClick={() => editor?.chain().focus().toggleBold().run()}
+                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('bold') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                title="加粗"
                             >
-                                <Palette size={16} />
+                                <Bold size={16} />
                             </button>
-                        }
-                    />
+                            <button
+                                type="button"
+                                onClick={() => editor?.chain().focus().toggleItalic().run()}
+                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('italic') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                title="斜体"
+                            >
+                                <Italic size={16} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor?.chain().focus().toggleStrike().run()}
+                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('strike') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                title="删除线"
+                            >
+                                <Strikethrough size={16} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleHighlight}
+                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('highlight') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                title="高亮文本"
+                            >
+                                <Highlighter size={16} />
+                            </button>
+                            <Popover placement="bottom" isOpen={isLinkPopoverOpen} onOpenChange={handleLinkOpenChange}>
+                                <PopoverTrigger>
+                                    <div>
+                                        <button
+                                            type="button"
+                                            className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('link') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                            title="添加/编辑链接"
+                                        >
+                                            <LinkIcon size={16} />
+                                        </button>
+                                    </div>
+                                </PopoverTrigger>
+                                <PopoverContent className="p-2 w-64">
+                                    <div className="space-y-2">
+                                        <Input
+                                            type="url"
+                                            placeholder="https://example.com"
+                                            value={linkUrl}
+                                            onChange={(e) => setLinkUrl(e.target.value)}
+                                            className="w-full"
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                            <Button size="sm" onClick={handleApplyLink}>应用</Button>
+                                            <Button size="sm" onClick={handleRemoveLink}>移除</Button>
+                                        </div>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                            <ColorPickerPopover
+                                editor={editor}
+                                trigger={
+                                    <button
+                                        type="button"
+                                        className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('textStyle') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                        title="文本颜色"
+                                    >
+                                        <Palette size={16} />
+                                    </button>
+                                }
+                            />
+                        </>
+                    )}
                 </BubbleMenu>
             )}
 
-            {/* Floating Menu: 用于插入块级元素 */}
             {editor && (
                 <FloatingMenu
                     editor={editor}
@@ -682,6 +728,13 @@ export function RichTextEditor({
                     </button>
                     <button
                         type="button"
+                        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                    >
+                        <Minus size={16} /> 分割线
+                    </button>
+                    <button
+                        type="button"
                         onClick={handleFloatingImageAdd}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
@@ -697,7 +750,6 @@ export function RichTextEditor({
                 </FloatingMenu>
             )}
 
-            {/* 产品选择器模态框 */}
             {showProductSelector && (
                 <ProductSelector
                     isOpen={showProductSelector}

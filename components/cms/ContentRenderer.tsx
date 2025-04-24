@@ -27,20 +27,20 @@ const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
                 return;
             }
 
-            // Detect product node - Now only needs id and style
+            // Detect product node
             if (domNode.attribs && domNode.attribs['data-node-type'] === 'product') {
                 const productId = domNode.attribs['data-product-id'];
                 const productStyle = domNode.attribs['data-style'] || 'simple';
+                // 读取 alignment 属性
+                const alignment = (domNode.attribs['data-alignment'] || 'left') as 'left' | 'center' | 'right';
 
-                // Check if productId is valid before rendering the loader
                 if (!productId) {
-
-                    // Optionally render a placeholder or error message
-                    return <div className="text-red-500 text-xs p-2 border border-red-200 rounded">产品 ID 丢失</div>;
+                    // Change div to span for inline compatibility
+                    return <span className="text-red-500 text-xs p-2 border border-red-200 rounded align-middle">产品 ID 丢失</span>;
                 }
 
-                // Render the dynamic loader component
-                return <DynamicProductLoader productId={productId} style={productStyle} />;
+                // 传递 alignment 给 DynamicProductLoader
+                return <DynamicProductLoader productId={productId} style={productStyle} alignment={alignment} />;
             }
 
             // Keep existing image handling (unchanged, but slightly improved)

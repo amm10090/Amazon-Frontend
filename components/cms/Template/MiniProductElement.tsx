@@ -15,8 +15,8 @@ const MiniProductElement = ({ product }: { product: ComponentProduct }) => {
     const productUrl = `/product/${id}`;
 
     return (
-        <Link href={productUrl} className="inline-block no-underline max-w-full">
-            <motion.div
+        <Link href={productUrl} className="inline-block no-underline max-w-full align-middle">
+            <motion.span
                 className="inline-flex items-center my-2 p-2 border rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm max-w-full w-64 overflow-hidden"
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.2 }}
@@ -36,7 +36,7 @@ const MiniProductElement = ({ product }: { product: ComponentProduct }) => {
                     <div className="text-xs text-primary dark:text-primary-light">{formatPrice(price)}</div>
                 </div>
                 <StoreIdentifier url={effectiveUrl} showName={false} className="mb-0 ml-2 flex-shrink-0" />
-            </motion.div>
+            </motion.span>
         </Link>
     );
 };

@@ -74,24 +74,24 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
     // --- End reusable logic ---
 
     return (
-        <div className="my-4 w-full max-w-[280px] mx-auto relative">
+        <span className="inline-block align-middle my-4 w-full max-w-[280px] mx-auto relative">
             {/* Prime badge */}
             {isPrime && (
                 <div className="absolute top-3 left-3 z-10">
-                    <div className="bg-[#0574F7] text-white px-2 py-0.5 rounded-full text-xs font-medium shadow-sm">
+                    <span className="bg-[#0574F7] text-white px-2 py-0.5 rounded-full text-xs font-medium shadow-sm">
                         Prime
-                    </div>
+                    </span>
                 </div>
             )}
             <Link href={productUrl} className="no-underline">
-                <motion.div
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full flex flex-col"
+                <motion.span
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full inline-flex flex-col"
                     whileHover={{ y: -8, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.03)' }}
                     transition={{ duration: 0.3 }}
                 >
                     {/* 产品图片 */}
-                    <div className="relative w-full aspect-[1/1] bg-white dark:bg-gray-700 pt-0.5">
-                        <motion.div whileHover={{ scale: 1.05 }} className="h-full w-full relative">
+                    <span className="relative w-full aspect-[1/1] bg-white dark:bg-gray-700 pt-0.5 block">
+                        <motion.span whileHover={{ scale: 1.05 }} className="h-full w-full relative block">
                             {image ? (
                                 <Image
                                     src={image}
@@ -105,32 +105,32 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                                     onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
                                 />
                             ) : (
-                                <div className="h-full w-full flex items-center justify-center text-gray-400 bg-gray-100 dark:bg-gray-700">
+                                <span className="h-full w-full flex items-center justify-center text-gray-400 bg-gray-100 dark:bg-gray-700">
                                     无图片
-                                </div>
+                                </span>
                             )}
-                        </motion.div>
-                    </div>
+                        </motion.span>
+                    </span>
 
                     {/* 产品信息 */}
-                    <div className="p-3 flex-grow flex flex-col">
+                    <span className="p-3 flex-grow flex flex-col">
                         {/* 品牌信息和商店标识 */}
-                        <div className="flex items-center justify-between mb-1.5 min-h-[20px]"> {/* Added min-height */}
+                        <span className="flex items-center justify-between mb-1.5 min-h-[20px]">
                             {formattedBrand ? (
                                 <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded inline-block truncate max-w-[50%]">
                                     {formattedBrand}
                                 </span>
-                            ) : <span />} {/* Placeholder span */}
+                            ) : <span />}
                             <StoreIdentifier url={effectiveUrl} align="right" />
-                        </div>
+                        </span>
 
-                        <h3 className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-gray-100">
+                        <strong className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-gray-100">
                             {title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
-                        </h3>
+                        </strong>
 
                         {/* 价格和折扣 */}
-                        <div className="flex items-center justify-between mt-1 mb-2 min-h-[28px]"> {/* Added min-height */}
-                            <div className="flex items-baseline min-w-0 overflow-hidden mr-2">
+                        <span className="flex items-center justify-between mt-1 mb-2 min-h-[28px]">
+                            <span className="flex items-baseline min-w-0 overflow-hidden mr-2">
                                 <span className="text-lg font-semibold text-primary dark:text-primary-light whitespace-nowrap">
                                     {formatPrice(price)}
                                 </span>
@@ -139,8 +139,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                                         {formatPrice(displayOriginalPrice)}
                                     </span>
                                 )}
-                            </div>
-                            {/* Badge: Coupon has priority */}
+                            </span>
                             {couponLabel ? (
                                 <span className="text-xs font-bold text-white px-2 py-0.5 rounded whitespace-nowrap flex-shrink-0 bg-green-500">
                                     {couponLabel}
@@ -150,27 +149,27 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                                     {discountLabel}
                                 </span>
                             ) : null}
-                        </div>
+                        </span>
                         {couponExpirationDate && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 border-t border-gray-100 dark:border-gray-700 pt-1">
+                            <span className="block text-xs text-gray-500 dark:text-gray-400 mt-1 border-t border-gray-100 dark:border-gray-700 pt-1">
                                 Coupon Expires: {formatExpiryDate(couponExpirationDate)}
-                            </div>
+                            </span>
                         )}
-                    </div>
+                    </span>
 
                     {/* 查看详情按钮 */}
-                    <div className="px-3 pb-3 mt-auto"> {/* Ensure button is at the bottom */}
-                        <motion.div
+                    <span className="block px-3 pb-3 mt-auto">
+                        <motion.span
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
-                            className="w-full py-2 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-dark dark:hover:bg-primary text-white text-center rounded-full font-medium shadow-sm transition-colors"
+                            className="block w-full py-2 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-dark dark:hover:bg-primary text-white text-center rounded-full font-medium shadow-sm transition-colors"
                         >
                             查看详情
-                        </motion.div>
-                    </div>
-                </motion.div>
+                        </motion.span>
+                    </span>
+                </motion.span>
             </Link>
-        </div>
+        </span>
     );
 };
 

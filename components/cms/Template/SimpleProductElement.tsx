@@ -14,33 +14,35 @@ const SimpleProductElement = ({ product }: { product: ComponentProduct }) => {
     const productUrl = `/product/${id}`; // Use ID for internal link
 
     return (
-        <div className="flex items-center my-4 p-3 border rounded-md bg-white shadow-sm">
-            {image && (
-                <Link href={productUrl} className="relative w-16 h-16 mr-3 border rounded-md overflow-hidden flex-shrink-0">
-                    <Image
-                        src={image}
-                        alt={title}
-                        fill
-                        sizes="(max-width: 768px) 10vw, 64px"
-                        className="object-cover"
-                        onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
-                    />
-                </Link>
-            )}
-            <div className="flex-grow min-w-0">
-                <Link href={productUrl} className="font-medium text-gray-900 truncate hover:text-primary transition-colors no-underline">
-                    {title}
-                </Link>
-                <div className="flex gap-2 text-sm text-gray-500">
-                    <span>{formatPrice(price)}</span>
-                    {/* Only display ASIN if it exists and has a value */}
-                    {asin && <span>ASIN: {asin}</span>}
-                </div>
-            </div>
-            <StoreIdentifier url={effectiveUrl} align="right" showName={false} className="mb-0 ml-auto flex-shrink-0" />
+        <span className="inline-flex items-center my-4 p-3 border rounded-md bg-white shadow-sm gap-3 max-w-lg align-middle">
+            <span className="flex items-center flex-grow min-w-0 gap-3">
+                {image && (
+                    <Link href={productUrl} className="relative w-16 h-16 border rounded-md overflow-hidden flex-shrink-0">
+                        <Image
+                            src={image}
+                            alt={title}
+                            fill
+                            sizes="(max-width: 768px) 10vw, 64px"
+                            className="object-cover"
+                            onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
+                        />
+                    </Link>
+                )}
+                <span className="min-w-0">
+                    <Link href={productUrl} className="font-medium text-gray-900 truncate hover:text-primary transition-colors no-underline block">
+                        {title}
+                    </Link>
+                    <span className="flex gap-2 text-sm text-gray-500 mt-1">
+                        <span>{formatPrice(price)}</span>
+                        {/* Only display ASIN if it exists and has a value */}
+                        {asin && <span>ASIN: {asin}</span>}
+                    </span>
+                </span>
+            </span>
+            <StoreIdentifier url={effectiveUrl} align="right" showName={false} className="mb-0 flex-shrink-0" />
             {/* Optionally keep the '产品' tag if needed for CMS context */}
             {/* <div className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full ml-2">产品</div> */}
-        </div>
+        </span>
     );
 };
 
