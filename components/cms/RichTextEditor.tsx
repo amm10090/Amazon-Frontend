@@ -13,6 +13,7 @@ import Color from '@tiptap/extension-color';
 import Dropcursor from '@tiptap/extension-dropcursor';
 import Focus from '@tiptap/extension-focus';
 import Gapcursor from '@tiptap/extension-gapcursor';
+import Heading from '@tiptap/extension-heading';
 import Highlight from '@tiptap/extension-highlight';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
@@ -90,9 +91,7 @@ export function RichTextEditor({
             // 然后加载其他扩展
             StarterKit.configure({
                 // 配置 StarterKit 选项
-                heading: {
-                    levels: [1, 2, 3],
-                },
+                heading: false, // 禁用StarterKit自带的heading扩展
                 codeBlock: {
                     HTMLAttributes: {
                         class: 'bg-gray-100 rounded p-2 font-mono text-sm',
@@ -104,6 +103,10 @@ export function RichTextEditor({
                     },
                 },
                 dropcursor: false
+            }),
+            // 单独配置Heading扩展支持六级标题
+            Heading.configure({
+                levels: [1, 2, 3, 4, 5, 6],
             }),
             Placeholder.configure({
                 placeholder,
@@ -402,14 +405,35 @@ export function RichTextEditor({
                         font-weight: 600;
                         margin-top: 0.8rem;
                         margin-bottom: 0.4rem;
-                        color: #444;
+                        color: #333;
                     }
                     .ProseMirror h3 {
                         font-size: 1.25rem;
                         font-weight: 500;
                         margin-top: 0.6rem;
                         margin-bottom: 0.3rem;
-                        color: #555;
+                        color: #333;
+                    }
+                    .ProseMirror h4 {
+                        font-size: 1.15rem;
+                        font-weight: 500;
+                        margin-top: 0.5rem;
+                        margin-bottom: 0.3rem;
+                        color: #333;
+                    }
+                    .ProseMirror h5 {
+                        font-size: 1.05rem;
+                        font-weight: 500;
+                        margin-top: 0.5rem;
+                        margin-bottom: 0.2rem;
+                        color: #333;
+                    }
+                    .ProseMirror h6 {
+                        font-size: 1rem;
+                        font-weight: 500;
+                        margin-top: 0.5rem;
+                        margin-bottom: 0.2rem;
+                        color: #333;
                     }
                     .ProseMirror p {
                         margin-bottom: 0.75rem;
@@ -699,6 +723,34 @@ export function RichTextEditor({
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
                         <Heading2 size={16} /> 二级标题
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                    >
+                        <Heading2 size={15} /> 三级标题
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                    >
+                        <Heading2 size={14} /> 四级标题
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
+                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                    >
+                        <Heading2 size={13} /> 五级标题
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
+                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                    >
+                        <Heading2 size={12} /> 六级标题
                     </button>
                     <button
                         type="button"

@@ -10,8 +10,8 @@
 }
 
 /* 引用块样式 */
-.ProseMirror blockquote,
-.prose blockquote {
+.cms-content .ProseMirror blockquote,
+.cms-content .prose blockquote {
   border-left: 3px solid #b4b4b4;
   padding-left: 1rem;
   font-style: italic;
@@ -20,8 +20,8 @@
 }
 
 /* 代码块样式 */
-.ProseMirror pre,
-.prose pre {
+.cms-content .ProseMirror pre,
+.cms-content .prose pre {
   background-color: #f7fafc;
   border-radius: 0.25rem;
   padding: 0.75rem 1rem;
@@ -32,8 +32,8 @@
   overflow-x: auto;
 }
 
-.ProseMirror code,
-.prose code {
+.cms-content .ProseMirror code,
+.cms-content .prose code {
   background-color: #f0f0f0;
   border-radius: 0.25rem;
   padding: 0.125rem 0.25rem;
@@ -42,70 +42,74 @@
 }
 
 /* 高亮文本样式 */
-.ProseMirror mark,
-.prose mark {
+.cms-content .ProseMirror mark,
+.cms-content .prose mark {
   border-radius: 0.25rem;
   padding: 0.125rem 0.25rem;
   background-color: #fef3c7; /* 默认黄色 */
 }
 
-.ProseMirror mark[data-color="#fef3c7"],
-.prose mark[data-color="#fef3c7"] {
+.cms-content .ProseMirror mark[data-color="#fef3c7"],
+.cms-content .prose mark[data-color="#fef3c7"] {
   background-color: #fef3c7; /* 黄色 */
 }
 
-.ProseMirror mark[data-color="#d1fae5"],
-.prose mark[data-color="#d1fae5"] {
+.cms-content .ProseMirror mark[data-color="#d1fae5"],
+.cms-content .prose mark[data-color="#d1fae5"] {
   background-color: #d1fae5; /* 绿色 */
 }
 
-.ProseMirror mark[data-color="#fce7f3"],
-.prose mark[data-color="#fce7f3"] {
+.cms-content .ProseMirror mark[data-color="#fce7f3"],
+.cms-content .prose mark[data-color="#fce7f3"] {
   background-color: #fce7f3; /* 粉色 */
 }
 
-.ProseMirror mark[data-color="#dbeafe"],
-.prose mark[data-color="#dbeafe"] {
+.cms-content .ProseMirror mark[data-color="#dbeafe"],
+.cms-content .prose mark[data-color="#dbeafe"] {
   background-color: #dbeafe; /* 蓝色 */
 }
 
 /* 文本颜色样式 */
-.ProseMirror span[style*="color"],
-.prose span[style*="color"] {
+.cms-content .ProseMirror span[style*="color"],
+.cms-content .prose span[style*="color"] {
   border-radius: 0.125rem;
 }
 
 /* 列表样式 */
-.ProseMirror ul,
-.ProseMirror ol {
+.cms-content .ProseMirror ul,
+.cms-content .ProseMirror ol,
+.cms-content .prose ul,
+.cms-content .prose ol {
   padding-left: 1.5rem;
 }
 
-.ProseMirror ul li {
+.cms-content .ProseMirror ul li,
+.cms-content .prose ul li {
   list-style-type: disc;
 }
 
-.ProseMirror ol li {
+.cms-content .ProseMirror ol li,
+.cms-content .prose ol li {
   list-style-type: decimal;
 }
 
 /* 链接样式 */
-.ProseMirror a,
-.prose a {
+.cms-content .ProseMirror a,
+.cms-content .prose a {
   color: #3182ce;
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color 0.1s ease-in-out;
 }
 
-.ProseMirror a:hover,
-.prose a:hover {
+.cms-content .ProseMirror a:hover,
+.cms-content .prose a:hover {
   color: #2c5282;
 }
 
 /* 图片样式 */
-.ProseMirror img,
-.prose img {
+.cms-content .ProseMirror img,
+.cms-content .prose img {
   max-width: 100%;
   height: auto;
   border-radius: 0.25rem;
@@ -114,8 +118,8 @@
 }
 
 /* 产品嵌入样式 */
-.ProseMirror .product-embed,
-.prose .product-embed {
+.cms-content .ProseMirror .product-embed,
+.cms-content .prose .product-embed {
   border: 1px solid #e2e8f0;
   border-radius: 0.375rem;
   padding: 0.75rem;

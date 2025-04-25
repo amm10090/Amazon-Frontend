@@ -1,8 +1,8 @@
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Popover, PopoverTrigger, PopoverContent, Input, Kbd } from '@heroui/react';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Popover, PopoverTrigger, PopoverContent, Input, Kbd, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Switch } from '@heroui/react';
 import type { Editor } from '@tiptap/core';
 import {
     Bold, Italic, Underline, Strikethrough, List, ListOrdered, Undo, Redo,
-    Link as LinkIcon, Image as ImageIcon, Tag, Heading1, Heading2, Heading3,
+    Link as LinkIcon, Image as ImageIcon, Tag, Heading,
     AlignLeft, AlignCenter, AlignRight, Code, Quote,
     Trash2, Highlighter, Type, Palette,
     CornerDownLeft,
@@ -43,6 +43,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
     // 新增链接和图片 Popover 状态
     const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false);
     const [linkUrl, setLinkUrl] = useState('');
+    const [linkOpenInNewTab, setLinkOpenInNewTab] = useState(false);
     const [isImagePopoverOpen, setIsImagePopoverOpen] = useState(false);
     const [imageUrl, setImageUrl] = useState('');
     // 新增：快捷键模态框状态
@@ -128,7 +129,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
         setYoutubeHeight('480');
     }, []);
 
-    // 新增：应用链接 URL
+    // 应用链接 URL
     const applyLinkUrl = useCallback(() => {
         if (!editor) return;
         const urlToSet = linkUrl.trim();
@@ -136,27 +137,31 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
         if (urlToSet === '') {
             editor.chain().focus().extendMarkRange('link').unsetLink().run();
         } else {
-            // 简单的验证，确保是 http(s) 开头
             if (!/^https?:\/\//i.test(urlToSet)) {
                 alert('请输入有效的 URL (以 http:// 或 https:// 开头)');
 
                 return;
             }
-            editor.chain().focus().extendMarkRange('link').setLink({ href: urlToSet }).run();
+            editor.chain().focus().extendMarkRange('link').setLink({
+                href: urlToSet,
+                target: linkOpenInNewTab ? '_blank' : null
+            }).run();
         }
         setIsLinkPopoverOpen(false);
-        setLinkUrl(''); // 关闭后清空
-    }, [editor, linkUrl]);
+        setLinkUrl('');
+        setLinkOpenInNewTab(false);
+    }, [editor, linkUrl, linkOpenInNewTab]);
 
-    // 新增：移除链接
+    // 移除链接
     const handleLinkRemove = useCallback(() => {
         if (!editor) return;
         editor.chain().focus().extendMarkRange('link').unsetLink().run();
         setIsLinkPopoverOpen(false);
-        setLinkUrl(''); // 关闭后清空
+        setLinkUrl('');
+        setLinkOpenInNewTab(false);
     }, [editor]);
 
-    // 新增：应用图片 URL
+    // 应用图片 URL
     const applyImageUrl = useCallback(() => {
         if (!editor) return;
         const urlToApply = imageUrl.trim();
@@ -177,7 +182,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
         }
     }, [editor, imageUrl]);
 
-    // 新增：取消图片插入
+    // 取消图片插入
     const handleImageCancel = useCallback(() => {
         setIsImagePopoverOpen(false);
         setImageUrl(''); // 取消时清空
@@ -208,6 +213,32 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
     const handleMetadataButtonClick = useCallback(() => {
         setIsProductSelectorOpen(true);
     }, []);
+
+    // 新增：获取当前标题级别或'p'
+    const getCurrentHeadingLevel = useCallback(() => {
+        if (!editor) return 'p';
+        for (let i = 1; i <= 6; i++) {
+            if (editor.isActive('heading', { level: i as 1 | 2 | 3 | 4 | 5 | 6 })) {
+                return `h${i}`;
+            }
+        }
+
+        return 'p';
+    }, [editor]);
+
+    // 新增：处理标题选择
+    const handleHeadingSelect = useCallback((key: React.Key) => {
+        if (!editor) return;
+        const level = key.toString();
+
+        if (level === 'p') {
+            editor.chain().focus().setParagraph().run();
+        } else {
+            const headingLevel = parseInt(level.substring(1), 10) as 1 | 2 | 3 | 4 | 5 | 6;
+
+            editor.chain().focus().toggleHeading({ level: headingLevel }).run();
+        }
+    }, [editor]);
 
     if (!editor) {
         return null;
@@ -362,32 +393,36 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
             </div>
             <div className="h-6 w-px bg-gray-300" />
 
-            {/* 标题 */}
+            {/* 标题 - 改为下拉菜单 */}
             <div className="flex items-center space-x-1">
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-200' : ''}`}
-                    title="一级标题 (Ctrl+Alt+1)"
-                >
-                    <Heading1 size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-200' : ''}`}
-                    title="二级标题 (Ctrl+Alt+2)"
-                >
-                    <Heading2 size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-200' : ''}`}
-                    title="三级标题 (Ctrl+Alt+3)"
-                >
-                    <Heading3 size={16} />
-                </button>
+                <Dropdown>
+                    <DropdownTrigger>
+                        <Button
+                            variant="light" // 或其他你喜欢的样式
+                            className="p-1.5 rounded hover:bg-gray-100 data-[hover=true]:bg-gray-100 min-w-0" // 调整样式以适应按钮
+                            title="标题级别"
+                        >
+                            {/* 可以根据当前级别显示不同内容，或保持通用图标 */}
+                            <Heading size={16} />
+                            {/* <span className="ml-1 text-xs">{getCurrentHeadingLevel().toUpperCase()}</span> */}
+                        </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                        aria-label="Heading Levels"
+                        onAction={handleHeadingSelect}
+                        selectedKeys={[getCurrentHeadingLevel()]} // 高亮当前级别
+                        selectionMode="single"
+                    >
+                        <DropdownItem key="p">普通文本</DropdownItem>
+                        <DropdownItem key="h1">一级标题</DropdownItem>
+                        <DropdownItem key="h2">二级标题</DropdownItem>
+                        <DropdownItem key="h3">三级标题</DropdownItem>
+                        <DropdownItem key="h4">四级标题</DropdownItem>
+                        <DropdownItem key="h5">五级标题</DropdownItem>
+                        <DropdownItem key="h6">六级标题</DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+
                 <button
                     type="button"
                     onClick={applyTypography}
@@ -488,9 +523,12 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                const currentUrl = editor?.getAttributes('link').href || '';
+                                const attrs = editor?.getAttributes('link');
+                                const currentUrl = attrs?.href || '';
+                                const currentTarget = attrs?.target;
 
                                 setLinkUrl(currentUrl);
+                                setLinkOpenInNewTab(currentTarget === '_blank');
                                 setIsLinkPopoverOpen(true);
                             }}
                             className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('link') ? 'bg-gray-200' : ''}`}
@@ -501,17 +539,28 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     </PopoverTrigger>
                     <PopoverContent className="p-3 w-72">
                         <div className="space-y-3">
-                            <label htmlFor="link-url-input" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="toolbar-link-url-input" className="block text-sm font-medium text-gray-700 mb-1">
                                 链接 URL
                             </label>
                             <Input
-                                id="link-url-input"
+                                id="toolbar-link-url-input"
                                 placeholder="https://example.com"
                                 value={linkUrl}
                                 onChange={(e) => setLinkUrl(e.target.value)}
                                 type="url"
                                 size="sm"
                             />
+                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                                <label htmlFor="toolbar-link-new-tab" className="text-sm text-gray-600 select-none">
+                                    在新标签页打开
+                                </label>
+                                <Switch
+                                    id="toolbar-link-new-tab"
+                                    isSelected={linkOpenInNewTab}
+                                    onValueChange={setLinkOpenInNewTab}
+                                    size="sm"
+                                />
+                            </div>
                             <div className="flex justify-end gap-2 mt-4">
                                 <Button size="sm" variant="bordered" onPress={handleLinkRemove}>
                                     移除
@@ -532,7 +581,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                setImageUrl(''); // 打开时清空
+                                setImageUrl('');
                                 setIsImagePopoverOpen(true);
                             }}
                             className="p-1.5 rounded hover:bg-gray-100"
@@ -580,49 +629,43 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     </PopoverTrigger>
                     <PopoverContent className="p-3 w-72">
                         <div className="space-y-3">
-                            {/* 手动添加 label */}
                             <label htmlFor="youtube-url-input" className="block text-sm font-medium text-gray-700 mb-1">
                                 YouTube URL
                             </label>
                             <Input
-                                // 移除 label 和 labelPlacement
                                 placeholder="https://www.youtube.com/watch?v=..."
                                 value={youtubeUrl}
                                 onChange={(e) => setYoutubeUrl(e.target.value)}
                                 type="url"
                                 size="sm"
-                                id="youtube-url-input" // 添加 id
-                                className="" // 移除 mb-3，可以保留空 className 或其他需要的类
+                                id="youtube-url-input"
+                                className=""
                             />
                             <div className="flex gap-3 mb-3">
-                                {/* 手动添加宽度 label */}
                                 <div className="flex-1">
                                     <label htmlFor="youtube-width-input" className="block text-sm font-medium text-gray-700 mb-1">宽度 (px)</label>
                                     <Input
-                                        // 移除 label
                                         placeholder="640"
                                         value={youtubeWidth}
                                         onChange={(e) => setYoutubeWidth(e.target.value)}
                                         type="number"
                                         min="1"
                                         size="sm"
-                                        id="youtube-width-input" // 添加 id
-                                        className="" // 保持flex-1由外部div处理
+                                        id="youtube-width-input"
+                                        className=""
                                     />
                                 </div>
-                                {/* 手动添加高度 label */}
                                 <div className="flex-1">
                                     <label htmlFor="youtube-height-input" className="block text-sm font-medium text-gray-700 mb-1">高度 (px)</label>
                                     <Input
-                                        // 移除 label
                                         placeholder="480"
                                         value={youtubeHeight}
                                         onChange={(e) => setYoutubeHeight(e.target.value)}
                                         type="number"
                                         min="1"
                                         size="sm"
-                                        id="youtube-height-input" // 添加 id
-                                        className="" // 保持flex-1由外部div处理
+                                        id="youtube-height-input"
+                                        className=""
                                     />
                                 </div>
                             </div>

@@ -1,3 +1,4 @@
+@import './rich-text.css';
 @import 'tailwindcss';
 @config "../tailwind.config.mjs";
 
@@ -162,13 +163,115 @@ Link, Link:hover, Link:focus, Link:active, Link:visited {
     overscroll-behavior-y: none;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  /* 移除全局 h1-h6 默认样式，让 prose 控制 */
+  /* h1, h2, h3, h4, h5, h6 {
     @apply font-bold text-text;
-  }
-  
+  } */
+
   button, a {
     @apply transition-all duration-300;
     text-decoration: none;
+  }
+
+  /* 清晰的 Prose 标题层级 */
+  .prose h1 {
+    @apply text-3xl font-bold mt-8 mb-4; /* 更大的 H1 */
+  }
+  .prose h2 {
+    @apply text-2xl font-semibold mt-7 mb-3; /* 稍大的 H2 */
+  }
+  .prose h3 {
+    @apply text-xl font-semibold mt-6 mb-3; /* H3 */
+  }
+  .prose h4 {
+    @apply text-lg font-semibold mt-5 mb-2; /* H4 */
+  }
+  .prose h5 {
+    @apply text-base font-semibold mt-4 mb-2; /* H5 */
+  }
+  .prose h6 {
+    @apply text-sm font-semibold mt-4 mb-2; /* H6 */
+  }
+
+  /* 自定义 Prose 样式 - 下面的部分将被上面的规则覆盖或不再需要 */
+  /*
+  .prose h1, .prose-sm h1, .prose-base h1, .prose-lg h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  .prose h2, .prose-sm h2, .prose-base h2, .prose-lg h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 0.8rem;
+    margin-bottom: 0.4rem;
+    color: #444;
+  }
+  .prose h3, .prose-sm h3, .prose-base h3, .prose-lg h3 {
+     font-size: 1.25rem;
+     font-weight: 500;
+     margin-top: 0.6rem;
+     margin-bottom: 0.3rem;
+     color: #555;
+  }
+  */
+  .prose p, .prose-sm p, .prose-base p, .prose-lg p {
+     margin-bottom: 0.75rem;
+     /* 如果需要，可以添加 color 等 */
+  }
+  .prose ul, .prose ol, .prose-sm ul, .prose-sm ol, .prose-base ul, .prose-base ol, .prose-lg ul, .prose-lg ol {
+     padding-left: 1.5rem;
+     margin-bottom: 0.75rem;
+  }
+
+  /* 添加列表项样式 */
+  .prose ul > li, .prose-sm ul > li, .prose-base ul > li, .prose-lg ul > li {
+    list-style-type: disc;
+    /* 可选：添加 margin-bottom 或其他 li 样式 */
+    margin-bottom: 0.25rem; /* 示例：添加列表项间距 */
+  }
+  .prose ol > li, .prose-sm ol > li, .prose-base ol > li, .prose-lg ol > li {
+    list-style-type: decimal;
+    /* 可选：添加 margin-bottom 或其他 li 样式 */
+    margin-bottom: 0.25rem; /* 示例：添加列表项间距 */
+  }
+
+  /* 可选：调整 marker 颜色 */
+  .prose ul > li::marker, .prose ol > li::marker,
+  .prose-sm ul > li::marker, .prose-sm ol > li::marker,
+  .prose-base ul > li::marker, .prose-base ol > li::marker,
+  .prose-lg ul > li::marker, .prose-lg ol > li::marker {
+     color: var(--color-text-light, #7f8c8d); /* 示例：使用次要文本颜色 */
+  }
+
+ /* 暗色模式覆盖 (示例 - 请根据你的暗色主题颜色调整) */
+ .dark .prose h1, .dark .prose-sm h1, .dark .prose-base h1, .dark .prose-lg h1 {
+    color: var(--color-gray-100, #f1f5f9); /* 使用你的暗色主题文本颜色 */
+ }
+ .dark .prose h2, .dark .prose-sm h2, .dark .prose-base h2, .dark .prose-lg h2 {
+    color: var(--color-gray-200, #e2e8f0);
+ }
+ .dark .prose h3, .dark .prose-sm h3, .dark .prose-base h3, .dark .prose-lg h3 {
+    color: var(--color-gray-300, #cbd5e1);
+ }
+ .dark .prose p, .dark .prose-sm p, .dark .prose-base p, .dark .prose-lg p {
+    color: var(--color-gray-300, #cbd5e1);
+ }
+ /* 如果需要，为列表、链接等添加暗色模式颜色 */
+
+  .prose h3 {
+    @apply text-xl font-semibold mt-6 mb-3; /* 调整 H3 样式 */
+  }
+  .prose h4 {
+    @apply text-lg font-semibold mt-5 mb-2; /* 定义 H4 样式 */
+  }
+  .prose h5 {
+    @apply text-base font-semibold mt-4 mb-2; /* 定义 H5 样式 */
+  }
+  .prose h6 {
+    @apply text-sm font-semibold mt-4 mb-2; /* 定义 H6 样式 */
   }
 }
 
@@ -456,4 +559,139 @@ Link, Link:hover, Link:focus, Link:active, Link:visited {
     scrollbar-width: none;
   }
 }
+
+/* Add styles for Tiptap Block Actions */
+.tiptap .ProseMirror {
+    position: relative; /* Needed for absolute positioning of buttons */
+}
+
+.block-action-button {
+    position: absolute;
+    z-index: 50;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    line-height: 1;
+    transition: background-color 0.2s;
+    user-select: none;
+}
+
+.block-action-button:hover {
+    background-color: #e0e0e0;
+}
+
+.block-add-button {
+    left: -24px; /* 调整：尝试向右移动一点 */
+    top: 2px;    /* 调整：尝试向上移动一点 */
+    /* 如果垂直位置不对，尝试 transform: translateY(-50%); */
+}
+
+.block-drag-handle {
+    cursor: grab;
+    left: -52px; /* Position drag handle further left */
+}
+
+.block-drag-handle.dragging {
+    cursor: grabbing;
+    background-color: #ebf4ff; /* blue-100 */
+    border-color: #90cdf4; /* blue-300 */
+    opacity: 1;
+}
+
+/* Show buttons when hovering over the editor or a specific block */
+/* This :hover is on the Prosemirror container, might need refinement */
+.tiptap .ProseMirror:hover .block-action-button {
+    /* A more specific selector might be needed if only showing on block hover */
+    /* The BlockActionsExtension currently controls visibility based on hoveredPos */
+    /* So CSS only needs to handle the default hidden state and hover appearance */
+    /* display: inline-flex; /* Or block, depending on layout */
+    /* display: block; */ /* Let Decoration plugin handle display logic */
+}
+
+/* Style for the specific block being hovered (requires JS to add class) */
+.block-hovered > .block-action-button {
+    display: inline-flex; /* Or block */
+}
+
+/* Adjust popover trigger style if needed */
+.add-menu-popover-trigger {
+    /* Style the dummy trigger if necessary */
+}
+
+/* Styling for Add Menu Popover Content */
+.add-menu-popover-content {
+    /* Add custom styles here if needed */
+}
+
+/* --- Start Tiptap Block Actions Extension Styles --- */
+
+/* 为 Tiptap 编辑器内的块级元素/行添加相对定位和左内边距 */
+.tiptap .ProseMirror > * {
+  position: relative;
+  padding-left: 30px; /* 为按钮留出空间，根据需要调整 */
+  min-height: 1.5em;  /* 防止空行按钮错位 */
+}
+
+/* 覆盖 product-node-wrapper 的内联块，使其能正常应用 padding-left */
+.product-node-wrapper {
+  display: block; /* 或者根据需要调整 */
+}
+
+/* 基本按钮样式 */
+.block-action-button {
+    display: inline-flex; /* 默认隐藏，由JS控制或在hover时显示 */
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    font-size: 16px;
+    line-height: 1;
+    border: 1px solid #ccc;
+    background-color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 50;
+    transition: background-color 0.2s, opacity 0.2s;
+    opacity: 0; /* 默认隐藏 */
+    user-select: none; /* 防止文本选择 */
+    position: absolute; /* 定位按钮 */
+    top: 0; /* 靠近顶部对齐，或使用 50% + transform */
+    /* transform: translateY(2px); /* 微调垂直位置 */
+}
+
+/* '添加' 按钮特定定位 */
+.block-add-button {
+  left: 5px; /* 在父元素的 padding-left 区域内 */
+}
+
+/* 悬停时显示按钮 - 应用于父元素 */
+.tiptap .ProseMirror > *:hover > .block-action-button {
+  opacity: 1;
+}
+
+/* 按钮悬停效果 */
+.block-action-button:hover {
+  background-color: #f0f0f0;
+}
+
+/* (可选) 拖拽手柄样式 */
+/*
+.block-drag-handle {
+    left: -5px; // 如果添加按钮在5px, 拖拽可以在更左边
+    cursor: grab;
+}
+
+.block-drag-handle:active {
+    cursor: grabbing;
+}
+*/
+
+/* --- End Tiptap Block Actions Extension Styles --- */
 
