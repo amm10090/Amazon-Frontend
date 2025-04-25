@@ -77,11 +77,11 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
         <span className="inline-block align-middle my-4 w-full max-w-[280px] mx-auto relative">
             {/* Prime badge */}
             {isPrime && (
-                <div className="absolute top-3 left-3 z-10">
+                <span className="absolute top-3 left-3 z-10">
                     <span className="bg-[#0574F7] text-white px-2 py-0.5 rounded-full text-xs font-medium shadow-sm">
                         Prime
                     </span>
-                </div>
+                </span>
             )}
             <Link href={productUrl} className="no-underline">
                 <motion.span
@@ -106,7 +106,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                                 />
                             ) : (
                                 <span className="h-full w-full flex items-center justify-center text-gray-400 bg-gray-100 dark:bg-gray-700">
-                                    无图片
+                                    No Image
                                 </span>
                             )}
                         </motion.span>
@@ -164,7 +164,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                             whileTap={{ scale: 0.97 }}
                             className="block w-full py-2 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-dark dark:hover:bg-primary text-white text-center rounded-full font-medium shadow-sm transition-colors"
                         >
-                            查看详情
+                            View Details
                         </motion.span>
                     </span>
                 </motion.span>

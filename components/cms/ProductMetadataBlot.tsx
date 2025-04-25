@@ -9,7 +9,7 @@ import { productsApi } from '@/lib/api';
 import { adaptProducts, formatPrice } from '@/lib/utils';
 import type { ComponentProduct } from '@/types';
 
-// 创建一个类型来适配不同的API响应
+// Create a type to adapt different API responses
 interface ProductApiData {
     id?: string;
     asin?: string;
@@ -33,35 +33,35 @@ interface ProductApiData {
     [key: string]: any;
 }
 
-// 元数据字段分类定义
+// Metadata field category definitions
 export const METADATA_FIELDS = {
     basic: [
-        { id: 'title', name: '标题', render: (value: string) => value },
-        { id: 'brand', name: '品牌', render: (value: string) => value },
-        { id: 'description', name: '描述', render: (value: string) => value }
+        { id: 'title', name: 'Title', render: (value: string) => value },
+        { id: 'brand', name: 'Brand', render: (value: string) => value },
+        { id: 'description', name: 'Description', render: (value: string) => value }
     ],
     price: [
-        { id: 'price', name: '当前价格', render: (value: number) => formatPrice(value) },
-        { id: 'originalPrice', name: '原价', render: (value: number) => formatPrice(value) },
-        { id: 'discount', name: '折扣率', render: (value: number) => `${value}%` }
+        { id: 'price', name: 'Current Price', render: (value: number) => formatPrice(value) },
+        { id: 'originalPrice', name: 'Original Price', render: (value: number) => formatPrice(value) },
+        { id: 'discount', name: 'Discount Rate', render: (value: number) => `${value}%` }
     ],
     shipping: [
-        { id: 'isPrime', name: 'Prime状态', render: (value: boolean) => value ? '是' : '否' },
-        { id: 'isFreeShipping', name: '免运费', render: (value: boolean) => value ? '是' : '否' }
+        { id: 'isPrime', name: 'Prime Status', render: (value: boolean) => value ? 'Yes' : 'No' },
+        { id: 'isFreeShipping', name: 'Free Shipping', render: (value: boolean) => value ? 'Yes' : 'No' }
     ],
     coupon: [
-        { id: 'couponType', name: '优惠券类型', render: (value: string) => value },
-        { id: 'couponValue', name: '优惠券金额', render: (value: number) => formatPrice(value) },
-        { id: 'couponExpirationDate', name: '到期时间', render: (value: string) => new Date(value).toLocaleDateString('zh-CN') }
+        { id: 'couponType', name: 'Coupon Type', render: (value: string) => value },
+        { id: 'couponValue', name: 'Coupon Value', render: (value: number) => formatPrice(value) },
+        { id: 'couponExpirationDate', name: 'Expiration Date', render: (value: string) => new Date(value).toLocaleDateString('en-US') }
     ]
 } as const;
 
-// 获取所有字段ID
+// Get all field IDs
 export const ALL_FIELD_IDS = Object.values(METADATA_FIELDS).flatMap(group =>
     group.map(field => field.id)
 );
 
-// 字段渲染器映射
+// Field renderer mapping
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const FIELD_RENDERERS = Object.values(METADATA_FIELDS).reduce<Record<string, (value: any) => string>>((acc, group) => {
     group.forEach(field => {
@@ -71,41 +71,41 @@ export const FIELD_RENDERERS = Object.values(METADATA_FIELDS).reduce<Record<stri
     return acc;
 }, {});
 
-// 导出节点属性接口
+// Export node attributes interface
 export interface ProductMetadataAttributes {
     productId: string;
     fieldId: string;
+    value?: unknown;
 }
 
-// 修改 fetcher 函数
+// Modify fetcher function
 const fetcher = async (productId: string): Promise<ComponentProduct> => {
     try {
         const response = await productsApi.getProductById(productId);
 
-        // 添加调试日志
+        // Add debug logs
 
-        // 处理不同的数据结构情况
+        // Handle different data structure scenarios
         let productData;
 
         if (response.data?.data) {
             productData = response.data.data;
         } else if (response.data) {
-            // 可能直接返回数据对象
+            // May directly return data object
             productData = response.data;
         } else {
-            throw new Error('无法解析产品数据格式');
+            throw new Error('Failed to parse product data format');
         }
 
-
-        // 检查是否为数组或单个对象
+        // Check if it's an array or single object
         let dataToAdapt: ProductApiData[] = Array.isArray(productData) ? productData : [productData];
 
-        // 确保数据符合API产品数据格式
+        // Ensure data conforms to API product data format
         dataToAdapt = dataToAdapt.map(item => {
-            // 基本字段映射，处理可能的不同字段名
+            // Basic field mapping, handle possible different field names
             const mappedItem: ProductApiData = {
                 id: item.id || item.asin || item.sku || '',
-                title: item.title || item.name || '未命名产品',
+                title: item.title || item.name || 'Unnamed Product',
                 price: item.price || item.current_price || 0,
                 original_price: item.original_price || item.originalPrice || item.list_price || null,
                 discount: item.discount || item.discount_percentage || null,
@@ -114,18 +114,18 @@ const fetcher = async (productId: string): Promise<ComponentProduct> => {
                     (item.images && item.images.length > 0 ? item.images[0] : null) ||
                     '/placeholder-product.jpg',
                 asin: item.asin || item.sku || '',
-                // 其他字段
+                // Other fields
                 ...item
             };
 
             return mappedItem;
         });
 
-        // @ts-ignore 暂时忽略类型检查，因为我们已经做了适当的字段映射
+        // @ts-ignore Temporarily ignore type checking as we've done appropriate field mapping
         const adaptedProducts = adaptProducts(dataToAdapt);
 
         if (adaptedProducts.length === 0) {
-            throw new Error('产品数据适配后为空');
+            throw new Error('Product data is empty after adaptation');
         }
 
         return adaptedProducts[0];
@@ -134,7 +134,7 @@ const fetcher = async (productId: string): Promise<ComponentProduct> => {
     }
 };
 
-// 产品元数据视图组件
+// Product metadata view component
 const ProductMetadataView = ({ node }: NodeViewProps) => {
     const { productId, fieldId } = node.attrs;
 
@@ -143,24 +143,23 @@ const ProductMetadataView = ({ node }: NodeViewProps) => {
         () => fetcher(productId),
         {
             revalidateOnFocus: false,
-            dedupingInterval: 10000, // 10秒内不重复请求
+            dedupingInterval: 10000, // No duplicate requests within 10 seconds
         }
     );
 
-    // 获取渲染器
+    // Get renderer
     const renderer = FIELD_RENDERERS[fieldId];
 
-    // 调试信息
+    // Debug information
 
-
-    // 计算显示值
+    // Calculate display value
     const displayValue = useMemo(() => {
-        if (error) return '加载失败';
-        if (!product) return '加载中...';
+        if (error) return 'Failed to load';
+        if (!product) return 'Loading...';
 
         const value = product[fieldId as keyof ComponentProduct];
 
-        if (value === undefined || value === null) return '暂无数据';
+        if (value === undefined || value === null) return 'No data available';
 
         try {
             return renderer ? renderer(value) : String(value);
@@ -178,7 +177,7 @@ const ProductMetadataView = ({ node }: NodeViewProps) => {
     );
 };
 
-// 产品元数据节点定义
+// Product metadata node definition
 export const ProductMetadataBlot = Node.create<ProductMetadataAttributes>({
     name: 'productMetadata',
     group: 'inline',
@@ -233,7 +232,7 @@ export const ProductMetadataBlot = Node.create<ProductMetadataAttributes>({
     }
 });
 
-// 修改命令类型定义
+// Modify command type definition
 declare module '@tiptap/core' {
     interface Commands<ReturnType> {
         productMetadata: {

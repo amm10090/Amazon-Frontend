@@ -52,7 +52,7 @@ const HorizontalProductElement = ({ product }: { product: ComponentProduct }) =>
                             <StoreIdentifier url={effectiveUrl} align="left" showName={false} className="mb-0" />
                             <Link href={productUrl} className="no-underline">
                                 <button className="px-3 py-1.5 sm:px-4 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-dark dark:hover:bg-primary text-white rounded-full text-sm transition-colors whitespace-nowrap">
-                                    查看详情
+                                    View Details
                                 </button>
                             </Link>
                         </span>

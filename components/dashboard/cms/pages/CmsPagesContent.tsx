@@ -8,7 +8,6 @@ import { useState, useEffect } from 'react';
 
 import { cmsApi } from '@/lib/api';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { formatDate } from '@/lib/utils';
 import type { ContentPage } from '@/types/cms';
 
 
@@ -38,9 +37,9 @@ const CmsPagesContent = () => {
                 const params: Record<string, string | number> = {
                     page: currentPage,
                     limit: 10,
-                        sortBy: sortBy,
-                        sortOrder: sortOrder
-                };      
+                    sortBy: sortBy,
+                    sortOrder: sortOrder
+                };
 
                 // 添加搜索条件
                 if (search) {
@@ -59,14 +58,14 @@ const CmsPagesContent = () => {
                     setTotalPages(response.data.data.totalPages);
                 } else {
                     showErrorToast({
-                        title: "加载失败",
-                        description: "获取页面列表失败",
+                        title: "Load Failed",
+                        description: "Failed to get page list",
                     });
                 }
             } catch {
                 showErrorToast({
-                    title: "加载失败",
-                    description: "获取页面列表时出错",
+                    title: "Load Failed",
+                    description: "Error occurred while getting page list",
                 });
             } finally {
                 setLoading(false);
@@ -94,7 +93,7 @@ const CmsPagesContent = () => {
 
     // 删除页面
     const handleDeletePage = async (id: string) => {
-        if (!confirm('确定要删除此页面吗？此操作不可恢复。')) {
+        if (!confirm('Are you sure you want to delete this page? This action cannot be undone.')) {
             return;
         }
 
@@ -103,21 +102,21 @@ const CmsPagesContent = () => {
 
             if (response.data?.status) {
                 showSuccessToast({
-                    title: "删除成功",
-                    description: "页面已成功删除",
+                    title: "Delete Successful",
+                    description: "Page has been successfully deleted",
                 });
                 // 刷新列表
                 setRefreshKey(prev => prev + 1);
             } else {
                 showErrorToast({
-                    title: "删除失败",
-                    description: "删除页面时出错",
+                    title: "Delete Failed",
+                    description: "Error occurred while deleting page",
                 });
             }
         } catch {
             showErrorToast({
-                title: "删除失败",
-                description: "删除页面时出错",
+                title: "Delete Failed",
+                description: "Error occurred while deleting page",
             });
         }
     };
@@ -126,11 +125,11 @@ const CmsPagesContent = () => {
     const renderStatusBadge = (status: string) => {
         switch (status) {
             case 'published':
-                return <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">已发布</span>;
+                return <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">Published</span>;
             case 'draft':
-                return <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">草稿</span>;
+                return <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">Draft</span>;
             case 'archived':
-                return <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-700">已归档</span>;
+                return <span className="px-2 py-1 text-xs rounded-full bg-amber-100 text-amber-700">Archived</span>;
             default:
                 return <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">{status}</span>;
         }
@@ -143,6 +142,18 @@ const CmsPagesContent = () => {
         return sortOrder === 'asc'
             ? <span className="ml-1">↑</span>
             : <span className="ml-1">↓</span>;
+    };
+
+    // 格式化日期为英文格式
+    const formatDateInEnglish = (date: Date) => {
+        return date.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
     };
 
     // 渲染分页
@@ -219,7 +230,7 @@ const CmsPagesContent = () => {
                         : 'text-blue-600 hover:bg-blue-50'
                         }`}
                 >
-                    上一页
+                    Previous
                 </button>
 
                 {pages}
@@ -232,7 +243,7 @@ const CmsPagesContent = () => {
                         : 'text-blue-600 hover:bg-blue-50'
                         }`}
                 >
-                    下一页
+                    Next
                 </button>
             </div>
         );
@@ -241,14 +252,14 @@ const CmsPagesContent = () => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-800">内容页面管理</h1>
+                <h1 className="text-2xl font-bold text-gray-800">Blog Post Management</h1>
                 <div className="mt-4 md:mt-0">
                     <Link
-                        href="/dashboard/cms/pages/create"
+                        href="/dashboard/blog/create"
                         className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                     >
                         <Plus size={16} className="mr-2" />
-                        创建新页面
+                        Create New Post
                     </Link>
                 </div>
             </div>
@@ -262,13 +273,13 @@ const CmsPagesContent = () => {
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="搜索页面..."
+                                placeholder="Search posts..."
                                 className="pl-10 pr-4 py-2 w-full border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             />
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <Search size={18} className="text-gray-400" />
                             </div>
-                            <button type="submit" className="hidden">搜索</button>
+                            <button type="submit" className="hidden">Search</button>
                         </form>
                     </div>
 
@@ -281,16 +292,16 @@ const CmsPagesContent = () => {
                             }}
                             className="px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
-                            <option value="all">所有状态</option>
-                            <option value="published">已发布</option>
-                            <option value="draft">草稿</option>
-                            <option value="archived">已归档</option>
+                            <option value="all">All Status</option>
+                            <option value="published">Published</option>
+                            <option value="draft">Draft</option>
+                            <option value="archived">Archived</option>
                         </select>
 
                         <button
                             onClick={() => setRefreshKey(prev => prev + 1)}
                             className="px-3 py-2 border rounded-md hover:bg-gray-50"
-                            title="刷新列表"
+                            title="Refresh List"
                         >
                             <RefreshCcw size={18} />
                         </button>
@@ -303,15 +314,15 @@ const CmsPagesContent = () => {
                 {loading ? (
                     <div className="p-8 text-center">
                         <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" />
-                        <p className="mt-2 text-gray-500">加载中...</p>
+                        <p className="mt-2 text-gray-500">Loading...</p>
                     </div>
                 ) : pages.length === 0 ? (
                     <div className="p-8 text-center">
                         <FileText size={48} className="mx-auto text-gray-300" />
-                        <p className="mt-2 text-gray-500">没有找到页面</p>
+                        <p className="mt-2 text-gray-500">No pages found</p>
                         {(search || statusFilter !== 'all') && (
                             <p className="mt-1 text-sm text-gray-400">
-                                尝试清除筛选条件或创建新页面
+                                Try clearing filters or create a new page
                             </p>
                         )}
                     </div>
@@ -325,7 +336,7 @@ const CmsPagesContent = () => {
                                             onClick={() => handleSortChange('title')}
                                             className="font-medium flex items-center"
                                         >
-                                            标题 {renderSortIcon('title')}
+                                            Title {renderSortIcon('title')}
                                         </button>
                                     </th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -333,22 +344,22 @@ const CmsPagesContent = () => {
                                             onClick={() => handleSortChange('slug')}
                                             className="font-medium flex items-center"
                                         >
-                                            路径 {renderSortIcon('slug')}
+                                            Path {renderSortIcon('slug')}
                                         </button>
                                     </th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        状态
+                                        Status
                                     </th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         <button
                                             onClick={() => handleSortChange('updatedAt')}
                                             className="font-medium flex items-center"
                                         >
-                                            更新时间 {renderSortIcon('updatedAt')}
+                                            Updated At {renderSortIcon('updatedAt')}
                                         </button>
                                     </th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        操作
+                                        Actions
                                     </th>
                                 </tr>
                             </thead>
@@ -365,36 +376,36 @@ const CmsPagesContent = () => {
                                             {renderStatusBadge(page.status)}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-500">{formatDate(new Date(page.updatedAt))}</div>
+                                            <div className="text-sm text-gray-500">{formatDateInEnglish(new Date(page.updatedAt))}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex space-x-2">
                                                 <Link
-                                                    href={`/dashboard/cms/pages/edit/${page._id}`}
+                                                    href={`/dashboard/blog/edit/${page._id}`}
                                                     className="text-blue-600 hover:text-blue-800"
-                                                    title="编辑页面"
+                                                    title="Edit post"
                                                 >
                                                     <Edit size={18} />
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDeletePage(page._id as string)}
                                                     className="text-red-600 hover:text-red-800"
-                                                    title="删除页面"
+                                                    title="Delete post"
                                                 >
                                                     <Trash2 size={18} />
                                                 </button>
                                                 <Link
-                                                    href={`/${page.slug}`}
+                                                    href={`/blog/${page.slug}`}
                                                     target="_blank"
                                                     className="text-green-600 hover:text-green-800"
-                                                    title="查看页面"
+                                                    title="View post"
                                                 >
                                                     <Eye size={18} />
                                                 </Link>
                                                 <Link
-                                                    href={`/dashboard/cms/pages/settings/${page._id}`}
+                                                    href={`/dashboard/blog/settings/${page._id}`}
                                                     className="text-gray-600 hover:text-gray-800"
-                                                    title="页面设置"
+                                                    title="Post settings"
                                                 >
                                                     <FileCog size={18} />
                                                 </Link>

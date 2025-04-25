@@ -24,18 +24,18 @@ import SimpleProductElement from './Template/SimpleProductElement';
 // --- Skeleton Placeholder ---
 // 修改 ProductSkeletonPlaceholder 返回 span
 const ProductSkeletonPlaceholder = ({ style }: { style: string }) => {
-    const baseClasses = "my-4 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 align-middle"; // 添加 align-middle
-    let styleClasses = "inline-block w-full h-24"; // 默认 inline-block
+    const baseClasses = "my-4 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 align-middle"; // Add align-middle
+    let styleClasses = "inline-block w-full h-24"; // Default inline-block
 
     if (style === 'card') {
-        styleClasses = "inline-block w-full max-w-[280px] h-96 rounded-lg shadow-md mx-auto"; // card 需要特定尺寸和边距
+        styleClasses = "inline-block w-full max-w-[280px] h-96 rounded-lg shadow-md mx-auto"; // Card needs specific size and margin
     } else if (style === 'horizontal') {
-        styleClasses = "inline-flex items-center w-full h-28 border rounded-lg overflow-hidden shadow-sm p-3"; // horizontal 使用 inline-flex
+        styleClasses = "inline-flex items-center w-full h-28 border rounded-lg overflow-hidden shadow-sm p-3"; // Horizontal uses inline-flex
     } else if (style === 'mini') {
-        styleClasses = "inline-flex items-center space-x-2 h-16 w-60 border rounded-lg p-2 shadow-sm overflow-hidden"; // mini 使用 inline-flex
+        styleClasses = "inline-flex items-center space-x-2 h-16 w-60 border rounded-lg p-2 shadow-sm overflow-hidden"; // Mini uses inline-flex
     }
 
-    // 返回 span
+    // Return span
     return <span className={`${baseClasses} ${styleClasses}`} />;
 };
 
@@ -93,7 +93,7 @@ export default function DynamicProductLoader({ productId, style = 'simple' }: Dy
         }
     );
 
-    // 加载状态 - 现在也需要考虑对齐
+    // Loading state - now also needs to consider alignment
     if (isLoading) {
         return (
             <span className="inline-block align-middle">
@@ -102,20 +102,18 @@ export default function DynamicProductLoader({ productId, style = 'simple' }: Dy
         );
     }
 
-    // 错误状态 - 改用 span 并应用内联样式
+    // Error state - use span and apply inline styles
     if (error || !product) {
         return (
-            // Change outer div to span, add inline-block and vertical-align
-            <span className="inline-block align-middle my-4 text-center"> {/* Center text within span */}
-                {/* Change inner div to span */}
+            <span className="inline-block align-middle my-4 text-center">
                 <span className="inline-flex items-center justify-center p-3 border rounded-md bg-red-50 text-red-700 shadow-sm text-xs max-w-md">
-                    无法加载产品信息 (ID: {productId})。
+                    Failed to load product information (ID: {productId}).
                 </span>
             </span>
         );
     }
 
-    // 渲染产品组件 (不变)
+    // Render product component (unchanged)
     let productElement: React.ReactNode | null = null;
 
     switch (style) {
@@ -125,6 +123,6 @@ export default function DynamicProductLoader({ productId, style = 'simple' }: Dy
         case 'simple': default: productElement = <SimpleProductElement product={product} />; break;
     }
 
-    // 直接返回产品元素，移除包裹 span
+    // Return product element directly, remove wrapping span
     return productElement;
 } 

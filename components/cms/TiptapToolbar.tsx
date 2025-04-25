@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Popover, PopoverTrigger, PopoverContent, Input, Kbd, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Switch } from '@heroui/react';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Popover, PopoverTrigger, PopoverContent, Input, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Switch } from '@heroui/react';
 import type { Editor } from '@tiptap/core';
 import {
     Bold, Italic, Underline, Strikethrough, List, ListOrdered, Undo, Redo,
@@ -10,14 +10,14 @@ import {
     Keyboard,
     Database
 } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, type MouseEvent } from 'react';
 
 import type { ComponentProduct } from '@/types';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
 import type { ProductMetadataAttributes } from './ProductMetadataBlot';
 import { ProductMetadataSelector } from './ProductMetadataSelector';
-import { ProductSelector } from './ProductSelector';
+import ProductPickerModal from './ProductPickerModal';
 
 // 为编辑器链定义扩展接口
 interface ExtendedChain {
@@ -31,10 +31,12 @@ interface TiptapToolbarProps {
 
 // 辅助函数，用于生成 Kbd 标签
 const ShortcutKey = ({ children }: { children: React.ReactNode }) => (
-    <Kbd className="text-xs">{children}</Kbd>
+    <kbd className="px-1.5 py-0.5 text-xs font-semibold text-gray-500 bg-gray-100 border border-gray-200 rounded-md">
+        {children}
+    </kbd>
 );
 
-export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
+export function TiptapToolbar({ editor }: TiptapToolbarProps) {
     const [isTypographyModalOpen, setIsTypographyModalOpen] = useState(false);
     const [isYoutubePopoverOpen, setIsYoutubePopoverOpen] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -49,8 +51,8 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
     // 新增：快捷键模态框状态
     const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<ComponentProduct | null>(null);
-    const [isMetadataSelectorOpen, setIsMetadataSelectorOpen] = useState(false);
-    const [isProductSelectorOpen, setIsProductSelectorOpen] = useState(false);
+    const [showProductPicker, setShowProductPicker] = useState(false);
+    const [showMetadataSelector, setShowMetadataSelector] = useState(false);
 
     // 新增：切换快捷键模态框
     const toggleShortcutModal = useCallback(() => {
@@ -188,55 +190,58 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
         setImageUrl(''); // 取消时清空
     }, []);
 
-    // 修改 handleMetadataSelect 函数
+    // 处理产品选择
+    const handleProductSelect = useCallback((product: ComponentProduct) => {
+        if (!editor) return;
+
+        // 使用类型断言处理插入产品命令
+        const commands = editor.commands as unknown as ExtendedChain;
+
+        commands.insertProductMetadata({
+            productId: product.id || product.asin || '',
+            fieldId: 'title',
+            value: product.title
+        }).run();
+
+        setShowMetadataSelector(true);
+        setSelectedProduct(product);
+    }, [editor]);
+
+    // 处理元数据选择
     const handleMetadataSelect = useCallback((fieldId: string) => {
         if (!editor || !selectedProduct) return;
 
-        const attributes: ProductMetadataAttributes = {
-            productId: selectedProduct.id || selectedProduct.asin || '',
-            fieldId
-        };
+        // 使用类型断言处理插入元数据命令
+        const commands = editor.commands as unknown as ExtendedChain;
 
-        // 使用 chain() 方法
-        const chain = editor.chain().focus();
+        commands.insertProductMetadata({
+            productId: selectedProduct.id || '',
+            fieldId,
+            value: selectedProduct[fieldId as keyof ComponentProduct]
+        }).run();
 
-        (chain as unknown as ExtendedChain).insertProductMetadata(attributes).run();
+        setShowMetadataSelector(false);
+        setSelectedProduct(null);
     }, [editor, selectedProduct]);
 
-    // 修改 handleProductSelect 函数
-    const handleProductSelect = useCallback((product: ComponentProduct) => {
-        setSelectedProduct(product);
-        setIsMetadataSelectorOpen(true);
+    // 处理添加产品点击
+    const handleAddProductClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowProductPicker(true);
     }, []);
 
-    // 新增处理数据库按钮点击的函数
-    const handleMetadataButtonClick = useCallback(() => {
-        setIsProductSelectorOpen(true);
+    // 处理添加元数据点击
+    const handleAddMetadataClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowMetadataSelector(true);
     }, []);
 
-    // 新增：获取当前标题级别或'p'
-    const getCurrentHeadingLevel = useCallback(() => {
-        if (!editor) return 'p';
-        for (let i = 1; i <= 6; i++) {
-            if (editor.isActive('heading', { level: i as 1 | 2 | 3 | 4 | 5 | 6 })) {
-                return `h${i}`;
-            }
-        }
-
-        return 'p';
-    }, [editor]);
-
-    // 新增：处理标题选择
-    const handleHeadingSelect = useCallback((key: React.Key) => {
-        if (!editor) return;
-        const level = key.toString();
-
-        if (level === 'p') {
-            editor.chain().focus().setParagraph().run();
-        } else {
-            const headingLevel = parseInt(level.substring(1), 10) as 1 | 2 | 3 | 4 | 5 | 6;
-
-            editor.chain().focus().toggleHeading({ level: headingLevel }).run();
+    // 处理产品样式变更
+    const _handleProductStyleChange = useCallback((style: string) => {
+        if (editor && editor.isActive('product')) {
+            editor.chain().focus().updateAttributes('product', { style }).run();
         }
     }, [editor]);
 
@@ -248,39 +253,39 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
     // 注意：Mod = Cmd (macOS) / Ctrl (Windows/Linux)
     const shortcuts = [
         {
-            category: '基本操作', items: [
-                { action: '撤销', win: 'Ctrl + Z', mac: 'Cmd + Z' },
-                { action: '重做', win: 'Ctrl + Shift + Z', mac: 'Cmd + Shift + Z' },
-                { action: '强制换行', win: 'Shift + Enter 或 Ctrl + Enter', mac: 'Shift + Enter 或 Cmd + Enter' },
-                { action: '复制', win: 'Ctrl + C', mac: 'Cmd + C' },
-                { action: '剪切', win: 'Ctrl + X', mac: 'Cmd + X' },
-                { action: '粘贴', win: 'Ctrl + V', mac: 'Cmd + V' },
-                { action: '无格式粘贴', win: 'Ctrl + Shift + V', mac: 'Cmd + Shift + V' },
+            category: 'Basic Operations', items: [
+                { action: 'Undo', win: 'Ctrl + Z', mac: 'Cmd + Z' },
+                { action: 'Redo', win: 'Ctrl + Shift + Z', mac: 'Cmd + Shift + Z' },
+                { action: 'Hard Break', win: 'Shift + Enter or Ctrl + Enter', mac: 'Shift + Enter or Cmd + Enter' },
+                { action: 'Copy', win: 'Ctrl + C', mac: 'Cmd + C' },
+                { action: 'Cut', win: 'Ctrl + X', mac: 'Cmd + X' },
+                { action: 'Paste', win: 'Ctrl + V', mac: 'Cmd + V' },
+                { action: 'Paste Without Formatting', win: 'Ctrl + Shift + V', mac: 'Cmd + Shift + V' },
             ]
         },
         {
-            category: '文本格式化', items: [
-                { action: '加粗', win: 'Ctrl + B', mac: 'Cmd + B' },
-                { action: '斜体', win: 'Ctrl + I', mac: 'Cmd + I' },
-                { action: '下划线', win: 'Ctrl + U', mac: 'Cmd + U' },
-                { action: '删除线', win: 'Ctrl + Shift + S', mac: 'Cmd + Shift + S' },
-                { action: '代码', win: 'Ctrl + E', mac: 'Cmd + E' },
-                { action: '高亮', win: 'Ctrl + Shift + H', mac: 'Cmd + Shift + H' },
+            category: 'Text Formatting', items: [
+                { action: 'Bold', win: 'Ctrl + B', mac: 'Cmd + B' },
+                { action: 'Italic', win: 'Ctrl + I', mac: 'Cmd + I' },
+                { action: 'Underline', win: 'Ctrl + U', mac: 'Cmd + U' },
+                { action: 'Strikethrough', win: 'Ctrl + Shift + S', mac: 'Cmd + Shift + S' },
+                { action: 'Code', win: 'Ctrl + E', mac: 'Cmd + E' },
+                { action: 'Highlight', win: 'Ctrl + Shift + H', mac: 'Cmd + Shift + H' },
             ]
         },
         {
-            category: '段落格式化', items: [
-                { action: '普通文本', win: 'Ctrl + Alt + 0', mac: 'Cmd + Alt + 0' },
-                { action: '一级标题', win: 'Ctrl + Alt + 1', mac: 'Cmd + Alt + 1' },
-                { action: '二级标题', win: 'Ctrl + Alt + 2', mac: 'Cmd + Alt + 2' },
-                { action: '三级标题', win: 'Ctrl + Alt + 3', mac: 'Cmd + Alt + 3' },
-                { action: '无序列表', win: 'Ctrl + Shift + 8', mac: 'Cmd + Shift + 8' },
-                { action: '有序列表', win: 'Ctrl + Shift + 7', mac: 'Cmd + Shift + 7' },
-                { action: '引用', win: 'Ctrl + Shift + B', mac: 'Cmd + Shift + B' },
-                { action: '代码块', win: 'Ctrl + Alt + C', mac: 'Cmd + Alt + C' },
-                { action: '左对齐', win: 'Ctrl + Shift + L', mac: 'Cmd + Shift + L' },
-                { action: '居中对齐', win: 'Ctrl + Shift + E', mac: 'Cmd + Shift + E' },
-                { action: '右对齐', win: 'Ctrl + Shift + R', mac: 'Cmd + Shift + R' },
+            category: 'Paragraph Formatting', items: [
+                { action: 'Normal Text', win: 'Ctrl + Alt + 0', mac: 'Cmd + Alt + 0' },
+                { action: 'Heading 1', win: 'Ctrl + Alt + 1', mac: 'Cmd + Alt + 1' },
+                { action: 'Heading 2', win: 'Ctrl + Alt + 2', mac: 'Cmd + Alt + 2' },
+                { action: 'Heading 3', win: 'Ctrl + Alt + 3', mac: 'Cmd + Alt + 3' },
+                { action: 'Bullet List', win: 'Ctrl + Shift + 8', mac: 'Cmd + Shift + 8' },
+                { action: 'Ordered List', win: 'Ctrl + Shift + 7', mac: 'Cmd + Shift + 7' },
+                { action: 'Quote', win: 'Ctrl + Shift + B', mac: 'Cmd + Shift + B' },
+                { action: 'Code Block', win: 'Ctrl + Alt + C', mac: 'Cmd + Alt + C' },
+                { action: 'Align Left', win: 'Ctrl + Shift + L', mac: 'Cmd + Shift + L' },
+                { action: 'Center', win: 'Ctrl + Shift + E', mac: 'Cmd + Shift + E' },
+                { action: 'Align Right', win: 'Ctrl + Shift + R', mac: 'Cmd + Shift + R' },
             ]
         },
     ];
@@ -320,7 +325,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                         type="button"
                         onClick={() => editor.chain().focus().toggleBold().run()}
                         className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bold') ? 'bg-gray-200' : ''}`}
-                        title="加粗 (Ctrl+B)"
+                        title="Bold (Ctrl+B)"
                     >
                         <Bold size={16} />
                     </button>
@@ -328,7 +333,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                         type="button"
                         onClick={() => editor.chain().focus().toggleItalic().run()}
                         className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('italic') ? 'bg-gray-200' : ''}`}
-                        title="斜体 (Ctrl+I)"
+                        title="Italic (Ctrl+I)"
                     >
                         <Italic size={16} />
                     </button>
@@ -336,7 +341,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                         type="button"
                         onClick={() => editor.chain().focus().toggleUnderline().run()}
                         className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('underline') ? 'bg-gray-200' : ''}`}
-                        title="下划线 (Ctrl+U)"
+                        title="Underline (Ctrl+U)"
                     >
                         <Underline size={16} />
                     </button>
@@ -344,25 +349,27 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                         type="button"
                         onClick={() => editor.chain().focus().toggleStrike().run()}
                         className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('strike') ? 'bg-gray-200' : ''}`}
-                        title="删除线 (Ctrl+Shift+S)"
+                        title="Strikethrough (Ctrl+Shift+S)"
                     >
                         <Strikethrough size={16} />
                     </button>
 
                     {/* 高亮颜色选择器 Popover */}
-                    <ColorPickerPopover
-                        editor={editor}
-                        mode="highlight"
-                        trigger={
-                            <button
-                                type="button"
-                                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('highlight') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                title="高亮颜色 (Ctrl+Shift+H)"
-                            >
-                                <Highlighter size={16} />
-                            </button>
-                        }
-                    />
+                    <div className="flex items-center">
+                        <ColorPickerPopover
+                            editor={editor}
+                            mode="highlight"
+                            trigger={
+                                <button
+                                    type="button"
+                                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('highlight') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                    title="Highlight (Ctrl+Shift+H)"
+                                >
+                                    <Highlighter size={16} />
+                                </button>
+                            }
+                        />
+                    </div>
                 </div>
 
                 {/* 文本颜色选择器 Popover */}
@@ -374,7 +381,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             <button
                                 type="button"
                                 className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('textStyle') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                title="文本颜色"
+                                title="Text Color"
                             >
                                 <Palette size={16} />
                             </button>
@@ -386,7 +393,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={clearFormatting}
                     className="p-1.5 rounded hover:bg-gray-100"
-                    title="清除格式"
+                    title="Clear Formatting"
                 >
                     <Trash2 size={16} />
                 </button>
@@ -400,26 +407,26 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                         <Button
                             variant="light" // 或其他你喜欢的样式
                             className="p-1.5 rounded hover:bg-gray-100 data-[hover=true]:bg-gray-100 min-w-0" // 调整样式以适应按钮
-                            title="标题级别"
+                            title="Heading Level"
                         >
                             {/* 可以根据当前级别显示不同内容，或保持通用图标 */}
                             <Heading size={16} />
-                            {/* <span className="ml-1 text-xs">{getCurrentHeadingLevel().toUpperCase()}</span> */}
                         </Button>
                     </DropdownTrigger>
                     <DropdownMenu
                         aria-label="Heading Levels"
-                        onAction={handleHeadingSelect}
-                        selectedKeys={[getCurrentHeadingLevel()]} // 高亮当前级别
+                        onAction={(key) => {
+                            if (typeof key === 'string') {
+                                handleMetadataSelect(key);
+                            }
+                        }}
+                        selectedKeys={[selectedProduct?.title || 'Normal Text']} // 高亮当前级别
                         selectionMode="single"
                     >
-                        <DropdownItem key="p">普通文本</DropdownItem>
-                        <DropdownItem key="h1">一级标题</DropdownItem>
-                        <DropdownItem key="h2">二级标题</DropdownItem>
-                        <DropdownItem key="h3">三级标题</DropdownItem>
-                        <DropdownItem key="h4">四级标题</DropdownItem>
-                        <DropdownItem key="h5">五级标题</DropdownItem>
-                        <DropdownItem key="h6">六级标题</DropdownItem>
+                        <DropdownItem key="普通文本">Normal Text</DropdownItem>
+                        <DropdownItem key="一级标题">Heading 1</DropdownItem>
+                        <DropdownItem key="二级标题">Heading 2</DropdownItem>
+                        <DropdownItem key="三级标题">Heading 3</DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
 
@@ -427,7 +434,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={applyTypography}
                     className="p-1.5 rounded hover:bg-gray-100"
-                    title="智能排版 (自动转换特殊符号)"
+                    title="Smart Typography (auto-converts special symbols)"
                 >
                     <Type size={16} />
                 </button>
@@ -440,7 +447,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().setTextAlign('left').run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : ''}`}
-                    title="左对齐 (Ctrl+Shift+L)"
+                    title="Align Left (Ctrl+Shift+L)"
                 >
                     <AlignLeft size={16} />
                 </button>
@@ -448,7 +455,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().setTextAlign('center').run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : ''}`}
-                    title="居中 (Ctrl+Shift+E)"
+                    title="Center (Ctrl+Shift+E)"
                 >
                     <AlignCenter size={16} />
                 </button>
@@ -456,7 +463,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().setTextAlign('right').run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : ''}`}
-                    title="右对齐 (Ctrl+Shift+R)"
+                    title="Align Right (Ctrl+Shift+R)"
                 >
                     <AlignRight size={16} />
                 </button>
@@ -469,7 +476,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleBulletList().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bulletList') ? 'bg-gray-200' : ''}`}
-                    title="无序列表 (Ctrl+Shift+8)"
+                    title="Bullet List (Ctrl+Shift+8)"
                 >
                     <List size={16} />
                 </button>
@@ -477,7 +484,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleOrderedList().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('orderedList') ? 'bg-gray-200' : ''}`}
-                    title="有序列表 (Ctrl+Shift+7)"
+                    title="Ordered List (Ctrl+Shift+7)"
                 >
                     <ListOrdered size={16} />
                 </button>
@@ -490,7 +497,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleBlockquote().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('blockquote') ? 'bg-gray-200' : ''}`}
-                    title="引用 (Ctrl+Shift+B)"
+                    title="Quote (Ctrl+Shift+B)"
                 >
                     <Quote size={16} />
                 </button>
@@ -498,7 +505,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={() => editor.chain().focus().toggleCodeBlock().run()}
                     className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('codeBlock') ? 'bg-gray-200' : ''}`}
-                    title="代码块 (Ctrl+Alt+C)"
+                    title="Code Block (Ctrl+Alt+C)"
                 >
                     <Code size={16} />
                 </button>
@@ -506,7 +513,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={toggleHardBreak}
                     className="p-1.5 rounded hover:bg-gray-100"
-                    title="强制换行 (Shift+Enter)"
+                    title="Hard Break (Shift+Enter)"
                 >
                     <CornerDownLeft size={16} />
                 </button>
@@ -532,7 +539,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                                 setIsLinkPopoverOpen(true);
                             }}
                             className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('link') ? 'bg-gray-200' : ''}`}
-                            title="添加/编辑链接"
+                            title="Add/Edit Link"
                         >
                             <LinkIcon size={16} />
                         </button>
@@ -540,7 +547,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     <PopoverContent className="p-3 w-72">
                         <div className="space-y-3">
                             <label htmlFor="toolbar-link-url-input" className="block text-sm font-medium text-gray-700 mb-1">
-                                链接 URL
+                                Link URL
                             </label>
                             <Input
                                 id="toolbar-link-url-input"
@@ -552,7 +559,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             />
                             <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
                                 <label htmlFor="toolbar-link-new-tab" className="text-sm text-gray-600 select-none">
-                                    在新标签页打开
+                                    Open in new tab
                                 </label>
                                 <Switch
                                     id="toolbar-link-new-tab"
@@ -563,10 +570,10 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             </div>
                             <div className="flex justify-end gap-2 mt-4">
                                 <Button size="sm" variant="bordered" onPress={handleLinkRemove}>
-                                    移除
+                                    Remove
                                 </Button>
                                 <Button size="sm" color="primary" onPress={applyLinkUrl}>
-                                    应用
+                                    Apply
                                 </Button>
                             </div>
                         </div>
@@ -585,7 +592,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                                 setIsImagePopoverOpen(true);
                             }}
                             className="p-1.5 rounded hover:bg-gray-100"
-                            title="插入图片 (URL)"
+                            title="Insert Image (URL)"
                         >
                             <ImageIcon size={16} />
                         </button>
@@ -593,7 +600,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     <PopoverContent className="p-3 w-72">
                         <div className="space-y-3">
                             <label htmlFor="image-url-input" className="block text-sm font-medium text-gray-700 mb-1">
-                                图片 URL
+                                Image URL
                             </label>
                             <Input
                                 id="image-url-input"
@@ -605,10 +612,10 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             />
                             <div className="flex justify-end gap-2 mt-4">
                                 <Button size="sm" variant="bordered" onPress={handleImageCancel}>
-                                    取消
+                                    Cancel
                                 </Button>
                                 <Button size="sm" color="primary" onPress={applyImageUrl}>
-                                    应用
+                                    Apply
                                 </Button>
                             </div>
                         </div>
@@ -622,7 +629,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             type="button"
                             onClick={handleYoutubeAdd}
                             className="p-1.5 rounded hover:bg-gray-100"
-                            title="插入 YouTube 视频"
+                            title="Insert YouTube Video"
                         >
                             <YoutubeIcon size={16} />
                         </button>
@@ -643,7 +650,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             />
                             <div className="flex gap-3 mb-3">
                                 <div className="flex-1">
-                                    <label htmlFor="youtube-width-input" className="block text-sm font-medium text-gray-700 mb-1">宽度 (px)</label>
+                                    <label htmlFor="youtube-width-input" className="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
                                     <Input
                                         placeholder="640"
                                         value={youtubeWidth}
@@ -656,7 +663,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <label htmlFor="youtube-height-input" className="block text-sm font-medium text-gray-700 mb-1">高度 (px)</label>
+                                    <label htmlFor="youtube-height-input" className="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
                                     <Input
                                         placeholder="480"
                                         value={youtubeHeight}
@@ -671,10 +678,10 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             </div>
                             <div className="flex justify-end gap-2 mt-4">
                                 <Button size="sm" variant="bordered" onPress={handleYoutubeCancel}>
-                                    取消
+                                    Cancel
                                 </Button>
                                 <Button size="sm" color="primary" onPress={applyYoutubeUrl}>
-                                    应用
+                                    Apply
                                 </Button>
                             </div>
                         </div>
@@ -682,17 +689,17 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                 </Popover>
                 <button
                     type="button"
-                    onClick={onAddProduct}
+                    onClick={handleAddProductClick}
                     className="p-1.5 rounded hover:bg-gray-100"
-                    title="添加产品"
+                    title="Add Product"
                 >
                     <Tag size={16} />
                 </button>
                 <button
                     type="button"
-                    onClick={handleMetadataButtonClick}
+                    onClick={handleAddMetadataClick}
                     className="p-1.5 rounded hover:bg-gray-100"
-                    title="插入产品元数据"
+                    title="Insert Product Metadata"
                 >
                     <Database size={16} />
                 </button>
@@ -704,7 +711,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     type="button"
                     onClick={toggleShortcutModal}
                     className="p-1.5 rounded hover:bg-gray-100"
-                    title="查看键盘快捷键"
+                    title="View Keyboard Shortcuts"
                 >
                     <Keyboard size={16} />
                 </button>
@@ -715,33 +722,33 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader className="flex flex-col gap-1">智能排版规则</ModalHeader>
+                            <ModalHeader className="flex flex-col gap-1">Smart Typography Rules</ModalHeader>
                             <ModalBody>
-                                <p>输入以下字符时，它们会自动转换为更符合排版规范的符号：</p>
+                                <p>When typing the following characters, they are automatically converted to typographically correct symbols:</p>
                                 <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
-                                    <li><code className="bg-gray-100 px-1 rounded">--</code> → — (破折号)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">...</code> → … (省略号)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">&lt;-</code> → ← (左箭头)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">-&gt;</code> → → (右箭头)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">(c)</code> → © (版权)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">(r)</code> → ® (注册商标)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">(tm)</code> → ™ (商标)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">1/2</code> → ½ (二分之一)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">1/4</code> → ¼ (四分之一)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">3/4</code> → ¾ (四分之三)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">+/-</code> → ± (正负号)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">!=</code> → ≠ (不等号)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">&lt;&lt;</code> → « (左书名号)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">&gt;&gt;</code> → » (右书名号)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">2*3</code> 或 <code className="bg-gray-100 px-1 rounded">2x3</code> → 2×3 (乘号)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">^2</code> → ² (上标2)</li>
-                                    <li><code className="bg-gray-100 px-1 rounded">^3</code> → ³ (上标3)</li>
-                                    <li>智能引号 (‘’, “”)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">--</code> → — (em dash)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">...</code> → … (ellipsis)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">&lt;-</code> → ← (left arrow)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">-&gt;</code> → → (right arrow)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">(c)</code> → © (copyright)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">(r)</code> → ® (registered trademark)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">(tm)</code> → ™ (trademark)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">1/2</code> → ½ (one half)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">1/4</code> → ¼ (one quarter)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">3/4</code> → ¾ (three quarters)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">+/-</code> → ± (plus-minus)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">!=</code> → ≠ (not equal)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">&lt;&lt;</code> → « (left quotation)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">&gt;&gt;</code> → » (right quotation)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">2*3</code> or <code className="bg-gray-100 px-1 rounded">2x3</code> → 2×3 (multiplication)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">^2</code> → ² (superscript 2)</li>
+                                    <li><code className="bg-gray-100 px-1 rounded">^3</code> → ³ (superscript 3)</li>
+                                    <li>Smart quotes (&apos;, &quot;)</li>
                                 </ul>
                             </ModalBody>
                             <ModalFooter>
                                 <Button color="primary" onPress={onClose}>
-                                    关闭
+                                    Close
                                 </Button>
                             </ModalFooter>
                         </>
@@ -755,7 +762,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                     {(onClose) => (
                         <>
                             <ModalHeader className="flex items-center gap-2">
-                                <Keyboard size={18} /> 键盘快捷键
+                                <Keyboard size={18} /> Keyboard Shortcuts
                             </ModalHeader>
                             <ModalBody className="max-h-[70vh] overflow-y-auto">
                                 <div className="space-y-4">
@@ -769,10 +776,10 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                                                             <td className="py-2 pr-4 text-gray-700">{item.action}</td>
                                                             <td className="py-2 pl-4 text-right">
                                                                 <div className="flex justify-end items-center gap-1">
-                                                                    {(isMac ? item.mac : item.win).split(' 或 ').map((combo, idx, arr) => (
+                                                                    {(isMac ? item.mac : item.win).split(' or ').map((combo, idx, arr) => (
                                                                         <span key={combo} className="flex items-center gap-1">
                                                                             {combo.split(' + ').map(key => <ShortcutKey key={key}>{key}</ShortcutKey>)}
-                                                                            {idx < arr.length - 1 && <span className="text-gray-400 mx-1">或</span>}
+                                                                            {idx < arr.length - 1 && <span className="text-gray-400 mx-1">or</span>}
                                                                         </span>
                                                                     ))}
                                                                 </div>
@@ -787,7 +794,7 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
                             </ModalBody>
                             <ModalFooter>
                                 <Button color="primary" onPress={onClose}>
-                                    关闭
+                                    Close
                                 </Button>
                             </ModalFooter>
                         </>
@@ -796,18 +803,18 @@ export function TiptapToolbar({ editor, onAddProduct }: TiptapToolbarProps) {
             </Modal>
 
             {/* 产品选择器 (用于选择产品后插入元数据) */}
-            <ProductSelector
-                isOpen={isProductSelectorOpen}
-                onClose={() => setIsProductSelectorOpen(false)}
-                onSelect={handleProductSelect}
+            <ProductPickerModal
+                isOpen={showProductPicker}
+                onClose={() => setShowProductPicker(false)}
+                onProductSelect={handleProductSelect}
             />
 
             {/* 在组件末尾添加 */}
             {selectedProduct && (
                 <ProductMetadataSelector
-                    isOpen={isMetadataSelectorOpen}
+                    isOpen={showMetadataSelector}
                     onClose={() => {
-                        setIsMetadataSelectorOpen(false);
+                        setShowMetadataSelector(false);
                         setSelectedProduct(null);
                     }}
                     product={selectedProduct}

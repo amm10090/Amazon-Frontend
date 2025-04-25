@@ -72,7 +72,7 @@ export function ProductMetadataSelector({
         try {
             return field.render(value);
         } catch {
-            return '格式错误';
+            return 'Format Error';
         }
     };
 
@@ -80,7 +80,7 @@ export function ProductMetadataSelector({
         <Modal isOpen={isOpen} onClose={onClose} size="lg">
             <ModalContent>
                 <ModalHeader>
-                    <h3 className="text-lg font-medium">选择产品元数据</h3>
+                    <h3 className="text-lg font-medium">Select Product Metadata</h3>
                 </ModalHeader>
 
                 <ModalBody>
@@ -88,7 +88,7 @@ export function ProductMetadataSelector({
                     <div className="relative mb-4">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                         <Input
-                            placeholder="搜索字段..."
+                            placeholder="Search fields..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-9"
@@ -97,7 +97,7 @@ export function ProductMetadataSelector({
 
                     {/* 选项卡 */}
                     <Tabs selectedKey={selectedTab} onSelectionChange={key => setSelectedTab(key as string)}>
-                        <Tab key="basic" title="基本信息">
+                        <Tab key="basic" title="Basic Info">
                             <ScrollShadow className="h-[300px]">
                                 <div className="grid grid-cols-2 gap-2">
                                     {filteredFields.basic?.map(field => (
@@ -115,7 +115,7 @@ export function ProductMetadataSelector({
                                 </div>
                             </ScrollShadow>
                         </Tab>
-                        <Tab key="price" title="价格信息">
+                        <Tab key="price" title="Price Info">
                             <ScrollShadow className="h-[300px]">
                                 <div className="grid grid-cols-2 gap-2">
                                     {filteredFields.price?.map(field => (
@@ -133,7 +133,7 @@ export function ProductMetadataSelector({
                                 </div>
                             </ScrollShadow>
                         </Tab>
-                        <Tab key="shipping" title="配送信息">
+                        <Tab key="shipping" title="Shipping Info">
                             <ScrollShadow className="h-[300px]">
                                 <div className="grid grid-cols-2 gap-2">
                                     {filteredFields.shipping?.map(field => (
@@ -151,7 +151,7 @@ export function ProductMetadataSelector({
                                 </div>
                             </ScrollShadow>
                         </Tab>
-                        <Tab key="coupon" title="优惠信息">
+                        <Tab key="coupon" title="Coupon Info">
                             <ScrollShadow className="h-[300px]">
                                 <div className="grid grid-cols-2 gap-2">
                                     {filteredFields.coupon?.map(field => (
@@ -174,7 +174,7 @@ export function ProductMetadataSelector({
 
                 <ModalFooter>
                     <Button variant="light" onPress={onClose}>
-                        取消
+                        Cancel
                     </Button>
                 </ModalFooter>
             </ModalContent>

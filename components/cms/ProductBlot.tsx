@@ -32,7 +32,6 @@ const ProductSkeletonPlaceholder = ({ style }: { style: string }) => {
     return <div className={className} />;
 };
 
-
 // Fetcher function for SWR (similar to DynamicProductLoader)
 const fetchEditorProduct = async (productIdOrAsin: string): Promise<ComponentProduct | null> => {
     if (!productIdOrAsin) return null;
@@ -63,7 +62,6 @@ const fetchEditorProduct = async (productIdOrAsin: string): Promise<ComponentPro
     }
 };
 
-
 // 产品节点的属性接口 - 添加 alignment
 export interface ProductAttributes {
     id: string;
@@ -83,16 +81,17 @@ export interface ProductAttributes {
     isFreeShipping?: boolean | null;
     brand?: string | null;
     alignment?: 'left' | 'center' | 'right';
+    category?: string;
 }
 
 type ProductComponentProps = NodeViewProps;
 
 // 定义产品样式 (导出以便在 RichTextEditor 中使用)
 export const PRODUCT_STYLES = [
-    { id: 'simple', name: '简单' },
-    { id: 'card', name: '卡片' },
-    { id: 'horizontal', name: '水平' },
-    { id: 'mini', name: '迷你' }
+    { id: 'simple', name: 'Simple' },
+    { id: 'card', name: 'Card' },
+    { id: 'horizontal', name: 'Horizontal' },
+    { id: 'mini', name: 'Mini' }
 ];
 
 // 产品节点组件 - 应用 inline-block 样式
@@ -119,7 +118,7 @@ const ProductComponent: FC<ProductComponentProps> = ({ node, selected }) => {
         if (error || !product) {
             return (
                 <div className="flex items-center justify-center my-2 p-3 border rounded-md bg-red-50 text-red-700 shadow-sm text-xs">
-                    无法加载产品预览 (ID: {productId})。
+                    Failed to load product preview (ID: {productId}).
                 </div>
             );
         }
@@ -155,107 +154,12 @@ const ProductComponent: FC<ProductComponentProps> = ({ node, selected }) => {
 
                 {/* 产品标签 */}
                 <div className={`absolute top-1 right-1 flex items-center gap-1 z-10 transition-opacity duration-200 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                    <div className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 rounded-full shadow-sm transition-colors" contentEditable={false}>产品</div>
+                    <div className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 rounded-full shadow-sm transition-colors" contentEditable={false}>Product</div>
                 </div>
             </div>
         </NodeViewWrapper>
     );
 };
-
-// 命令参数的接口
-
-
-// 创建一个自定义的序列化函数，用于序列化产品节点 - Keep for saving
-// const createProductSerializer = () => {
-//     // 序列化函数，将节点转换为DOM元素
-//     const productNodeToDom = (node: ProseMirrorNodeType) => {
-//         const el = document.createElement('div');
-//
-//         el.setAttribute('data-node-type', 'product');
-//         // Primarily save ID and Style for frontend rendering
-//         el.setAttribute('data-product-id', node.attrs.id || '');
-//         el.setAttribute('data-style', node.attrs.style || 'simple'); // 添加样式属性
-//
-//         // Optionally save other attributes if needed for backend/other purposes
-//         // or as fallback data if dynamic loading fails? (decision needed)
-//         // Example: keeping title as fallback
-//         if (node.attrs.title) el.setAttribute('data-title', node.attrs.title);
-//         if (node.attrs.price) el.setAttribute('data-price', String(node.attrs.price));
-//         if (node.attrs.image) el.setAttribute('data-image', node.attrs.image);
-//         if (node.attrs.asin) el.setAttribute('data-asin', node.attrs.asin);
-//         if (node.attrs.url) el.setAttribute('data-url', node.attrs.url);
-//         if (node.attrs.cj_url) el.setAttribute('data-cj-url', node.attrs.cj_url);
-//         if (node.attrs.brand) el.setAttribute('data-brand', node.attrs.brand);
-//         if (node.attrs.originalPrice) el.setAttribute('data-original-price', String(node.attrs.originalPrice));
-//         if (node.attrs.discount) el.setAttribute('data-discount', String(node.attrs.discount));
-//         if (node.attrs.couponType) el.setAttribute('data-coupon-type', node.attrs.couponType);
-//         if (node.attrs.couponValue) el.setAttribute('data-coupon-value', String(node.attrs.couponValue));
-//         if (node.attrs.couponExpirationDate) el.setAttribute('data-coupon-expiration-date', node.attrs.couponExpirationDate);
-//         if (typeof node.attrs.isPrime === 'boolean') el.setAttribute('data-is-prime', String(node.attrs.isPrime));
-//         if (typeof node.attrs.isFreeShipping === 'boolean') el.setAttribute('data-is-free-shipping', String(node.attrs.isFreeShipping));
-//
-//         // 对于叶子节点，创建自闭合的HTML元素
-//         return el;
-//     };
-//
-//     // 扩展DOMSerializer，添加对产品节点的支持
-//     const originalFromSchema = DOMSerializer.fromSchema;
-//
-//     // Check if already modified to prevent infinite loops or errors
-//     if (!(DOMSerializer.fromSchema as ExtendedFromSchema).__customProductSerializerAttached) {
-//         DOMSerializer.fromSchema = function (schema) {
-//             const serializer = originalFromSchema.call(this, schema);
-//             const productNodeType = schema.nodes.product;
-//
-//             if (productNodeType && !serializer.nodes.product) { // Attach only if not present
-//                 serializer.nodes.product = productNodeToDom;
-//             }
-//
-//             return serializer;
-//         };
-//         (DOMSerializer.fromSchema as ExtendedFromSchema).__customProductSerializerAttached = true;
-//     }
-// };
-
-
-// 标准的 ProseMirror 节点规范中的 toDOM 函数 - 移除 style 处理
-// const productToDOM = (node: ProseMirrorNodeType) => {
-//     const attrs: Record<string, string | number | boolean | null | undefined> = {
-//         'data-node-type': 'product',
-//         'data-product-id': node.attrs.id || '',
-//         'data-style': node.attrs.style || 'simple',
-//         'data-alignment': node.attrs.alignment,
-//         'data-title': node.attrs.title,
-//         'data-price': node.attrs.price,
-//         'data-image': node.attrs.image,
-//         'data-asin': node.attrs.asin,
-//         'data-url': node.attrs.url,
-//         'data-cj-url': node.attrs.cj_url,
-//         'data-brand': node.attrs.brand,
-//         'data-original-price': node.attrs.originalPrice,
-//         'data-discount': node.attrs.discount,
-//         'data-coupon-type': node.attrs.couponType,
-//         'data-coupon-value': node.attrs.couponValue,
-//         'data-coupon-expiration-date': node.attrs.couponExpirationDate,
-//         'data-is-prime': node.attrs.isPrime,
-//         'data-is-free-shipping': node.attrs.isFreeShipping
-//     };
-//
-//     // Clean up null/undefined and convert booleans/numbers, and default 'left' alignment
-//     Object.keys(attrs).forEach(key => {
-//         if (attrs[key] === undefined || attrs[key] === null) {
-//             delete attrs[key];
-//         } else if (key === 'alignment' && attrs[key] === 'left') {
-//             delete attrs[key]; // 不保存默认的左对齐
-//         } else if (typeof attrs[key] === 'boolean') {
-//             attrs[key] = String(attrs[key]);
-//         } else if (typeof attrs[key] === 'number') {
-//             attrs[key] = String(attrs[key]);
-//         }
-//     });
-//
-//     return ['div', attrs as Record<string, string>];
-// };
 
 // TipTap产品节点扩展 - 修改 group 和 inline
 export const ProductBlot = Node.create<ProductAttributes>({
@@ -286,7 +190,7 @@ export const ProductBlot = Node.create<ProductAttributes>({
             },
             // Keep other attributes for node structure, insertion, and parsing
             title: {
-                default: '未命名产品',
+                default: 'Unnamed Product',
                 parseHTML: element => element.getAttribute('data-title'),
                 renderHTML: attributes => attributes.title ? { 'data-title': attributes.title } : {},
             },
@@ -367,6 +271,11 @@ export const ProductBlot = Node.create<ProductAttributes>({
                 parseHTML: element => element.getAttribute('data-is-free-shipping') === 'true',
                 renderHTML: attributes => typeof attributes.isFreeShipping === 'boolean' ? { 'data-is-free-shipping': String(attributes.isFreeShipping) } : {},
             },
+            category: {
+                default: '',
+                parseHTML: element => element.getAttribute('data-category'),
+                renderHTML: attributes => attributes.category ? { 'data-category': attributes.category } : {},
+            },
         };
     },
 
@@ -388,7 +297,7 @@ export const ProductBlot = Node.create<ProductAttributes>({
                         id: element.getAttribute('data-product-id') || '',
                         style: element.getAttribute('data-style') || 'simple',
                         alignment: (element.getAttribute('data-alignment') || 'left') as ProductAttributes['alignment'],
-                        title: element.getAttribute('data-title') || '未命名产品',
+                        title: element.getAttribute('data-title') || 'Unnamed Product',
                         price: parseFloat(element.getAttribute('data-price') || '0'),
                         image: element.getAttribute('data-image') || '/placeholder-product.jpg',
                         asin: element.getAttribute('data-asin') || '',
@@ -402,6 +311,7 @@ export const ProductBlot = Node.create<ProductAttributes>({
                         couponExpirationDate: getNullableString('data-coupon-expiration-date'),
                         isPrime: getBoolean('data-is-prime'),
                         isFreeShipping: getBoolean('data-is-free-shipping'),
+                        category: getNullableString('data-category'),
                     };
                 }
             },
@@ -428,7 +338,8 @@ export const ProductBlot = Node.create<ProductAttributes>({
             'data-coupon-value': node.attrs.couponValue,
             'data-coupon-expiration-date': node.attrs.couponExpirationDate,
             'data-is-prime': node.attrs.isPrime,
-            'data-is-free-shipping': node.attrs.isFreeShipping
+            'data-is-free-shipping': node.attrs.isFreeShipping,
+            'data-category': node.attrs.category,
         };
 
         Object.keys(attrs).forEach(key => {
@@ -463,7 +374,7 @@ export const ProductBlot = Node.create<ProductAttributes>({
                 const allowedKeys: Array<keyof ProductAttributes> = [
                     'id', 'title', 'price', 'image', 'asin', 'style', 'url', 'cj_url',
                     'brand', 'originalPrice', 'discount', 'couponType', 'couponValue',
-                    'couponExpirationDate', 'isPrime', 'isFreeShipping', 'alignment'
+                    'couponExpirationDate', 'isPrime', 'isFreeShipping', 'alignment', 'category'
                 ];
 
                 allowedKeys.forEach(key => {
@@ -474,7 +385,7 @@ export const ProductBlot = Node.create<ProductAttributes>({
 
                 const fullAttributes: ProductAttributes = {
                     id: validAttributes.id ?? '',
-                    title: validAttributes.title ?? '未命名产品',
+                    title: validAttributes.title ?? 'Unnamed Product',
                     price: validAttributes.price ?? 0,
                     image: validAttributes.image ?? '/placeholder-product.jpg',
                     asin: validAttributes.asin ?? '',
@@ -490,6 +401,7 @@ export const ProductBlot = Node.create<ProductAttributes>({
                     couponExpirationDate: validAttributes.couponExpirationDate ?? null,
                     isPrime: validAttributes.isPrime ?? null,
                     isFreeShipping: validAttributes.isFreeShipping ?? null,
+                    category: validAttributes.category ?? '',
                 };
 
                 return commands.insertContent({

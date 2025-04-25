@@ -21,7 +21,7 @@ const MiniProductElement = ({ product }: { product: ComponentProduct }) => {
                 whileHover={{ scale: 1.02 }}
                 transition={{ duration: 0.2 }}
             >
-                <div className="relative w-10 h-10 mr-2 rounded overflow-hidden flex-shrink-0">
+                <span className="relative w-10 h-10 mr-2 rounded overflow-hidden flex-shrink-0">
                     <Image
                         src={image || '/placeholder-product.jpg'}
                         alt={title}
@@ -30,11 +30,11 @@ const MiniProductElement = ({ product }: { product: ComponentProduct }) => {
                         className="object-cover"
                         onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
                     />
-                </div>
-                <div className="flex-grow min-w-0 max-w-[calc(100%-60px)]">
-                    <div className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate" title={title}>{title}</div>
-                    <div className="text-xs text-primary dark:text-primary-light">{formatPrice(price)}</div>
-                </div>
+                </span>
+                <span className="flex-grow min-w-0 max-w-[calc(100%-60px)]">
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate" title={title}>{title}</span>
+                    <span className="text-xs text-primary dark:text-primary-light">{formatPrice(price)}</span>
+                </span>
                 <StoreIdentifier url={effectiveUrl} showName={false} className="mb-0 ml-2 flex-shrink-0" />
             </motion.span>
         </Link>

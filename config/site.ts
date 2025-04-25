@@ -13,12 +13,15 @@ export const siteConfig = {
       href: "/deals",
     },
     {
+      label: "Blog",
+      href: "/blog",
+    },
+    {
       label: "About Us",
       href: "/about-us",
     },
   ],
   navMenuItems: [
-
     {
       label: "All Products",
       href: "/product",
@@ -26,6 +29,10 @@ export const siteConfig = {
     {
       label: "Limited Time Deals",
       href: "/deals",
+    },
+    {
+      label: "Blog",
+      href: "/blog",
     },
     {
       label: "About Us",

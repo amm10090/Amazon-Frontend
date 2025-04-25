@@ -14,6 +14,7 @@ import useSWR from 'swr';
 
 import { showErrorToast } from '@/lib/toast';
 import { formatPrice } from '@/lib/utils';
+import type { ComponentProduct } from '@/types';
 import type { Product as ApiProduct, ListResponse } from '@/types/api';
 
 import type { ProductAttributes } from './ProductBlot';
@@ -41,6 +42,7 @@ interface Product { // 不再继承 ApiProduct，显式定义
     coupon_expiration_date?: string | null;
     is_prime?: boolean | null;
     is_free_shipping?: boolean | null;
+    category?: string;
 }
 
 /**
@@ -49,7 +51,7 @@ interface Product { // 不再继承 ApiProduct，显式定义
 interface ProductPickerModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onProductSelect: (product: ProductAttributes) => void;
+    onProductSelect: (product: ComponentProduct) => void;
 }
 
 /**
@@ -92,8 +94,8 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
     useEffect(() => {
         if (error) {
             showErrorToast({
-                title: '获取产品失败',
-                description: error.message || '无法获取产品数据'
+                title: 'Failed to fetch products',
+                description: error.message || 'Unable to fetch product data'
             });
         }
     }, [error]);
@@ -120,13 +122,13 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
         // 提取所有需要的属性，提供默认值
         const attributes: ProductAttributes = {
             id: product.id || product.asin || '',
-            title: product.title || '未命名产品',
+            title: product.title || 'Unnamed Product',
             price: product.price || 0,
             image: product.main_image || product.image_url || product.images?.[0] || '/placeholder-product.jpg',
             asin: product.asin || '',
-            style: 'card', // 默认样式，可以后续提供选择
+            style: 'card',
             url: product.url || '',
-            cj_url: product.cj_url || '', // 处理 null -> '' (传递给 ProductAttributes 时，它接受 null)
+            cj_url: product.cj_url || '',
             brand: product.brand ?? null,
             originalPrice: product.original_price ?? null,
             discount: product.discount ?? null,
@@ -134,10 +136,11 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
             couponValue: product.coupon_value ?? null,
             couponExpirationDate: product.coupon_expiration_date ?? null,
             isPrime: product.is_prime ?? null,
-            isFreeShipping: product.is_free_shipping ?? null
+            isFreeShipping: product.is_free_shipping ?? null,
+            category: product.category || ''
         };
 
-        onProductSelect(attributes);
+        onProductSelect(attributes as ComponentProduct);
         onClose();
     };
 
@@ -145,14 +148,14 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalContent className="min-w-[500px] max-w-[800px]">
                 <ModalHeader>
-                    <h3 className="text-lg font-medium">选择产品</h3>
+                    <h3 className="text-lg font-medium">Select Product</h3>
                 </ModalHeader>
 
                 {/* 搜索框 */}
                 <div className="relative mb-4">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="搜索产品名称或SKU..."
+                        placeholder="Search by product name or SKU..."
                         className="pl-8"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -163,15 +166,15 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
                 <ScrollShadow className="h-[400px] pr-4">
                     {isLoading ? (
                         <div className="flex justify-center items-center h-full">
-                            <p>加载中...</p>
+                            <p>Loading...</p>
                         </div>
                     ) : products.length === 0 && debouncedSearchTerm ? (
                         <div className="flex justify-center items-center h-full">
-                            <p>未找到产品</p>
+                            <p>No products found</p>
                         </div>
                     ) : products.length === 0 && !debouncedSearchTerm ? (
                         <div className="flex justify-center items-center h-full">
-                            <p>请输入关键词搜索产品</p>
+                            <p>Please enter keywords to search products</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-4">
@@ -206,7 +209,7 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
 
                 <div className="flex justify-end gap-2 mt-4">
                     <Button variant="light" onClick={onClose}>
-                        取消
+                        Cancel
                     </Button>
                 </div>
             </ModalContent>

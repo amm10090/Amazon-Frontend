@@ -292,8 +292,8 @@ const PageEditorContent = () => {
                     <ContentRenderer content={formData.content} className="prose max-w-none" />
 
                     <div className="mt-8 text-sm text-gray-500 pt-4 border-t">
-                        <span>作者: {session?.user?.name || session?.user?.email || '未知'}</span> |
-                        <span> 最后更新: {currentDate}</span>
+                        <span>Author: {session?.user?.name || session?.user?.email || 'Unknown'}</span> |
+                        <span> Last Updated: {currentDate}</span>
                     </div>
                 </article>
             </main>
@@ -312,7 +312,7 @@ const PageEditorContent = () => {
                         <ArrowLeft size={20} />
                     </button>
                     <h1 className="text-2xl font-bold">
-                        {mode === 'create' ? '创建新内容页面' : '编辑内容页面'}
+                        {mode === 'create' ? 'Create New Blog Post' : 'Edit Blog Post'}
                     </h1>
                 </div>
                 <button
@@ -323,12 +323,12 @@ const PageEditorContent = () => {
                     {isPreviewActive ? (
                         <>
                             <Edit3 size={18} className="mr-2" />
-                            返回编辑
+                            Back to Edit
                         </>
                     ) : (
                         <>
                             <Eye size={18} className="mr-2" />
-                            预览页面
+                            Preview Post
                         </>
                     )}
                 </button>
@@ -341,14 +341,14 @@ const PageEditorContent = () => {
                     {/* 标题输入 */}
                     <div>
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                            页面标题
+                            Title
                         </label>
                         <input
                             type="text"
                             id="title"
                             value={formData.title}
                             onChange={handleTitleChange}
-                            placeholder="输入页面标题..."
+                            placeholder="Enter page title..."
                             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             required
                         />
@@ -357,7 +357,7 @@ const PageEditorContent = () => {
                     {/* URL路径输入 */}
                     <div>
                         <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
-                            URL路径
+                            URL Path
                         </label>
                         <div className="flex items-center">
                             <span className="bg-gray-100 px-3 py-2 border border-r-0 rounded-l-md text-gray-500">
@@ -368,7 +368,7 @@ const PageEditorContent = () => {
                                 id="slug"
                                 value={formData.slug}
                                 onChange={handleSlugChange}
-                                placeholder="url-路径"
+                                placeholder="url-path"
                                 className="flex-1 px-4 py-2 border rounded-r-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 required
                             />
@@ -376,7 +376,7 @@ const PageEditorContent = () => {
                         {showSlugWarning && (
                             <div className="mt-1 flex items-center text-amber-600 text-sm">
                                 <AlertTriangle size={16} className="mr-1" />
-                                修改URL路径可能会影响SEO和现有链接
+                                Modifying URL path may affect SEO and existing links
                             </div>
                         )}
                     </div>
@@ -384,13 +384,13 @@ const PageEditorContent = () => {
                     {/* 摘要输入 */}
                     <div>
                         <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700 mb-1">
-                            页面摘要 (用于SEO描述)
+                            Excerpt (for SEO description)
                         </label>
                         <textarea
                             id="excerpt"
                             value={formData.excerpt}
                             onChange={handleExcerptChange}
-                            placeholder="输入页面的简短描述..."
+                            placeholder="Enter a brief description of the page..."
                             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             rows={3}
                         />
@@ -399,7 +399,7 @@ const PageEditorContent = () => {
                     {/* 状态选择 */}
                     <div>
                         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                            页面状态
+                            Page Status
                         </label>
                         <select
                             id="status"
@@ -407,72 +407,72 @@ const PageEditorContent = () => {
                             onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'draft' | 'published' | 'archived' }))}
                             className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         >
-                            <option value="draft">草稿</option>
-                            <option value="published">已发布</option>
-                            <option value="archived">已归档</option>
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                            <option value="archived">Archived</option>
                         </select>
                     </div>
 
                     {/* 内容编辑器 */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            页面内容
+                            Content
                         </label>
                         <RichTextEditor
                             value={formData.content}
                             onChange={(content: string) => setFormData(prev => ({ ...prev, content }))}
                             onEditorReady={handleEditorReady}
-                            placeholder="开始编辑页面内容..."
+                            placeholder="Start editing page content..."
                             className="mb-6"
                         />
                     </div>
 
                     {/* SEO 元数据部分 */}
                     <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-                        <h3 className="text-md font-medium mb-3">SEO 元数据设置</h3>
+                        <h3 className="text-md font-medium mb-3">SEO Metadata Settings</h3>
                         <div className="space-y-4">
                             <div>
                                 <label htmlFor="metaTitle" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Meta 标题 (用于搜索引擎)
+                                    Meta Title (for search engines)
                                 </label>
                                 <input
                                     type="text"
                                     id="metaTitle"
                                     value={formData.metaTitle || ''}
                                     onChange={(e) => setFormData(prev => ({ ...prev, metaTitle: e.target.value }))}
-                                    placeholder="输入Meta标题..."
+                                    placeholder="Enter meta title..."
                                     className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                                 <p className="mt-1 text-xs text-gray-500">
-                                    建议字数：60个字符以内，留空则使用页面标题
+                                    Recommended: Within 60 characters, leave blank to use page title
                                 </p>
                             </div>
                             <div>
                                 <label htmlFor="metaDescription" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Meta 描述
+                                    Meta Description
                                 </label>
                                 <textarea
                                     id="metaDescription"
                                     value={formData.metaDescription || ''}
                                     onChange={(e) => setFormData(prev => ({ ...prev, metaDescription: e.target.value }))}
-                                    placeholder="输入Meta描述..."
+                                    placeholder="Enter meta description..."
                                     className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     rows={2}
                                 />
                                 <p className="mt-1 text-xs text-gray-500">
-                                    建议字数：160个字符以内，留空则使用摘要
+                                    Recommended: Within 160 characters, leave blank to use excerpt
                                 </p>
                             </div>
                             <div>
                                 <label htmlFor="metaKeywords" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Meta 关键词 (用逗号分隔)
+                                    Meta Keywords (comma separated)
                                 </label>
                                 <input
                                     type="text"
                                     id="metaKeywords"
                                     value={formData.metaKeywords || ''}
                                     onChange={(e) => setFormData(prev => ({ ...prev, metaKeywords: e.target.value }))}
-                                    placeholder="关键词1, 关键词2, 关键词3..."
+                                    placeholder="keyword1, keyword2, keyword3..."
                                     className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                             </div>
@@ -488,7 +488,7 @@ const PageEditorContent = () => {
                                 }`}
                         >
                             <Save size={18} className="mr-2" />
-                            {isSubmitting ? '保存中...' : '保存页面'}
+                            {isSubmitting ? 'Saving...' : 'Save Page'}
                         </button>
                     </div>
                 </form>

@@ -60,11 +60,11 @@ interface RichTextEditorProps {
 export function RichTextEditor({
     value,
     onChange,
-    placeholder = '在此输入内容...',
+    placeholder = 'Enter content here...',
     className = '',
     editorClass = '',
     onEditorReady,
-    charLimit = DEFAULT_CHAR_LIMIT // 默认2000字符
+    charLimit = DEFAULT_CHAR_LIMIT // 默认10000
 }: RichTextEditorProps) {
     const [showProductSelector, setShowProductSelector] = useState(false);
     const [isClient, setIsClient] = useState(false);
@@ -343,7 +343,7 @@ export function RichTextEditor({
         e.stopPropagation();
 
         if (!editor) return;
-        const url = prompt('输入图片 URL:', 'https://');
+        const url = prompt('Enter image URL:', 'https://');
 
         if (url && url !== 'https://') {
             editor.chain().focus().setImage({ src: url }).run();
@@ -373,7 +373,7 @@ export function RichTextEditor({
 
     // 如果不在客户端，返回占位符
     if (!isClient) {
-        return <div className={className}><div className={editorClass}>加载编辑器...</div></div>;
+        return <div className={className}><div className={editorClass}>Loading editor...</div></div>;
     }
 
     return (
@@ -459,16 +459,16 @@ export function RichTextEditor({
                 {/* Markdown快捷方式提示 */}
                 {!editor?.getText() && (
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400 text-center pointer-events-none">
-                        <p className="mb-2">Markdown快捷方式可用</p>
+                        <p className="mb-2">Markdown shortcuts available</p>
                         <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-                            <div className="text-left"># 标题1</div>
-                            <div className="text-left">## 标题2</div>
-                            <div className="text-left">*斜体*</div>
-                            <div className="text-left">**粗体**</div>
-                            <div className="text-left">`代码`</div>
-                            <div className="text-left">&gt; 引用</div>
-                            <div className="text-left">- 列表项</div>
-                            <div className="text-left">1. 有序列表</div>
+                            <div className="text-left"># H1 Title</div>
+                            <div className="text-left">## H2 Title</div>
+                            <div className="text-left">*italic*</div>
+                            <div className="text-left">**bold**</div>
+                            <div className="text-left">`code`</div>
+                            <div className="text-left">&gt; quote</div>
+                            <div className="text-left">- list item</div>
+                            <div className="text-left">1. ordered list</div>
                         </div>
                     </div>
                 )}
@@ -489,7 +489,7 @@ export function RichTextEditor({
                     <div className="flex justify-between items-center text-xs">
                         <div className="flex items-center gap-4 text-gray-500">
                             <div>
-                                字符数: <span className={`font-medium ${isOverLimit ? 'text-red-500' : isNearLimit ? 'text-yellow-600' : ''}`}>
+                                Characters: <span className={`font-medium ${isOverLimit ? 'text-red-500' : isNearLimit ? 'text-yellow-600' : ''}`}>
                                     {charactersCount}
                                 </span>
                                 {charLimit ? (
@@ -497,19 +497,19 @@ export function RichTextEditor({
                                 ) : null}
                             </div>
                             <div>
-                                词数: <span className="font-medium">{wordsCount}</span>
+                                Words: <span className="font-medium">{wordsCount}</span>
                             </div>
                         </div>
 
                         {isNearLimit && !isOverLimit && (
                             <div className="text-yellow-600 font-medium">
-                                剩余: {remainingChars} 字符
+                                Remaining: {remainingChars} characters
                             </div>
                         )}
 
                         {isOverLimit && (
                             <div className="text-red-500 font-medium animate-pulse">
-                                已超出 {Math.abs(remainingChars)} 字符
+                                Exceeded by {Math.abs(remainingChars)} characters
                             </div>
                         )}
                     </div>
@@ -715,91 +715,91 @@ export function RichTextEditor({
                         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Heading1 size={16} /> 一级标题
+                        <Heading1 size={16} /> H1 Title
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Heading2 size={16} /> 二级标题
+                        <Heading2 size={16} /> H2 Title
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Heading2 size={15} /> 三级标题
+                        <Heading2 size={15} /> H3 Title
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Heading2 size={14} /> 四级标题
+                        <Heading2 size={14} /> H4 Title
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Heading2 size={13} /> 五级标题
+                        <Heading2 size={13} /> H5 Title
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Heading2 size={12} /> 六级标题
+                        <Heading2 size={12} /> H6 Title
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleBulletList().run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <List size={16} /> 无序列表
+                        <List size={16} /> Unordered List
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleOrderedList().run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <ListOrdered size={16} /> 有序列表
+                        <ListOrdered size={16} /> Ordered List
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleBlockquote().run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Quote size={16} /> 引用
+                        <Quote size={16} /> Quote
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().toggleCodeBlock().run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Code size={16} /> 代码块
+                        <Code size={16} /> Code Block
                     </button>
                     <button
                         type="button"
                         onClick={() => editor.chain().focus().setHorizontalRule().run()}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Minus size={16} /> 分割线
+                        <Minus size={16} /> Horizontal Rule
                     </button>
                     <button
                         type="button"
                         onClick={handleFloatingImageAdd}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <ImageIcon size={16} /> 插入图片 (URL)
+                        <ImageIcon size={16} /> Insert Image (URL)
                     </button>
                     <button
                         type="button"
                         onClick={handleAddProductClick}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                     >
-                        <Tag size={16} /> 插入产品
+                        <Tag size={16} /> Insert Product
                     </button>
                 </FloatingMenu>
             )}

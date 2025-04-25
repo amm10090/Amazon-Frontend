@@ -25,7 +25,7 @@ import type { ContentPage, ContentCategory, ContentTag } from '@/types/cms';
 
 import { updatePageSettingsAction } from './actions';
 
-// 页面设置组件
+// Page settings component
 export default function PageSettingsPage() {
     const params = useParams();
     const router = useRouter();
@@ -38,7 +38,7 @@ export default function PageSettingsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // 表单状态
+    // Form state
     const [title, setTitle] = useState('');
     const [slug, setSlug] = useState('');
     const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('draft');
@@ -53,7 +53,7 @@ export default function PageSettingsPage() {
 
     const [actionState, formAction] = useActionState(updatePageSettingsAction.bind(null, pageId, pageData?.slug), null);
 
-    // 获取初始数据
+    // Get initial data
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -61,33 +61,33 @@ export default function PageSettingsPage() {
             try {
                 const [pageRes, catRes, tagRes] = await Promise.all([
                     cmsApi.getPageById(pageId),
-                    cmsApi.getCategories({ limit: 1000 }), // 获取所有分类
-                    cmsApi.getTags({ limit: 1000 }) // 获取所有标签
+                    cmsApi.getCategories({ limit: 1000 }), // Get all categories
+                    cmsApi.getTags({ limit: 1000 }) // Get all tags
                 ]);
 
                 if (pageRes.data?.status && pageRes.data.data) {
                     setPageData(pageRes.data.data);
                 } else {
-                    throw new Error(pageRes.data?.message || '获取页面数据失败');
+                    throw new Error(pageRes.data?.message || 'Failed to get page data');
                 }
 
                 if (catRes.data?.status && catRes.data.data?.categories) {
                     setCategories(catRes.data.data.categories);
                 } else {
-                    throw new Error(catRes.data?.message || '获取分类列表失败');
+                    throw new Error(catRes.data?.message || 'Failed to get category list');
                 }
 
                 if (tagRes.data?.status && tagRes.data.data?.tags) {
                     setTags(tagRes.data.data.tags);
                 } else {
-                    throw new Error(tagRes.data?.message || '获取标签列表失败');
+                    throw new Error(tagRes.data?.message || 'Failed to get tag list');
                 }
 
             } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : '加载数据时发生未知错误';
+                const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred while loading data';
 
                 setError(errorMessage);
-                showErrorToast({ title: "加载失败", description: errorMessage });
+                showErrorToast({ title: "Loading Failed", description: errorMessage });
             } finally {
                 setIsLoading(false);
             }
@@ -98,7 +98,7 @@ export default function PageSettingsPage() {
         }
     }, [pageId]);
 
-    // 使用获取到的数据初始化表单状态
+    // Initialize form state with fetched data
     useEffect(() => {
         if (pageData) {
             setTitle(pageData.title || '');
@@ -115,16 +115,16 @@ export default function PageSettingsPage() {
         }
     }, [pageData]);
 
-    // 处理 Action 结果
+    // Handle Action result
     useEffect(() => {
         if (actionState?.success) {
-            showSuccessToast({ title: '保存成功', description: '页面设置已更新' });
+            showSuccessToast({ title: 'Save Successful', description: 'Page settings have been updated' });
         } else if (actionState?.error) {
-            showErrorToast({ title: '保存失败', description: actionState.error });
+            showErrorToast({ title: 'Save Failed', description: actionState.error });
         }
     }, [actionState]);
 
-    // 处理分类/标签 Checkbox 变化
+    // Handle category/tag Checkbox changes
     const handleCheckboxChange = (
         id: string,
         type: 'category' | 'tag',
@@ -145,7 +145,7 @@ export default function PageSettingsPage() {
         return (
             <div className="flex items-center justify-center h-64">
                 <Spinner size="lg" color="primary" />
-                <p className="ml-2 text-gray-600">加载中...</p>
+                <p className="ml-2 text-gray-600">Loading...</p>
             </div>
         );
     }
@@ -153,39 +153,39 @@ export default function PageSettingsPage() {
     if (error) {
         return (
             <div className="p-4 text-center text-red-600 bg-red-50 rounded-md">
-                <p>加载页面设置失败: {error}</p>
-                <Button variant="bordered" onClick={() => router.back()} className="mt-4" startContent={<ArrowLeftIcon className="h-4 w-4" />}>
-                    返回
+                <p>Failed to load page settings: {error}</p>
+                <Button variant="bordered" onClick={() => router.push('/dashboard/blog')} className="mt-4" startContent={<ArrowLeftIcon className="h-4 w-4" />}>
+                    Back
                 </Button>
             </div>
         );
     }
 
     if (!pageData) {
-        return <div className="p-4 text-center text-gray-500">未找到页面数据。</div>;
+        return <div className="p-4 text-center text-gray-500">No page data found.</div>;
     }
 
     return (
         <form action={formAction} className="space-y-6">
-            {/* 页面头部和返回按钮 */}
+            {/* Page header and back button */}
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">页面设置: {pageData.title}</h1>
-                <Button variant="bordered" onClick={() => router.back()} startContent={<ArrowLeftIcon className="h-4 w-4" />}>
-                    返回列表
+                <h1 className="text-2xl font-bold text-gray-800">Page Settings: {pageData.title}</h1>
+                <Button variant="bordered" onClick={() => router.push('/dashboard/blog')} startContent={<ArrowLeftIcon className="h-4 w-4" />}>
+                    Back to List
                 </Button>
             </div>
 
-            {/* 基本信息卡片 */}
+            {/* Basic information card */}
             <Card>
                 <CardHeader>
-                    <h3 className="text-lg font-semibold">基本信息</h3>
-                    <p className="text-sm text-gray-500">修改页面的基础属性。</p>
+                    <h3 className="text-lg font-semibold">Basic Information</h3>
+                    <p className="text-sm text-gray-500">Modify basic page properties.</p>
                 </CardHeader>
                 <CardBody className="space-y-4">
                     <Input
                         id="title"
                         name="title"
-                        label="标题"
+                        label="Title"
                         value={title}
                         onValueChange={setTitle}
                         isRequired
@@ -194,38 +194,38 @@ export default function PageSettingsPage() {
                     <Input
                         id="slug"
                         name="slug"
-                        label="URL 路径"
+                        label="URL Path"
                         value={slug}
                         onValueChange={setSlug}
-                        description={`公开访问路径: /${slug}`}
+                        description={`Public access path: /${slug}`}
                         isRequired
                         fullWidth
                     />
                     <Select
                         id="status"
                         name="status"
-                        label="状态"
+                        label="Status"
                         selectedKeys={[status]}
                         onSelectionChange={(keys) => setStatus(Array.from(keys)[0] as 'draft' | 'published' | 'archived')}
                         isRequired
                     >
-                        <SelectItem key="draft">草稿</SelectItem>
-                        <SelectItem key="published">已发布</SelectItem>
-                        <SelectItem key="archived">已归档</SelectItem>
+                        <SelectItem key="draft">Draft</SelectItem>
+                        <SelectItem key="published">Published</SelectItem>
+                        <SelectItem key="archived">Archived</SelectItem>
                     </Select>
                     <Textarea
                         id="excerpt"
                         name="excerpt"
-                        label="摘要"
+                        label="Excerpt"
                         value={excerpt}
                         onValueChange={setExcerpt}
-                        placeholder="页面的简短描述..."
+                        placeholder="Short description of the page..."
                         fullWidth
                     />
                     <Input
                         id="featuredImage"
                         name="featuredImage"
-                        label="特色图片 URL"
+                        label="Featured Image URL"
                         value={featuredImage}
                         onValueChange={setFeaturedImage}
                         placeholder="https://example.com/image.jpg"
@@ -234,16 +234,16 @@ export default function PageSettingsPage() {
                 </CardBody>
             </Card>
 
-            {/* 分类与标签卡片 */}
+            {/* Categories and Tags card */}
             <Card>
                 <CardHeader>
-                    <h3 className="text-lg font-semibold">分类与标签</h3>
-                    <p className="text-sm text-gray-500">管理页面的分类和标签。</p>
+                    <h3 className="text-lg font-semibold">Categories and Tags</h3>
+                    <p className="text-sm text-gray-500">Manage page categories and tags.</p>
                 </CardHeader>
                 <CardBody className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* 分类选择 */}
+                    {/* Category selection */}
                     <div className="space-y-2">
-                        <h4 className="font-medium">分类</h4>
+                        <h4 className="font-medium">Categories</h4>
                         <div className="space-y-1 max-h-48 overflow-y-auto border rounded p-2">
                             {categories.length > 0 ? categories.map((cat, index) => (
                                 <Checkbox
@@ -260,13 +260,13 @@ export default function PageSettingsPage() {
                                 >
                                     {cat.name}
                                 </Checkbox>
-                            )) : <p className="text-sm text-gray-500">没有可用的分类。</p>}
+                            )) : <p className="text-sm text-gray-500">No categories available.</p>}
                         </div>
                     </div>
 
-                    {/* 标签选择 */}
+                    {/* Tag selection */}
                     <div className="space-y-2">
-                        <h4 className="font-medium">标签</h4>
+                        <h4 className="font-medium">Tags</h4>
                         <div className="space-y-1 max-h-48 overflow-y-auto border rounded p-2">
                             {tags.length > 0 ? tags.map((tag, index) => (
                                 <Checkbox
@@ -283,41 +283,41 @@ export default function PageSettingsPage() {
                                 >
                                     {tag.name}
                                 </Checkbox>
-                            )) : <p className="text-sm text-gray-500">没有可用的标签。</p>}
+                            )) : <p className="text-sm text-gray-500">No tags available.</p>}
                         </div>
                     </div>
                 </CardBody>
             </Card>
 
-            {/* SEO 设置卡片 */}
+            {/* SEO Settings card */}
             <Card>
                 <CardHeader>
-                    <h3 className="text-lg font-semibold">SEO 设置</h3>
-                    <p className="text-sm text-gray-500">优化页面在搜索引擎中的表现。</p>
+                    <h3 className="text-lg font-semibold">SEO Settings</h3>
+                    <p className="text-sm text-gray-500">Optimize page performance in search engines.</p>
                 </CardHeader>
                 <CardBody className="space-y-4">
                     <Input
                         id="metaTitle"
                         name="metaTitle"
-                        label="Meta 标题"
+                        label="Meta Title"
                         value={metaTitle}
                         onValueChange={setMetaTitle}
-                        placeholder="搜索引擎结果中显示的标题"
+                        placeholder="Title displayed in search engine results"
                         fullWidth
                     />
                     <Textarea
                         id="metaDescription"
                         name="metaDescription"
-                        label="Meta 描述"
+                        label="Meta Description"
                         value={metaDescription}
                         onValueChange={setMetaDescription}
-                        placeholder="页面的简短 SEO 描述"
+                        placeholder="Short SEO description of the page"
                         fullWidth
                     />
                     <Input
                         id="canonicalUrl"
                         name="canonicalUrl"
-                        label="规范 URL"
+                        label="Canonical URL"
                         type="url"
                         value={canonicalUrl}
                         onValueChange={setCanonicalUrl}
@@ -327,28 +327,28 @@ export default function PageSettingsPage() {
                     <Input
                         id="ogImage"
                         name="ogImage"
-                        label="SEO 图片 URL"
+                        label="SEO Image URL"
                         type="url"
                         value={ogImage}
                         onValueChange={setOgImage}
-                        placeholder="社交媒体分享时显示的图片 URL"
+                        placeholder="Image URL displayed when sharing on social media"
                         fullWidth
                     />
                 </CardBody>
             </Card>
 
-            {/* 日期信息和保存按钮 */}
+            {/* Date information and save button */}
             <Card>
                 <CardHeader>
-                    <h3 className="text-lg font-semibold">页面信息</h3>
+                    <h3 className="text-lg font-semibold">Page Information</h3>
                 </CardHeader>
                 <CardBody>
-                    <p className="text-sm text-gray-600">创建时间: {pageData.createdAt ? formatDate(new Date(pageData.createdAt)) : 'N/A'}</p>
-                    <p className="text-sm text-gray-600">最后更新: {pageData.updatedAt ? formatDate(new Date(pageData.updatedAt)) : 'N/A'}</p>
+                    <p className="text-sm text-gray-600">Created: {pageData.createdAt ? formatDate(new Date(pageData.createdAt)) : 'N/A'}</p>
+                    <p className="text-sm text-gray-600">Last Updated: {pageData.updatedAt ? formatDate(new Date(pageData.updatedAt)) : 'N/A'}</p>
                 </CardBody>
                 <CardFooter className="flex justify-end">
                     <Button type="submit" color="primary" isLoading={pending} isDisabled={pending}>
-                        {pending ? '保存中...' : '保存更改'}
+                        {pending ? 'Saving...' : 'Save Changes'}
                     </Button>
                 </CardFooter>
             </Card>

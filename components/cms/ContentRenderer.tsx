@@ -37,7 +37,7 @@ const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
 
                 if (!productId) {
                     // Change div to span for inline compatibility
-                    return <span className="text-red-500 text-xs p-2 border border-red-200 rounded align-middle">产品 ID 丢失</span>;
+                    return <span className="text-red-500 text-xs p-2 border border-red-200 rounded align-middle">Product ID missing</span>;
                 }
 
                 // 传递 alignment 给 DynamicProductLoader
@@ -51,7 +51,7 @@ const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
 
                 if (!productId || !fieldId) {
                     // 返回一个提示信息，说明数据不完整
-                    return <span className="text-orange-500 text-xs">[元数据信息不完整]</span>;
+                    return <span className="text-orange-500 text-xs">[Metadata information incomplete]</span>;
                 }
 
                 // 渲染动态元数据加载器
@@ -103,15 +103,15 @@ const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
                 return (
                     <Image
                         src={src}
-                        alt={alt || 'External content image'} // 默认alt文本
+                        alt={alt || 'External content image'} // Default alt text
                         width={width ? parseInt(width) : undefined}
                         height={height ? parseInt(height) : undefined}
-                        className="my-4 max-w-full h-auto rounded-md block mx-auto" // 居中外部图片
+                        className="my-4 max-w-full h-auto rounded-md block mx-auto" // Center external images
                         loading="lazy"
-                        style={parseStyleString(style)} // 应用内联样式
+                        style={parseStyleString(style)} // Apply inline styles
                         {...rest}
-                        unoptimized={true} // 对外部图片禁用优化
-                        onError={(e) => { e.currentTarget.style.display = 'none'; /* 隐藏损坏的图片 */ }}
+                        unoptimized={true} // Disable optimization for external images
+                        onError={(e) => { e.currentTarget.style.display = 'none'; /* Hide broken image */ }}
                     />
                 );
             }

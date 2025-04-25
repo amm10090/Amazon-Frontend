@@ -7,17 +7,17 @@ import { productsApi } from '@/lib/api';
 import { adaptProducts } from '@/lib/utils';
 import type { ComponentProduct } from '@/types';
 
-import { FIELD_RENDERERS } from './ProductMetadataBlot'; // 从 ProductMetadataBlot 导入渲染器
+import { FIELD_RENDERERS } from './ProductMetadataBlot'; // Import renderers from ProductMetadataBlot
 
-// 定义 Props 接口
+// Define Props interface
 interface DynamicMetadataLoaderProps {
     productId: string;
     fieldId: string;
 }
 
 // --- Fetcher Function ---
-// (可以复用 ProductMetadataBlot 中的 fetcher 逻辑，或根据需要调整)
-// 创建一个类型来适配不同的API响应
+// (Can reuse fetcher logic from ProductMetadataBlot, or adjust as needed)
+// Create a type to adapt different API responses
 interface ProductApiData {
     id?: string;
     asin?: string;
@@ -51,7 +51,7 @@ const fetcher = async (productId: string): Promise<ComponentProduct> => {
         } else if (response.data) {
             productData = response.data;
         } else {
-            throw new Error('无法解析产品数据格式');
+            throw new Error('Failed to parse product data format');
         }
 
         let dataToAdapt: ProductApiData[] = Array.isArray(productData) ? productData : [productData];
@@ -59,7 +59,7 @@ const fetcher = async (productId: string): Promise<ComponentProduct> => {
         dataToAdapt = dataToAdapt.map(item => {
             const mappedItem: ProductApiData = {
                 id: item.id || item.asin || item.sku || '',
-                title: item.title || item.name || '未命名产品',
+                title: item.title || item.name || 'Unnamed Product',
                 price: item.price || item.current_price || 0,
                 original_price: item.original_price || item.originalPrice || item.list_price || null,
                 discount: item.discount || item.discount_percentage || null,
@@ -74,11 +74,11 @@ const fetcher = async (productId: string): Promise<ComponentProduct> => {
             return mappedItem;
         });
 
-        // @ts-ignore 忽略类型检查
+        // @ts-ignore Ignore type checking
         const adaptedProducts = adaptProducts(dataToAdapt);
 
         if (adaptedProducts.length === 0) {
-            throw new Error('产品数据适配后为空');
+            throw new Error('Product data is empty after adaptation');
         }
 
         return adaptedProducts[0];
@@ -87,44 +87,43 @@ const fetcher = async (productId: string): Promise<ComponentProduct> => {
     }
 };
 
-
 // --- Dynamic Metadata Loader Component ---
 export default function DynamicMetadataLoader({ productId, fieldId }: DynamicMetadataLoaderProps) {
     const { data: product, error, isLoading } = useSWR<ComponentProduct>(
-        productId ? ['product-metadata', productId] : null, // 使用与 ProductMetadataBlot 不同的 key 以避免冲突，或共享 key
+        productId ? ['product-metadata', productId] : null, // Use different key from ProductMetadataBlot to avoid conflicts, or share key
         () => fetcher(productId),
         {
-            revalidateOnFocus: false, // 按需配置 SWR 选项
+            revalidateOnFocus: false, // Configure SWR options as needed
             shouldRetryOnError: false,
-            dedupingInterval: 30000, // 减少重复请求间隔
+            dedupingInterval: 30000, // Reduce duplicate request interval
         }
     );
 
-    // 获取渲染器
+    // Get renderer
     const renderer = FIELD_RENDERERS[fieldId];
 
-    // 计算显示值
+    // Calculate display value
     const displayValue = useMemo(() => {
-        if (isLoading) return '加载中...'; // 加载状态
-        if (error) return '加载失败'; // 错误状态
-        if (!product) return '无数据'; // 未找到产品数据
+        if (isLoading) return 'Loading...'; // Loading state
+        if (error) return 'Failed to load'; // Error state
+        if (!product) return 'No data'; // No product data found
 
         const value = product[fieldId as keyof ComponentProduct];
 
-        if (value === undefined || value === null) return '暂无数据'; // 字段值为空
+        if (value === undefined || value === null) return 'No data available'; // Field value is empty
 
         try {
-            // 使用对应的渲染器格式化数据
+            // Use corresponding renderer to format data
             return renderer ? renderer(value) : String(value);
         } catch {
-            // 如果渲染出错，直接显示原始值
+            // If rendering fails, display raw value
             return String(value);
         }
     }, [product, fieldId, error, isLoading, renderer]);
 
-    // 渲染计算出的值，使用 span 保持内联特性
+    // Render calculated value, use span to maintain inline characteristics
     return (
-        <span className="dynamic-metadata text-sm"> {/* 添加 class 便于样式化 */}
+        <span className="dynamic-metadata text-sm"> {/* Add class for styling */}
             {displayValue}
         </span>
     );

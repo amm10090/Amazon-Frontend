@@ -8,56 +8,56 @@ import {
     Input,
     Skeleton
 } from '@heroui/react';
-import { debounce } from 'lodash'; // 使用lodash的debounce
+import { debounce } from 'lodash'; // Use lodash's debounce
 import { Search } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
-import { productsApi } from '@/lib/api'; // 更新导入
+import { productsApi } from '@/lib/api'; // Update import
 import { showErrorToast } from '@/lib/toast';
 import { adaptProducts } from '@/lib/utils';
 import type { ComponentProduct } from '@/types';
 import type { Product as ApiProduct } from '@/types/api';
 
-// 添加产品样式选项
+// Add product style options
 const PRODUCT_STYLES = [
-    { id: 'simple', name: '简单布局' },
-    { id: 'card', name: '卡片布局' },
-    { id: 'horizontal', name: '水平布局' },
-    { id: 'mini', name: '迷你布局' }
+    { id: 'simple', name: 'Simple Layout' },
+    { id: 'card', name: 'Card Layout' },
+    { id: 'horizontal', name: 'Horizontal Layout' },
+    { id: 'mini', name: 'Mini Layout' }
 ];
 
-// 本地产品接口，用于组件内部处理
+// Local product interface for internal component handling
 export interface Product {
     id?: string;
     title: string;
     price?: number;
-    main_image?: string; // 与API类型一致
-    image_url?: string;  // 与API类型一致
-    image?: string;      // 添加可能的 image 字段
+    main_image?: string; // Consistent with API type
+    image_url?: string;  // Consistent with API type
+    image?: string;      // Add possible image field
     asin?: string;
-    style?: string;      // 添加样式属性
+    style?: string;      // Add style property
 }
 
-// 组件属性接口
+// Component props interface
 interface ProductSelectorProps {
     isOpen: boolean;
     onClose: () => void;
     onSelect: (product: ComponentProduct) => void;
 }
 
-// 产品选择器组件
+// Product selector component
 export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorProps) {
-    // 状态管理
+    // State management
     const [products, setProducts] = useState<ComponentProduct[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [selectedStyle, setSelectedStyle] = useState('card'); // 添加样式选择状态
-    const limit = 10; // 每页显示的产品数量
+    const [selectedStyle, setSelectedStyle] = useState('card'); // Add style selection state
+    const limit = 10; // Number of products per page
 
-    // 加载产品数据
+    // Load product data
     const fetchProducts = useCallback(async (query: string, page: number) => {
         setIsLoading(true);
         try {
@@ -92,7 +92,7 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
                 }
             }
 
-            // 使用 adaptProducts 转换 API 响应
+            // Use adaptProducts to transform API response
             const adaptedProducts = adaptProducts(apiProducts);
 
             setProducts(prev => page === 1 ? adaptedProducts : [...prev, ...adaptedProducts]);
@@ -101,8 +101,8 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
 
         } catch (error) {
             showErrorToast({
-                title: '获取产品失败',
-                description: error instanceof Error ? error.message : '无法连接到服务器或发生错误'
+                title: 'Failed to get products',
+                description: error instanceof Error ? error.message : 'Unable to connect to server or an error occurred'
             });
             setProducts(prev => page === 1 ? [] : prev);
             setTotalPages(prev => page === 1 ? 1 : prev);
@@ -112,45 +112,45 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
         }
     }, [limit]);
 
-    // 创建防抖函数，直接使用lodash的debounce
+    // Create debounced function, directly use lodash's debounce
     const debouncedFetchProducts = useMemo(() =>
         debounce((query: string, page: number) => fetchProducts(query, page), 300)
-        , [fetchProducts]); // 依赖项应为 fetchProducts 本身
+        , [fetchProducts]); // Dependencies should be fetchProducts itself
 
-    // 初始加载和搜索处理
+    // Initial load and search handling
     useEffect(() => {
         if (isOpen) {
-            // 模态框打开时，获取第一页数据，清空搜索词
-            setSearchQuery(''); // 清空搜索
-            setCurrentPage(1);  // 重置页码
+            // When modal opens, get first page data, clear search term
+            setSearchQuery(''); // Clear search
+            setCurrentPage(1);  // Reset page number
         }
-    }, [isOpen, fetchProducts]); // 移除 debouncedFetchProducts - fetchProducts 引用现在稳定
+    }, [isOpen, fetchProducts]); // Remove debouncedFetchProducts - fetchProducts reference is now stable
 
-    // 处理搜索查询变化
+    // Handle search query changes
     useEffect(() => {
-        // 搜索词变化时，重置页码并获取第一页的搜索结果
+        // When search term changes, reset page number and get first page of search results
         setCurrentPage(1);
-        setProducts([]); // 清空现有产品以显示新的搜索结果
+        setProducts([]); // Clear existing products to show new search results
         debouncedFetchProducts(searchQuery, 1);
-    }, [searchQuery, debouncedFetchProducts]); // 依赖搜索词和防抖函数
+    }, [searchQuery, debouncedFetchProducts]); // Depend on search term and debounced function
 
-    // 处理选择产品
+    // Handle product selection
     const handleSelectProduct = useCallback((product: ComponentProduct) => {
         onSelect({
             ...product,
-            style: selectedStyle // 添加样式属性
+            style: selectedStyle // Add style property
         } as ComponentProduct);
         onClose();
     }, [selectedStyle, onClose, onSelect]);
 
-    // 加载更多产品
+    // Load more products
     const loadMoreProducts = useCallback(() => {
         if (currentPage < totalPages && !isLoading) {
             fetchProducts(searchQuery, currentPage + 1);
         }
     }, [currentPage, totalPages, isLoading, fetchProducts, searchQuery]);
 
-    // 监听滚动到底部加载更多
+    // Monitor scroll to bottom to load more
     const handleScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
         const target = event.currentTarget;
 
@@ -159,28 +159,27 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
         }
     }, [loadMoreProducts]);
 
-
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalContent className="sm:max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
                 <ModalHeader>
-                    <h3 className="text-lg font-medium">选择产品</h3>
+                    <h3 className="text-lg font-medium">Select Product</h3>
                 </ModalHeader>
 
-                {/* 搜索栏 */}
+                {/* Search bar */}
                 <div className="relative mb-4">
                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <Input
-                        placeholder="搜索产品名称或SKU..."
+                        placeholder="Search product name or SKU..."
                         className="pl-9"
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)} // 直接更新 searchQuery，useEffect 会处理防抖调用
+                        onChange={(e) => setSearchQuery(e.target.value)} // Directly update searchQuery, useEffect will handle debounced call
                     />
                 </div>
 
-                {/* 产品列表 - 添加滚动事件监听 */}
+                {/* Product list - add scroll event listener */}
                 <div className="flex-1 overflow-y-auto pr-2" onScroll={handleScroll}>
-                    {isLoading && products.length === 0 ? ( // 初始加载时显示骨架屏
+                    {isLoading && products.length === 0 ? ( // Show skeleton screen during initial loading
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {['skeleton-1', 'skeleton-2', 'skeleton-3', 'skeleton-4'].map((id) => (
                                 <div key={id} className="flex border rounded-md p-3">
@@ -194,12 +193,12 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
                             ))}
                         </div>
                     ) : products.length === 0 ? (
-                        // 无结果状态
+                        // No results state
                         <div className="text-center py-8 text-gray-500">
-                            没有找到匹配的产品
+                            No matching products found
                         </div>
                     ) : (
-                        // 产品列表
+                        // Product list
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {products.map((product) => (
                                 <button
@@ -219,12 +218,12 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs bg-gray-200">
-                                                无图片
+                                                No Image
                                             </div>
                                         )}
                                     </div>
-                                    <div className="flex-1 min-w-0"> {/* 防止文本溢出影响布局 */}
-                                        <h4 className="font-medium text-sm truncate">{product.title}</h4> {/* 使用 truncate */}
+                                    <div className="flex-1 min-w-0"> {/* Prevent text overflow affecting layout */}
+                                        <h4 className="font-medium text-sm truncate">{product.title}</h4> {/* Use truncate */}
                                         <div className="text-sm text-green-600">¥{(product.price || 0).toFixed(2)}</div>
                                         {product.asin && (
                                             <div className="text-xs text-gray-500 truncate">SKU: {product.asin}</div>
@@ -234,26 +233,26 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
                             ))}
                         </div>
                     )}
-                    {/* 加载更多时的加载指示器 */}
+                    {/* Loading indicator when loading more */}
                     {isLoading && products.length > 0 && (
                         <div className="text-center py-4 text-gray-500">
-                            加载中...
+                            Loading...
                         </div>
                     )}
                 </div>
 
-                {/* 底部操作 - 修正语法 */}
+                {/* Bottom actions - fix syntax */}
                 <div className="mt-4 pt-4 border-t flex justify-between items-center">
                     <span className="text-xs text-gray-500">
-                        第 {currentPage} 页 / 共 {totalPages} 页
+                        Page {currentPage} / {totalPages}
                     </span>
                     <div>
                         <Button variant="light" onClick={onClose} className="mr-2">
-                            取消
+                            Cancel
                         </Button>
-                        {/* 替换管理产品按钮为样式选择下拉菜单 */}
+                        {/* Replace manage products button with style selection dropdown */}
                         <div className="inline-flex">
-                            <span className="text-sm mr-2 self-center">显示样式:</span>
+                            <span className="text-sm mr-2 self-center">Display Style:</span>
                             <select
                                 value={selectedStyle}
                                 onChange={(e) => setSelectedStyle(e.target.value)}
