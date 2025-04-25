@@ -63,7 +63,7 @@ export const ALL_FIELD_IDS = Object.values(METADATA_FIELDS).flatMap(group =>
 
 // 字段渲染器映射
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FIELD_RENDERERS = Object.values(METADATA_FIELDS).reduce<Record<string, (value: any) => string>>((acc, group) => {
+export const FIELD_RENDERERS = Object.values(METADATA_FIELDS).reduce<Record<string, (value: any) => string>>((acc, group) => {
     group.forEach(field => {
         acc[field.id] = field.render;
     });

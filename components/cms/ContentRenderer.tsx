@@ -4,6 +4,7 @@ import parse, { Element, type HTMLReactParserOptions } from 'html-react-parser';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 
+import DynamicMetadataLoader from './DynamicMetadataLoader';
 import DynamicProductLoader from './DynamicProductLoader';
 
 // 内容渲染器的props接口
@@ -41,6 +42,20 @@ const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
 
                 // 传递 alignment 给 DynamicProductLoader
                 return <DynamicProductLoader productId={productId} style={productStyle} alignment={alignment} />;
+            }
+
+            // 新增: 处理 productMetadata 节点
+            else if (domNode.attribs && domNode.attribs['data-type'] === 'product-metadata') {
+                const productId = domNode.attribs['data-product-id'];
+                const fieldId = domNode.attribs['data-field-id'];
+
+                if (!productId || !fieldId) {
+                    // 返回一个提示信息，说明数据不完整
+                    return <span className="text-orange-500 text-xs">[元数据信息不完整]</span>;
+                }
+
+                // 渲染动态元数据加载器
+                return <DynamicMetadataLoader productId={productId} fieldId={fieldId} />;
             }
 
             // Keep existing image handling (unchanged, but slightly improved)
