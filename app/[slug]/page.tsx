@@ -134,21 +134,19 @@ export default async function ContentPage({ params }: { params: { slug: string }
             <article className="prose lg:prose-xl max-w-none bg-white p-6 rounded shadow"> {/* 添加背景和阴影 */}
                 <h1 className="mb-4">{pageData.title}</h1>
 
-                {/* 使用新的ContentRenderer组件替代dangerouslySetInnerHTML */}
                 <ContentRenderer content={pageData.content} />
 
-                {/* 你可以在这里添加其他页面元素，比如关联的产品列表等 */}
                 {pageData.products && pageData.products.length > 0 && (
                     <div className="mt-8 pt-4 border-t"> {/* 添加分隔线 */}
-                        <h2 className="text-xl font-semibold mb-4">相关产品</h2>
+                        <h2 className="text-xl font-semibold mb-4">Related Products</h2>
                         {/* 在这里渲染产品列表 */}
-                        <p className="text-gray-500">(产品渲染逻辑待实现)</p>
+                        <p className="text-gray-500">(Product rendering logic待实现)</p>
                     </div>
                 )}
 
                 <div className="mt-8 text-sm text-gray-500 pt-4 border-t"> {/* 添加页脚信息 */}
-                    <span>作者: {pageData.author}</span> |
-                    <span> 最后更新: {new Date(pageData.updatedAt).toLocaleDateString()}</span>
+                    <span>Author: {pageData.author}</span> |
+                    <span> Last Updated: {new Date(pageData.updatedAt).toLocaleDateString()}</span>
                 </div>
             </article>
         </main>

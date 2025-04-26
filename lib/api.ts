@@ -20,6 +20,7 @@ import type {
 // API Base URL configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 const SERVER_API_URL = process.env.SERVER_API_URL || API_BASE_URL;
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || API_BASE_URL;
 const DEFAULT_TIMEOUT = 15000;
 
 // Function to determine if code is running on server or client
@@ -43,6 +44,19 @@ const createApiClient = (config?: AxiosRequestConfig) => {
 };
 
 const api = createApiClient();
+
+const cmsApiClient = axios.create({
+    baseURL: `${SITE_URL}/api`,
+    timeout: DEFAULT_TIMEOUT,
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(process.env.NEXT_PUBLIC_API_KEY && {
+            'X-API-Key': process.env.NEXT_PUBLIC_API_KEY
+        })
+    },
+    withCredentials: false,
+});
 
 // 请求拦截器
 api.interceptors.request.use(
@@ -371,22 +385,22 @@ export const cmsApi = {
         tag?: string;
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
-    }) => api.get<ApiResponse<ContentPageListResponse>>('/cms/pages', { params }),
+    }) => cmsApiClient.get<ApiResponse<ContentPageListResponse>>('/cms/pages', { params }),
 
     getPageById: (id: string) =>
-        api.get<ApiResponse<ContentPage>>(`/cms/pages/${id}`),
+        cmsApiClient.get<ApiResponse<ContentPage>>(`/cms/pages/${id}`),
 
     getPageBySlug: (slug: string) =>
-        api.get<ApiResponse<ContentPage>>(`/cms/content/${slug}`),
+        cmsApiClient.get<ApiResponse<ContentPage>>(`/cms/content/${slug}`),
 
     createPage: (page: ContentPageCreateRequest) =>
-        api.post<ApiResponse<ContentPage>>('/cms/pages', page),
+        cmsApiClient.post<ApiResponse<ContentPage>>('/cms/pages', page),
 
     updatePage: (id: string, page: ContentPageUpdateRequest) =>
-        api.put<ApiResponse<ContentPage>>(`/cms/pages/${id}`, page),
+        cmsApiClient.put<ApiResponse<ContentPage>>(`/cms/pages/${id}`, page),
 
     deletePage: (id: string) =>
-        api.delete<ApiResponse<void>>(`/cms/pages/${id}`),
+        cmsApiClient.delete<ApiResponse<void>>(`/cms/pages/${id}`),
 
     // 内容分类相关
     getCategories: (params?: {
@@ -396,22 +410,22 @@ export const cmsApi = {
         parentId?: string;
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
-    }) => api.get<ApiResponse<ContentCategoryListResponse>>('/cms/categories', { params }),
+    }) => cmsApiClient.get<ApiResponse<ContentCategoryListResponse>>('/cms/categories', { params }),
 
     getCategoryById: (id: string) =>
-        api.get<ApiResponse<ContentCategory>>(`/cms/categories/${id}`),
+        cmsApiClient.get<ApiResponse<ContentCategory>>(`/cms/categories/${id}`),
 
     getCategoryBySlug: (slug: string) =>
-        api.get<ApiResponse<ContentCategory>>(`/cms/categories/slug/${slug}`),
+        cmsApiClient.get<ApiResponse<ContentCategory>>(`/cms/categories/slug/${slug}`),
 
     createCategory: (category: ContentCategoryCreateRequest) =>
-        api.post<ApiResponse<ContentCategory>>('/cms/categories', category),
+        cmsApiClient.post<ApiResponse<ContentCategory>>('/cms/categories', category),
 
     updateCategory: (id: string, category: ContentCategoryUpdateRequest) =>
-        api.put<ApiResponse<ContentCategory>>(`/cms/categories/${id}`, category),
+        cmsApiClient.put<ApiResponse<ContentCategory>>(`/cms/categories/${id}`, category),
 
     deleteCategory: (id: string) =>
-        api.delete<ApiResponse<void>>(`/cms/categories/${id}`),
+        cmsApiClient.delete<ApiResponse<void>>(`/cms/categories/${id}`),
 
     // 内容标签相关
     getTags: (params?: {
@@ -420,22 +434,22 @@ export const cmsApi = {
         search?: string;
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
-    }) => api.get<ApiResponse<ContentTagListResponse>>('/cms/tags', { params }),
+    }) => cmsApiClient.get<ApiResponse<ContentTagListResponse>>('/cms/tags', { params }),
 
     getTagById: (id: string) =>
-        api.get<ApiResponse<ContentTag>>(`/cms/tags/${id}`),
+        cmsApiClient.get<ApiResponse<ContentTag>>(`/cms/tags/${id}`),
 
     getTagBySlug: (slug: string) =>
-        api.get<ApiResponse<ContentTag>>(`/cms/tags/slug/${slug}`),
+        cmsApiClient.get<ApiResponse<ContentTag>>(`/cms/tags/slug/${slug}`),
 
     createTag: (tag: ContentTagCreateRequest) =>
-        api.post<ApiResponse<ContentTag>>('/cms/tags', tag),
+        cmsApiClient.post<ApiResponse<ContentTag>>('/cms/tags', tag),
 
     updateTag: (id: string, tag: ContentTagUpdateRequest) =>
-        api.put<ApiResponse<ContentTag>>(`/cms/tags/${id}`, tag),
+        cmsApiClient.put<ApiResponse<ContentTag>>(`/cms/tags/${id}`, tag),
 
     deleteTag: (id: string) =>
-        api.delete<ApiResponse<void>>(`/cms/tags/${id}`),
+        cmsApiClient.delete<ApiResponse<void>>(`/cms/tags/${id}`),
 
     // 产品选择相关
     getProductsForSelection: (params?: {
@@ -445,7 +459,7 @@ export const cmsApi = {
         category?: string;
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
-    }) => api.get<ApiResponse<ProductSelectionResponse>>('/cms/products', { params }),
+    }) => cmsApiClient.get<ApiResponse<ProductSelectionResponse>>('/cms/products', { params }),
 
     // 新增：使用search/products端点的产品选择函数，替代上面的函数
     getProductsForSearch: (params?: {
@@ -482,4 +496,4 @@ export const cmsApi = {
     },
 };
 
-export default api; 
+export default api;

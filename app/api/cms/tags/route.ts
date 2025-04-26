@@ -1,3 +1,5 @@
+// import { ObjectId } from 'mongodb'; // 恢复导入
+// 正确的导入语句
 import { type NextRequest, NextResponse } from 'next/server';
 
 import clientPromise from '@/lib/mongodb';
@@ -7,15 +9,18 @@ import type { ContentTagCreateRequest } from '@/types/cms';
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
-        const page = parseInt(searchParams.get('page') || '1');
-        const limit = parseInt(searchParams.get('limit') || '50');
+        const _page = parseInt(searchParams.get('page') || '1');
+        // 注意：为了计算 postCount，我们暂时移除分页限制，获取所有标签
+        // 如果标签数量非常多，后续可能需要优化为更复杂的聚合分页
+        const limit = parseInt(searchParams.get('limit') || '500'); // 获取所有标签
         const search = searchParams.get('search') || '';
 
         // 获取数据库连接
         const dbName = process.env.MONGODB_DB || 'oohunt';
         const client = await clientPromise;
         const db = client.db(dbName);
-        const collection = db.collection('cms_tags');
+        const tagsCollection = db.collection('cms_tags');
+        const _pagesCollection = db.collection('cms_pages');
 
         // 构建查询条件
         const query: Record<string, unknown> = {};
@@ -27,31 +32,76 @@ export async function GET(request: NextRequest) {
             ];
         }
 
-        // 计算总数
-        const total = await collection.countDocuments(query);
-        const totalPages = Math.ceil(total / limit);
+        // 使用聚合查询获取标签及其关联的文章数
+        const aggregationPipeline = [
+            // 匹配查询条件
+            { $match: query },
+            // 按名称排序
+            { $sort: { name: 1 } },
+            // 限制数量 (暂时获取全部)
+            { $limit: limit },
+            // 关联 cms_pages 集合
+            {
+                $lookup: {
+                    from: 'cms_pages',
+                    // 注意：cms_pages 中的 tags 存储的是 ObjectId 字符串，所以需要转换
+                    // 这里假设 tags 字段存储的是 tag._id 的字符串形式
+                    let: { tagId: { $toString: '$_id' } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $in: ['$$tagId', '$tags'] },
+                                status: 'published' // 只计算已发布的文章
+                            }
+                        },
+                        { $count: 'count' } // 计算匹配的文章数量
+                    ],
+                    as: 'relatedPages'
+                }
+            },
+            // 添加 postCount 字段
+            {
+                $addFields: {
+                    postCount: { $ifNull: [{ $first: '$relatedPages.count' }, 0] }
+                }
+            },
+            // 移除不再需要的 relatedPages 字段
+            {
+                $project: {
+                    relatedPages: 0
+                }
+            }
+        ];
 
         // 获取数据
-        const tags = await collection.find(query)
-            .sort({ name: 1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .toArray();
+        const tags = await tagsCollection.aggregate(aggregationPipeline).toArray();
 
-        // 转换数据格式
+        // 计算总数 (聚合结果的总数)
+        // 注意：这里的 total 反映的是聚合查询匹配到的标签总数，而不是所有标签总数
+        const total = tags.length;
+        // 基于原始的 limit 参数计算分页 (如果需要恢复分页)
+        // const originalLimit = parseInt(searchParams.get('limit') || '50');
+        // const totalPages = Math.ceil(total / originalLimit);
+
+        // 转换数据格式 (聚合结果已包含 _id)
         const formattedTags = tags.map(tag => ({
             ...tag,
-            _id: tag._id.toString(),
+            _id: tag._id.toString(), // 确保 _id 是字符串
+            postCount: tag.postCount, // 确保 postCount 存在
             createdAt: tag.createdAt instanceof Date ? tag.createdAt.toISOString() : tag.createdAt,
             updatedAt: tag.updatedAt instanceof Date ? tag.updatedAt.toISOString() : tag.updatedAt
         }));
 
+        // 如果需要恢复分页逻辑，可以在这里对 formattedTags 进行 slice 操作
+        // const startIndex = (page - 1) * originalLimit;
+        // const paginatedTags = formattedTags.slice(startIndex, startIndex + originalLimit);
+
         return NextResponse.json({
             status: true,
             data: {
-                tags: formattedTags,
-                totalPages,
-                currentPage: page,
+                tags: formattedTags, // 返回所有带计数的标签
+                // totalPages, // 如果恢复分页，则取消注释
+                // currentPage: page, // 如果恢复分页，则取消注释
                 totalItems: total
             }
         });

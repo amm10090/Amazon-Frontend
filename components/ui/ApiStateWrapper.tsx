@@ -25,8 +25,8 @@ export default function ApiStateWrapper<T>({
     isEmpty = false,
     data,
     error,
-    loadingMessage = "正在加载数据...",
-    emptyMessage = "没有找到数据",
+    loadingMessage = "Loading data...",
+    emptyMessage = "No data found",
     onRetry,
     loadingFallback,
     children
@@ -46,8 +46,8 @@ export default function ApiStateWrapper<T>({
     if (isError) {
         return (
             <ErrorMessage
-                message="加载失败"
-                details={error?.message || "请检查网络连接并重试"}
+                message="Failed to load"
+                details={error?.message || "Please check your network connection and try again"}
                 onRetry={onRetry}
             />
         );
@@ -83,7 +83,7 @@ export default function ApiStateWrapper<T>({
                         onClick={onRetry}
                         className="mt-4 px-6 py-3 bg-primary text-white rounded-full shadow-md hover:shadow-lg transition-all"
                     >
-                        刷新
+                        Refresh
                     </motion.button>
                 )}
             </motion.div>

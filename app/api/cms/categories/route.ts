@@ -1,3 +1,5 @@
+// import { ObjectId } from 'mongodb'; // 恢复导入
+// 正确的导入语句
 import { type NextRequest, NextResponse } from 'next/server';
 
 import clientPromise from '@/lib/mongodb';
@@ -7,8 +9,9 @@ import type { ContentCategoryCreateRequest } from '@/types/cms';
 export async function GET(request: NextRequest) {
     try {
         const searchParams = request.nextUrl.searchParams;
-        const page = parseInt(searchParams.get('page') || '1');
-        const limit = parseInt(searchParams.get('limit') || '50');
+        const _page = parseInt(searchParams.get('page') || '1');
+        // 注意：为了计算 postCount，我们暂时移除分页限制，获取所有分类
+        const limit = parseInt(searchParams.get('limit') || '500'); // 获取所有分类
         const search = searchParams.get('search') || '';
         const parentId = searchParams.get('parentId') || null;
 
@@ -16,7 +19,8 @@ export async function GET(request: NextRequest) {
         const dbName = process.env.MONGODB_DB || 'oohunt';
         const client = await clientPromise;
         const db = client.db(dbName);
-        const collection = db.collection('cms_categories');
+        const categoriesCollection = db.collection('cms_categories');
+        const _pagesCollection = db.collection('cms_pages');
 
         // 构建查询条件
         const query: Record<string, unknown> = {};
@@ -35,31 +39,65 @@ export async function GET(request: NextRequest) {
             query.parentId = { $exists: false };
         }
 
-        // 计算总数
-        const total = await collection.countDocuments(query);
-        const totalPages = Math.ceil(total / limit);
+        // 使用聚合查询获取分类及其关联的文章数
+        const aggregationPipeline = [
+            { $match: query },
+            { $sort: { name: 1 } },
+            { $limit: limit },
+            {
+                $lookup: {
+                    from: 'cms_pages',
+                    let: { categoryId: { $toString: '$_id' } },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $in: ['$$categoryId', '$categories'] },
+                                status: 'published'
+                            }
+                        },
+                        { $count: 'count' }
+                    ],
+                    as: 'relatedPages'
+                }
+            },
+            {
+                $addFields: {
+                    postCount: { $ifNull: [{ $first: '$relatedPages.count' }, 0] }
+                }
+            },
+            {
+                $project: {
+                    relatedPages: 0
+                }
+            }
+        ];
 
         // 获取数据
-        const categories = await collection.find(query)
-            .sort({ name: 1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .toArray();
+        const categories = await categoriesCollection.aggregate(aggregationPipeline).toArray();
+
+        // 计算总数
+        const total = categories.length;
+        // const originalLimit = parseInt(searchParams.get('limit') || '50');
+        // const totalPages = Math.ceil(total / originalLimit);
 
         // 转换数据格式
         const formattedCategories = categories.map(category => ({
             ...category,
             _id: category._id.toString(),
+            postCount: category.postCount,
             createdAt: category.createdAt instanceof Date ? category.createdAt.toISOString() : category.createdAt,
             updatedAt: category.updatedAt instanceof Date ? category.updatedAt.toISOString() : category.updatedAt
         }));
 
+        // const startIndex = (page - 1) * originalLimit;
+        // const paginatedCategories = formattedCategories.slice(startIndex, startIndex + originalLimit);
+
         return NextResponse.json({
             status: true,
             data: {
-                categories: formattedCategories,
-                totalPages,
-                currentPage: page,
+                categories: formattedCategories, // 返回所有带计数的分类
+                // totalPages, // 如果恢复分页，则取消注释
+                // currentPage: page, // 如果恢复分页，则取消注释
                 totalItems: total
             }
         });

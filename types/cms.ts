@@ -37,9 +37,10 @@ export interface ContentCategory {
     name: string;           // 分类名称
     slug: string;           // SEO友好的URL路径
     description?: string;   // 分类描述
-    parentId?: string;      // 父分类ID，用于层级结构
+    parentId?: string | null; // 父分类ID，用于层级结构
     createdAt: Date;
     updatedAt: Date;
+    postCount?: number; // 添加 postCount 字段
 }
 
 /**
@@ -51,6 +52,7 @@ export interface ContentTag {
     slug: string;           // SEO友好的URL路径
     createdAt: Date;
     updatedAt: Date;
+    postCount?: number; // 添加 postCount 字段
 }
 
 /**

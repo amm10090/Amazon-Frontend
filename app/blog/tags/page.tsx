@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import TaxonomyGrid from '@/components/blog/TaxonomyGrid';
 import type { ContentTag } from '@/types/cms';
+// import TagCloud from '@/components/blog/TagCloud';
 
 // Fetch all tags data
 async function getTags(): Promise<ContentTag[]> {
@@ -16,12 +18,10 @@ async function getTags(): Promise<ContentTag[]> {
         });
 
         if (!res.ok) {
-
             return [];
         }
 
         const json = await res.json();
-
 
         if (json.status && json.data?.tags) {
             return json.data.tags;
@@ -29,7 +29,6 @@ async function getTags(): Promise<ContentTag[]> {
 
         return [];
     } catch {
-
         return [];
     }
 }
@@ -45,34 +44,22 @@ export default async function TagsPage() {
     const tags = await getTags();
 
     return (
-        <main className="container mx-auto px-4 py-12 max-w-4xl">
-            <header className="mb-12 text-center">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">Blog Tags</h1>
-                <p className="text-lg text-gray-600">Browse articles by tag</p>
-            </header>
+        <main className="flex flex-col min-h-screen">
+            <div className="flex-grow container mx-auto px-4 py-12 max-w-6xl">
+                <header className="mb-12 text-center">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Blog Tags</h1>
+                    <p className="text-lg text-gray-600">Browse articles by tag</p>
+                </header>
 
-            {tags.length === 0 ? (
-                <div className="text-center py-16">
-                    <p className="text-xl text-gray-600">No tags available</p>
+                <div className="w-full">
+                    <TaxonomyGrid items={tags} basePath="/blog/tags" itemType="tag" />
                 </div>
-            ) : (
-                <div className="flex flex-wrap gap-4 justify-center">
-                    {tags.map((tag) => (
-                        <Link
-                            href={`/blog/tags/${tag.slug}`}
-                            key={tag._id}
-                            className="bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-full text-sm font-medium transition-colors"
-                        >
-                            {tag.name}
-                        </Link>
-                    ))}
-                </div>
-            )}
 
-            <div className="mt-16 text-center">
-                <Link href="/blog" className="text-blue-600 hover:underline">
-                    &larr; Back to all posts
-                </Link>
+                <div className="mt-16 text-center">
+                    <Link href="/blog" className="text-blue-600 hover:underline">
+                        &larr; Back to all posts
+                    </Link>
+                </div>
             </div>
         </main>
     );

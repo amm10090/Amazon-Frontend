@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
+import TaxonomyGrid from '@/components/blog/TaxonomyGrid';
 import type { ContentCategory } from '@/types/cms';
+// import CategoryCloud from '@/components/blog/CategoryCloud';
 
 // Fetch all categories data
 async function getCategories(): Promise<ContentCategory[]> {
@@ -16,12 +18,10 @@ async function getCategories(): Promise<ContentCategory[]> {
         });
 
         if (!res.ok) {
-
             return [];
         }
 
         const json = await res.json();
-
 
         if (json.status && json.data?.categories) {
             return json.data.categories;
@@ -29,7 +29,6 @@ async function getCategories(): Promise<ContentCategory[]> {
 
         return [];
     } catch {
-
         return [];
     }
 }
@@ -45,34 +44,22 @@ export default async function CategoriesPage() {
     const categories = await getCategories();
 
     return (
-        <main className="container mx-auto px-4 py-12 max-w-4xl">
-            <header className="mb-12 text-center">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">Blog Categories</h1>
-                <p className="text-lg text-gray-600">Browse articles by category</p>
-            </header>
+        <main className="flex flex-col min-h-screen">
+            <div className="flex-grow container mx-auto px-4 py-12 max-w-6xl">
+                <header className="mb-12 text-center">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Blog Categories</h1>
+                    <p className="text-lg text-gray-600">Browse articles by category</p>
+                </header>
 
-            {categories.length === 0 ? (
-                <div className="text-center py-16">
-                    <p className="text-xl text-gray-600">No categories available</p>
+                <div className="w-full">
+                    <TaxonomyGrid items={categories} basePath="/blog/categories" itemType="category" />
                 </div>
-            ) : (
-                <div className="flex flex-wrap gap-4 justify-center">
-                    {categories.map((category) => (
-                        <Link
-                            href={`/blog/categories/${category.slug}`}
-                            key={category._id}
-                            className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-4 py-2 rounded-full text-sm font-medium transition-colors"
-                        >
-                            {category.name}
-                        </Link>
-                    ))}
-                </div>
-            )}
 
-            <div className="mt-16 text-center">
-                <Link href="/blog" className="text-blue-600 hover:underline">
-                    &larr; Back to all posts
-                </Link>
+                <div className="mt-16 text-center">
+                    <Link href="/blog" className="text-blue-600 hover:underline">
+                        &larr; Back to all posts
+                    </Link>
+                </div>
             </div>
         </main>
     );

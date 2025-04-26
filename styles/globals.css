@@ -6,7 +6,17 @@
   --navbar-height: 64px;
 }
 
-
+/* 移除输入框聚焦时的黑色边框 */
+input:focus, 
+select:focus, 
+textarea:focus, 
+button:focus,
+[role="combobox"]:focus,
+[contenteditable]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: var(--color-primary) !important;
+}
 
 /* 基础样式 */
 body {
@@ -694,4 +704,11 @@ Link, Link:hover, Link:focus, Link:active, Link:visited {
 */
 
 /* --- End Tiptap Block Actions Extension Styles --- */
+
+/* 确保Badge内的文本不会与关闭按钮重叠 */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 

@@ -302,7 +302,7 @@ const PageEditorContent = () => {
         return (
             <div className="flex justify-center items-center h-64">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" />
-                <p className="ml-2">加载页面数据...</p>
+                <p className="ml-2">Loading page data...</p>
             </div>
         );
     }
@@ -312,13 +312,13 @@ const PageEditorContent = () => {
         return (
             <div className="text-center py-12">
                 <FileQuestion size={48} className="mx-auto text-red-500" />
-                <h2 className="text-xl font-semibold mt-4 mb-2">加载错误</h2>
+                <h2 className="text-xl font-semibold mt-4 mb-2">Loading Error</h2>
                 <p className="text-gray-600">{loadError}</p>
                 <button
                     onClick={() => router.push('/dashboard/cms/pages')}
                     className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
-                    返回页面列表
+                    Back to Page List
                 </button>
             </div>
         );

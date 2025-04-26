@@ -73,11 +73,9 @@ function formatDate(dateString: string): string {
 export default async function BlogList() {
     const pages = await getPages();
 
-
-
     return (
-        <div className="bg-gradient-to-b from-gray-50 to-white">
-            <main className="container mx-auto px-4 py-12 max-w-6xl">
+        <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white">
+            <main className="flex-grow container mx-auto px-4 py-12 max-w-6xl">
                 <header className="mb-12 text-center">
                     <h1 className="text-4xl font-bold text-gray-900 mb-4">Blog</h1>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto">
