@@ -20,7 +20,6 @@ import type {
 // API Base URL configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 const SERVER_API_URL = process.env.SERVER_API_URL || API_BASE_URL;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || API_BASE_URL;
 const DEFAULT_TIMEOUT = 15000;
 
 // Function to determine if code is running on server or client
@@ -46,7 +45,7 @@ const createApiClient = (config?: AxiosRequestConfig) => {
 const api = createApiClient();
 
 const cmsApiClient = axios.create({
-    baseURL: `${SITE_URL}/api`,
+    baseURL: '/api',
     timeout: DEFAULT_TIMEOUT,
     headers: {
         'Content-Type': 'application/json',

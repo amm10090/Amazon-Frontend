@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import CmsPagesContent from '@/components/dashboard/cms/pages/CmsPagesContent';
 
 export const metadata: Metadata = {
-    title: '内容页面管理 - Oohunt Dashboard',
-    description: '管理网站内容页面'
+    title: 'Content Page Management - Oohunt Dashboard',
+    description: 'Manage website content pages'
 };
 
 export default function CMSPagesPage() {
