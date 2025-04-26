@@ -1,11 +1,13 @@
 'use client';
 
-import { Edit, Trash2, Search, Plus, Eye, FileCog, FileText, RefreshCcw } from 'lucide-react';
+import { Edit, Trash2, Search, Plus, Eye, FileCog, FileText, RefreshCcw, Tag, FolderOpen, FileText as FileTextIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 
+import CategoriesManagement from '@/components/dashboard/cms/pages/CategoriesManagement';
+import TagsManagement from '@/components/dashboard/cms/pages/TagsManagement';
 import { cmsApi } from '@/lib/api';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { ContentPage } from '@/types/cms';
@@ -17,6 +19,9 @@ import type { ContentPage } from '@/types/cms';
 const CmsPagesContent = () => {
     const _router = useRouter();
     const { data: _session } = useSession();
+
+    // 选项卡状态
+    const [activeTab, setActiveTab] = useState<'posts' | 'categories' | 'tags'>('posts');
 
     const [pages, setPages] = useState<ContentPage[]>([]);
     const [loading, setLoading] = useState(true);
@@ -30,6 +35,8 @@ const CmsPagesContent = () => {
 
     // 加载页面数据
     useEffect(() => {
+        if (activeTab !== 'posts') return;
+
         const fetchPages = async () => {
             setLoading(true);
             try {
@@ -73,7 +80,7 @@ const CmsPagesContent = () => {
         };
 
         fetchPages();
-    }, [currentPage, search, statusFilter, sortBy, sortOrder, refreshKey]);
+    }, [currentPage, search, statusFilter, sortBy, sortOrder, refreshKey, activeTab]);
 
     // 处理搜索
     const handleSearch = (e: React.FormEvent) => {
@@ -249,8 +256,47 @@ const CmsPagesContent = () => {
         );
     };
 
-    return (
-        <div className="space-y-6">
+    // 渲染标签页导航
+    const renderTabsNav = () => (
+        <div className="border-b border-gray-200 mb-6">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                <button
+                    onClick={() => setActiveTab('posts')}
+                    className={`${activeTab === 'posts'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                >
+                    <FileTextIcon className="h-4 w-4 mr-2" />
+                    Posts
+                </button>
+                <button
+                    onClick={() => setActiveTab('categories')}
+                    className={`${activeTab === 'categories'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                >
+                    <FolderOpen className="h-4 w-4 mr-2" />
+                    Categories
+                </button>
+                <button
+                    onClick={() => setActiveTab('tags')}
+                    className={`${activeTab === 'tags'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                >
+                    <Tag className="h-4 w-4 mr-2" />
+                    Tags
+                </button>
+            </nav>
+        </div>
+    );
+
+    // 渲染页面内容
+    const renderPostsContent = () => (
+        <>
             <div className="flex flex-col md:flex-row md:items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-800">Blog Post Management</h1>
                 <div className="mt-4 md:mt-0">
@@ -421,6 +467,18 @@ const CmsPagesContent = () => {
                 {/* 分页 */}
                 {!loading && pages.length > 0 && renderPagination()}
             </div>
+        </>
+    );
+
+    return (
+        <div className="space-y-6">
+            {/* 标签页导航 */}
+            {renderTabsNav()}
+
+            {/* 根据当前选中的标签页显示不同内容 */}
+            {activeTab === 'posts' && renderPostsContent()}
+            {activeTab === 'categories' && <CategoriesManagement />}
+            {activeTab === 'tags' && <TagsManagement />}
         </div>
     );
 };

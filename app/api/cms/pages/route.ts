@@ -56,7 +56,8 @@ export async function GET(request: NextRequest) {
         }));
 
         return NextResponse.json({
-            status: true,
+            status: 200,
+            success: true,
             data: {
                 pages: formattedPages,
                 totalPages,
@@ -140,7 +141,8 @@ export async function POST(request: NextRequest) {
 
         // 返回创建的页面数据
         return NextResponse.json({
-            status: true,
+            status: 200,
+            success: true,
             message: '页面创建成功',
             data: {
                 ...pageData,

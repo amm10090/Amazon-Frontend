@@ -1,16 +1,30 @@
 'use client';
 
+import { Badge, Input, Autocomplete, AutocompleteItem } from "@heroui/react";
 import type { Editor } from '@tiptap/react';
-import { Save, FileQuestion, ArrowLeft, AlertTriangle, Eye, Edit3 } from 'lucide-react';
+import { Save, FileQuestion, ArrowLeft, AlertTriangle, Eye, Edit3, X } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
 
 import ContentRenderer from '@/components/cms/ContentRenderer';
 import { RichTextEditor } from '@/components/cms/RichTextEditor';
-import { cmsApi } from '@/lib/api';
+import { cmsApi } from '@/lib/api/cms';
 import { generateSlug } from '@/lib/utils';
-import type { ContentPage, ContentPageCreateRequest, ContentPageUpdateRequest } from '@/types/cms';
+import type { ContentPageCreateRequest, ContentPageUpdateRequest, ContentCategory, ContentTag } from '@/types/cms';
+
+
+interface FormData {
+    title: string;
+    slug: string;
+    content: string;
+    excerpt: string;
+    status: 'draft' | 'published' | 'archived';
+    metaTitle?: string;
+    metaDescription?: string;
+    metaKeywords?: string;
+}
 
 /**
  * 内容页面编辑组件
@@ -28,17 +42,16 @@ const PageEditorContent = () => {
     const [isPreviewActive, setIsPreviewActive] = useState(false);
     const editorInstance = useRef<Editor | null>(null);
 
+    const [categories, setCategories] = useState<string[]>([]);
+    const [tags, setTags] = useState<string[]>([]);
+    const [featuredImage, setFeaturedImage] = useState('');
+    const [availableCategories, setAvailableCategories] = useState<ContentCategory[]>([]);
+    const [availableTags, setAvailableTags] = useState<ContentTag[]>([]);
+    const [categorySearch, setCategorySearch] = useState('');
+    const [tagSearch, setTagSearch] = useState('');
+
     // 页面表单状态
-    const [formData, setFormData] = useState<{
-        title: string;
-        slug: string;
-        content: string;
-        excerpt: string;
-        status: 'draft' | 'published' | 'archived';
-        metaTitle?: string;
-        metaDescription?: string;
-        metaKeywords?: string;
-    }>({
+    const [formData, setFormData] = useState<FormData>({
         title: '',
         slug: '',
         content: '',
@@ -64,40 +77,71 @@ const PageEditorContent = () => {
         try {
             const response = await cmsApi.getPageById(id);
 
-            // 检查 API 响应状态和预期的数据结构（考虑嵌套）
-            // 使用具体的类型断言来反映嵌套结构
-            const pageContainer = response.data?.data as { data?: ContentPage };
+            // 添加详细日志输出，帮助调试
 
-            if (response.data?.status && pageContainer?.data) {
-                // 从嵌套结构中提取实际页面数据
-                const pageData = pageContainer.data;
+            // 检查响应结构，增强健壮性
+            if (response?.data) {
+                // 允许状态码为200或其他成功状态码(2xx)
+                const isSuccessStatus = response.data.status >= 200 && response.data.status < 300;
 
-                if (pageData) {
-                    const newFormData = {
-                        title: pageData.title,
-                        slug: pageData.slug,
-                        content: pageData.content,
-                        excerpt: pageData.excerpt || '',
-                        status: pageData.status as 'draft' | 'published' | 'archived',
-                        metaTitle: pageData.metaTitle || pageData.title,
-                        metaDescription: pageData.metaDescription || pageData.excerpt || '',
-                        metaKeywords: pageData.metaKeywords || ''
-                    };
+                if (isSuccessStatus && response.data.data) {
+                    const pageData = response.data.data;
 
-                    setFormData(newFormData);
+                    if (pageData) {
+                        const newFormData: FormData = {
+                            title: pageData.title || '',
+                            slug: pageData.slug || '',
+                            content: pageData.content || '',
+                            excerpt: pageData.excerpt || '',
+                            status: pageData.status || 'draft',
+                            metaTitle: pageData.metaTitle || pageData.title || '',
+                            metaDescription: pageData.metaDescription || pageData.excerpt || '',
+                            metaKeywords: pageData.metaKeywords || ''
+                        };
 
+                        setFormData(newFormData);
+                        setCategories(Array.isArray(pageData.categories) ? pageData.categories : []);
+                        setTags(Array.isArray(pageData.tags) ? pageData.tags : []);
+                        setFeaturedImage(pageData.featuredImage || '');
+                    } else {
+                        setLoadError('无法加载页面数据 - 页面数据格式错误');
+                    }
                 } else {
-                    setLoadError('无法加载页面数据 - 未找到页面对象');
+                    setLoadError(`无法加载页面数据 - API状态码: ${response.data.status || '未知'}, 消息: ${response.data.message || '未提供'}`);
                 }
             } else {
-                setLoadError('无法加载页面数据 - API 状态或数据无效');
+                setLoadError('无法加载页面数据 - API响应格式错误');
             }
-        } catch {
-            setLoadError('加载页面时出错');
+        } catch (err) {
+            setLoadError(`加载页面时出错: ${err instanceof Error ? err.message : '未知错误'}`);
         } finally {
             setLoadingPage(false);
         }
     };
+
+    // 加载可用的分类和标签
+    useEffect(() => {
+        const loadCategoriesAndTags = async () => {
+            try {
+                const [categoriesResponse, tagsResponse] = await Promise.all([
+                    cmsApi.getCategories(),
+                    cmsApi.getTags()
+                ]);
+
+                if (categoriesResponse.data?.data) {
+                    setAvailableCategories(categoriesResponse.data.data.categories);
+                }
+
+                if (tagsResponse.data?.data) {
+                    setAvailableTags(tagsResponse.data.data.tags);
+                }
+            } catch {
+                // 静默处理错误，不影响主要功能
+            }
+        };
+
+        loadCategoriesAndTags();
+    }, []);
 
     // 处理表单提交
     const handleSubmit = async (e: React.FormEvent) => {
@@ -118,65 +162,45 @@ const PageEditorContent = () => {
         setIsSubmitting(true);
 
         try {
-            // 对内容进行处理
-            const processedContent = formData.content;
+            const pageData: ContentPageCreateRequest | ContentPageUpdateRequest = {
+                title: formData.title,
+                slug: formData.slug,
+                content: formData.content,
+                excerpt: formData.excerpt,
+                status: formData.status,
+                categories,
+                tags,
+                featuredImage,
+                author: session?.user?.name || session?.user?.email || 'Unknown',
+                metaTitle: formData.metaTitle || formData.title,
+                metaDescription: formData.metaDescription || formData.excerpt,
+                metaKeywords: formData.metaKeywords
+            };
 
-            if (mode === 'create') {
-                // 创建新页面
-                const pageData: ContentPageCreateRequest = {
-                    title: formData.title,
-                    slug: formData.slug,
-                    content: processedContent,
-                    excerpt: formData.excerpt,
-                    status: formData.status,
-                    author: session?.user?.name || session?.user?.email || 'Unknown',
-                    categories: [],
-                    tags: [],
-                    metaTitle: formData.metaTitle || formData.title,
-                    metaDescription: formData.metaDescription || formData.excerpt,
-                    metaKeywords: formData.metaKeywords
-                };
+            if (formData.status === 'published') {
+                pageData.publishedAt = new Date();
+            }
 
-                if (formData.status === 'published') {
-                    pageData.publishedAt = new Date();
-                }
+            let response;
 
-                const response = await cmsApi.createPage(pageData);
+            if (params.id) {
+                response = await cmsApi.updatePage(params.id as string, pageData as ContentPageUpdateRequest);
+            } else {
+                response = await cmsApi.createPage(pageData as ContentPageCreateRequest);
+            }
 
-                if (response.data?.status && response.data?.data) {
-                    // 创建成功，重定向到页面列表
-                    router.push('/dashboard/cms/pages');
-                } else {
-                    alert('创建页面失败');
+            if (response.data?.status === 200) {
+                alert('页面保存成功');
+                if (!params.id && response.data.data) {
+                    router.push(`/dashboard/cms/pages/${response.data.data._id}`);
                 }
             } else {
-                // 更新页面
-                const pageData: ContentPageUpdateRequest = {
-                    title: formData.title,
-                    slug: formData.slug,
-                    content: processedContent,
-                    excerpt: formData.excerpt,
-                    status: formData.status,
-                    metaTitle: formData.metaTitle || formData.title,
-                    metaDescription: formData.metaDescription || formData.excerpt,
-                    metaKeywords: formData.metaKeywords
-                };
-
-                if (formData.status === 'published') {
-                    pageData.publishedAt = new Date();
-                }
-
-                const response = await cmsApi.updatePage(params.id as string, pageData);
-
-                if (response.data?.status && response.data?.data) {
-                    // 更新成功，重定向到页面列表
-                    router.push('/dashboard/cms/pages');
-                } else {
-                    alert('更新页面失败');
-                }
+                throw new Error(response.data?.message || 'Failed to save page');
             }
-        } catch {
-            alert('保存页面时出错');
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+
+            alert(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -185,8 +209,6 @@ const PageEditorContent = () => {
     // 阻止Enter键提交表单
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-            // 如果是在输入框中按Enter，阻止默认行为（表单提交）
-            // 但允许在textarea和富文本编辑器中使用Enter
             if (e.target.type !== 'textarea') {
                 e.preventDefault();
             }
@@ -199,14 +221,12 @@ const PageEditorContent = () => {
 
         setFormData(prev => ({ ...prev, title: newTitle }));
 
-        // 只有在创建模式且用户尚未手动编辑过slug时才自动更新slug
         if (mode === 'create' && !showSlugWarning) {
             const newSlug = generateSlug(newTitle);
 
             setFormData(prev => ({ ...prev, slug: newSlug }));
         }
 
-        // 如果元标题为空，自动更新
         if (!formData.metaTitle) {
             setFormData(prev => ({ ...prev, metaTitle: newTitle }));
         }
@@ -216,12 +236,10 @@ const PageEditorContent = () => {
     const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newSlug = e.target.value;
 
-        // 第一次手动编辑slug时显示警告
         if (!showSlugWarning && mode === 'create') {
             setShowSlugWarning(true);
         }
 
-        // 确保slug只包含有效字符
         const sanitizedSlug = newSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
         setFormData(prev => ({ ...prev, slug: sanitizedSlug }));
@@ -233,7 +251,6 @@ const PageEditorContent = () => {
 
         setFormData(prev => ({ ...prev, excerpt: newExcerpt }));
 
-        // 如果元描述为空，自动更新
         if (!formData.metaDescription) {
             setFormData(prev => ({ ...prev, metaDescription: newExcerpt }));
         }
@@ -242,6 +259,42 @@ const PageEditorContent = () => {
     // 获取编辑器实例
     const handleEditorReady = (editor: Editor) => {
         editorInstance.current = editor;
+    };
+
+    // 处理创建新分类
+    const handleCreateCategory = async (name: string): Promise<void> => {
+        try {
+            const response = await cmsApi.createCategory({ name, slug: generateSlug(name) });
+
+            if (response.data?.status === 200 && response.data.data) {
+                const newCategory = response.data.data;
+
+                if (newCategory._id) {
+                    setAvailableCategories(prev => [...prev, newCategory]);
+                    setCategories(prev => [...prev, newCategory._id].filter((id): id is string => id !== undefined));
+                }
+            }
+        } catch {
+            // 静默处理错误
+        }
+    };
+
+    // 处理创建新标签
+    const handleCreateTag = async (name: string): Promise<void> => {
+        try {
+            const response = await cmsApi.createTag({ name, slug: generateSlug(name) });
+
+            if (response.data?.status === 200 && response.data.data) {
+                const newTag = response.data.data;
+
+                if (newTag._id) {
+                    setAvailableTags(prev => [...prev, newTag]);
+                    setTags(prev => [...prev, newTag._id].filter((id): id is string => id !== undefined));
+                }
+            }
+        } catch {
+            // 静默处理错误
+        }
     };
 
     // 渲染加载状态
@@ -413,6 +466,132 @@ const PageEditorContent = () => {
                         </select>
                     </div>
 
+                    {/* 分类选择 */}
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Categories</label>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {categories.map((categoryId) => {
+                                    const category = availableCategories.find(c => c._id === categoryId);
+
+                                    return category ? (
+                                        <Badge key={categoryId} variant="solid" className="flex items-center gap-1">
+                                            {category.name}
+                                            <button
+                                                type="button"
+                                                onClick={() => setCategories(categories.filter(id => id !== categoryId))}
+                                                className="ml-1 hover:text-destructive"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </Badge>
+                                    ) : null;
+                                })}
+                            </div>
+                            <Autocomplete
+                                placeholder="Search or create new category"
+                                value={categorySearch}
+                                onValueChange={setCategorySearch}
+                                onSelectionChange={(key) => {
+                                    if (key && typeof key === 'string') {
+                                        const category = availableCategories.find(c => c._id === key);
+
+                                        if (category && category._id && !categories.includes(category._id)) {
+                                            setCategories([...categories, category._id]);
+                                        }
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && categorySearch.trim() && !availableCategories.some(c => c.name.toLowerCase() === categorySearch.toLowerCase())) {
+                                        handleCreateCategory(categorySearch.trim());
+                                        setCategorySearch('');
+                                    }
+                                }}
+                                aria-label="Search or create new category"
+                            >
+                                {availableCategories.map((category) => (
+                                    <AutocompleteItem key={category._id || ''} textValue={category.name}>
+                                        {category.name}
+                                    </AutocompleteItem>
+                                ))}
+                            </Autocomplete>
+                        </div>
+
+                        {/* 标签选择 */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Tags</label>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {tags.map((tagId) => {
+                                    const tag = availableTags.find(t => t._id === tagId);
+
+                                    return tag ? (
+                                        <Badge key={tagId} variant="solid" className="flex items-center gap-1">
+                                            {tag.name}
+                                            <button
+                                                type="button"
+                                                onClick={() => setTags(tags.filter(id => id !== tagId))}
+                                                className="ml-1 hover:text-destructive"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </Badge>
+                                    ) : null;
+                                })}
+                            </div>
+                            <Autocomplete
+                                placeholder="Search or create new tag"
+                                value={tagSearch}
+                                onValueChange={setTagSearch}
+                                onSelectionChange={(key) => {
+                                    if (key && typeof key === 'string') {
+                                        const tag = availableTags.find(t => t._id === key);
+
+                                        if (tag && tag._id && !tags.includes(tag._id)) {
+                                            setTags([...tags, tag._id]);
+                                        }
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && tagSearch.trim() && !availableTags.some(t => t.name.toLowerCase() === tagSearch.toLowerCase())) {
+                                        handleCreateTag(tagSearch.trim());
+                                        setTagSearch('');
+                                    }
+                                }}
+                                aria-label="Search or create new tag"
+                            >
+                                {availableTags.map((tag) => (
+                                    <AutocompleteItem key={tag._id || ''} textValue={tag.name}>
+                                        {tag.name}
+                                    </AutocompleteItem>
+                                ))}
+                            </Autocomplete>
+                        </div>
+                    </div>
+
+                    {/* 特色图片 */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">Featured Image</label>
+                        <div className="flex items-center gap-4">
+                            {featuredImage && (
+                                <Image
+                                    src={featuredImage}
+                                    alt="Featured Image"
+                                    width={80}
+                                    height={80}
+                                    className="h-20 w-20 object-cover rounded-md"
+                                />
+                            )}
+                            <div className="flex-1">
+                                <Input
+                                    type="text"
+                                    value={featuredImage}
+                                    onChange={(e) => setFeaturedImage(e.target.value)}
+                                    placeholder="Enter image URL"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     {/* 内容编辑器 */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -497,4 +676,5 @@ const PageEditorContent = () => {
     );
 };
 
-export default PageEditorContent; 
+export default PageEditorContent;
+

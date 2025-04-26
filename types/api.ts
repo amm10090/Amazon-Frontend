@@ -1,8 +1,21 @@
-// API响应类型
-export interface ApiResponse<T> {
+/**
+ * 通用API响应类型
+ */
+export interface ApiResponse<T = unknown> {
     status: number;
-    message: string;
-    data: T;
+    success: boolean;
+    message?: string;
+    data?: T;
+}
+
+/**
+ * 分页响应参数
+ */
+export interface PaginationResponse {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    pageSize: number;
 }
 
 // FastAPI分页响应类型

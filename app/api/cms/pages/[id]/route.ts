@@ -51,10 +51,9 @@ export async function GET(
         };
 
         return NextResponse.json({
-            status: true,
-            data: {
-                data: formattedPage
-            }
+            status: 200,
+            success: true,
+            data: formattedPage
         });
     } catch (error) {
 
@@ -165,11 +164,10 @@ export async function PUT(
         };
 
         return NextResponse.json({
-            status: true,
+            status: 200,
+            success: true,
             message: '页面更新成功',
-            data: {
-                data: formattedPage
-            }
+            data: formattedPage
         });
     } catch (error) {
 
@@ -222,7 +220,8 @@ export async function DELETE(
         }
 
         return NextResponse.json({
-            status: true,
+            status: 200,
+            success: true,
             message: '页面删除成功'
         });
     } catch (error) {

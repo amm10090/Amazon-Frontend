@@ -12,7 +12,6 @@ import CharacterCount from '@tiptap/extension-character-count';
 import Color from '@tiptap/extension-color';
 import Dropcursor from '@tiptap/extension-dropcursor';
 import Focus from '@tiptap/extension-focus';
-import Gapcursor from '@tiptap/extension-gapcursor';
 import Heading from '@tiptap/extension-heading';
 import Highlight from '@tiptap/extension-highlight';
 import Image from '@tiptap/extension-image';
@@ -197,7 +196,6 @@ export function RichTextEditor({
                 // controls: false,
                 // allowFullscreen: false,
             }),
-            Gapcursor,
         ],
         content: value,
         onUpdate: ({ editor }) => {

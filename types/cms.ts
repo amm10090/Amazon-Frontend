@@ -128,4 +128,9 @@ export interface ProductSelectionResponse {
     totalPages: number;
     currentPage: number;
     totalItems: number;
-} 
+}
+
+/**
+ * 页面详情响应
+ */
+export type PageResponse = ContentPage; 
