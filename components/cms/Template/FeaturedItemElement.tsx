@@ -27,21 +27,21 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
         : null;
 
     return (
-        // 使用 span 作为根元素
-        <span className="inline-block align-middle w-full max-w-3xl relative my-4">
-            <motion.span
+        // 使用 div 作为根元素，避免嵌套问题
+        <div className="inline-block align-middle w-full max-w-3xl relative my-4">
+            <motion.div
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col md:flex-row border border-gray-200 dark:border-gray-700"
                 whileHover={{ boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
                 transition={{ duration: 0.3 }}
             >
                 {/* 图片区域 - 响应式 */}
-                <span className="relative w-full md:w-1/3 aspect-square md:aspect-[4/3] flex-shrink-0 bg-white">
+                <div className="relative w-full md:w-1/3 aspect-square md:aspect-[4/3] flex-shrink-0 bg-white">
                     {isPrime && (
-                        <span className="absolute top-3 left-3 z-10">
+                        <div className="absolute top-3 left-3 z-10">
                             <span className="bg-[#0574F7] text-white px-2 py-0.5 rounded-full text-xs font-semibold shadow-sm">
                                 Prime
                             </span>
-                        </span>
+                        </div>
                     )}
                     <Link href={productUrl} className="block h-full w-full no-underline">
                         <Image
@@ -54,15 +54,16 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
                             onError={(e) => { e.currentTarget.src = '/placeholder-product.jpg'; }}
                         />
                     </Link>
-                </span>
+                </div>
 
                 {/* 信息区域 */}
-                <span className="p-4 md:p-6 flex flex-col flex-grow">
+                <div className="p-4 md:p-6 flex flex-col flex-grow">
                     {formattedBrand && (
-                        <span className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
                             {formattedBrand}
-                        </span>
+                        </div>
                     )}
+                    {/* 这里将h3独立出来，不放在span内部 */}
                     <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-2 flex-grow">
                         <Link href={productUrl} className="hover:text-primary-button dark:hover:text-primary transition-colors no-underline">
                             {title}
@@ -70,7 +71,7 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
                     </h3>
 
                     {/* 价格与折扣 */}
-                    <span className="flex items-baseline mb-3">
+                    <div className="flex items-baseline mb-3">
                         <span className="text-2xl font-bold text-primary dark:text-primary-light mr-3">
                             {formatPrice(price)}
                         </span>
@@ -84,10 +85,10 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
                                 {savingsLabel}
                             </span>
                         )}
-                    </span>
+                    </div>
 
                     {/* 来源与按钮 */}
-                    <span className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
                         <StoreIdentifier url={effectiveUrl} showName={true} className="mb-3 sm:mb-0" />
                         <Link href={productUrl} className="no-underline w-full sm:w-auto">
                             <motion.button
@@ -98,10 +99,10 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
                                 View Details
                             </motion.button>
                         </Link>
-                    </span>
-                </span>
-            </motion.span>
-        </span>
+                    </div>
+                </div>
+            </motion.div>
+        </div>
     );
 };
 

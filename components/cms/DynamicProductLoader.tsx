@@ -104,25 +104,24 @@ export default function DynamicProductLoader({ productId, style = 'simple', alig
         right: 'text-right', // Or ml-auto if using flex/grid container
     };
 
-    // Apply alignment to a wrapper span. Note: mx-auto only works if the parent is a block/flex container.
-    // For true inline centering/right alignment relative to text, more complex CSS might be needed outside this component.
+    // 将wrapper类名修改为div，但保持相同的样式效果
     const wrapperClassName = `inline-block ${alignmentClasses[alignment]}`;
 
     // Loading state - now also needs to consider alignment
     if (isLoading) {
         return (
-            <span className={wrapperClassName}>
+            <div className={wrapperClassName}>
                 <ProductSkeletonPlaceholder style={style} />
-            </span>
+            </div>
         );
     }
 
-    // Error state - use span and apply inline styles
+    // Error state - 使用div而不是span
     if (error || !product) {
         return (
-            <span className={`${wrapperClassName} inline-flex items-center text-red-500 text-xs p-2 border border-red-200 rounded align-middle bg-red-50 dark:bg-red-900/20 dark:border-red-800`}>
+            <div className={`${wrapperClassName} inline-flex items-center text-red-500 text-xs p-2 border border-red-200 rounded align-middle bg-red-50 dark:bg-red-900/20 dark:border-red-800`}>
                 Error loading product (ID: {productId})
-            </span>
+            </div>
         );
     }
 
@@ -138,10 +137,10 @@ export default function DynamicProductLoader({ productId, style = 'simple', alig
         case 'simple': default: productElement = <SimpleProductElement product={product} />; break;
     }
 
-    // Return product element directly, remove wrapping span
+    // 返回产品元素，使用div包装
     return (
-        <span className={wrapperClassName}>
+        <div className={wrapperClassName}>
             {productElement}
-        </span>
+        </div>
     );
 } 

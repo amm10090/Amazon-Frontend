@@ -54,7 +54,7 @@ const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
                     return <span className="text-orange-500 text-xs">[Metadata information incomplete]</span>;
                 }
 
-                // 渲染动态元数据加载器
+                // 渲染动态元数据加载器，确保使用正确的布局元素
                 return <DynamicMetadataLoader productId={productId} fieldId={fieldId} />;
             }
 
