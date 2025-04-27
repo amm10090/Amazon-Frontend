@@ -36,7 +36,7 @@ async function getTags(): Promise<ContentTag[]> {
 // Generate page metadata
 export const metadata: Metadata = {
     title: 'Blog Tags - Oohunt',
-    description: 'Browse blog posts by tag'
+    description: 'Browse our blog posts by tag to quickly find related topics'
 };
 
 // Tags list page component
@@ -44,23 +44,34 @@ export default async function TagsPage() {
     const tags = await getTags();
 
     return (
-        <main className="flex flex-col min-h-screen">
-            <div className="flex-grow container mx-auto px-4 py-12 max-w-6xl">
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+            <div className="container mx-auto px-4 py-16 max-w-6xl">
                 <header className="mb-12 text-center">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Blog Tags</h1>
-                    <p className="text-lg text-gray-600">Browse articles by tag</p>
+                    <div className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium mb-4">
+                        Blog Navigation
+                    </div>
+                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Tags</h1>
+                    <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                        Browse articles by tag to quickly find related topics
+                    </p>
                 </header>
 
-                <div className="w-full">
+                <div className="mb-16">
                     <TaxonomyGrid items={tags} basePath="/blog/tags" itemType="tag" />
                 </div>
 
-                <div className="mt-16 text-center">
-                    <Link href="/blog" className="text-blue-600 hover:underline">
-                        &larr; Back to all posts
+                <div className="text-center">
+                    <Link
+                        href="/blog"
+                        className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                        </svg>
+                        Back to All Posts
                     </Link>
                 </div>
             </div>
-        </main>
+        </div>
     );
 } 

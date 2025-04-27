@@ -1,43 +1,40 @@
 'use client';
-import { Card, CardHeader, CardBody, Link as HeroLink } from '@heroui/react'; // 导入 HeroUI 组件
+import Link from 'next/link';
 import React from 'react';
 
 import type { ContentCategory, ContentTag } from '@/types/cms';
 
-// 定义一个包含 postCount 的联合类型
-type TaxonomyItem = (ContentCategory | ContentTag) & { postCount?: number }; // postCount 现在是可选的
+// Define a union type including postCount
+type TaxonomyItem = (ContentCategory | ContentTag) & { postCount?: number }; // postCount is optional
 
 interface TaxonomyGridProps {
     items: TaxonomyItem[];
-    basePath: '/blog/categories' | '/blog/tags'; // 用于生成链接
-    itemType: 'category' | 'tag'; // 区分类型用于显示
+    basePath: '/blog/categories' | '/blog/tags'; // for generating links
+    itemType: 'category' | 'tag'; // to distinguish the type for display
 }
 
 const TaxonomyGrid: React.FC<TaxonomyGridProps> = ({ items, basePath, itemType }) => {
-    // 如果没有项目，显示提示信息
+    // If no items, show a message
     if (!items || items.length === 0) {
-        return <p className="text-center text-gray-500">No {itemType}s available.</p>;
+        return <p className="text-center text-gray-500 py-8">No {itemType}s available</p>;
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {items.map((item) => (
-                <HeroLink key={item._id} href={`${basePath}/${item.slug}`} className="block h-full">
-                    {/* 
-                        isPressable 会将 Card 渲染为 button，可能导致嵌套问题
-                        isHoverable 提供了悬停效果
-                    */}
-                    <Card className="h-full transition-shadow hover:shadow-md" isHoverable>
-                        <CardHeader>
-                            <h2 className="text-lg font-semibold text-gray-900 truncate">{item.name}</h2>
-                        </CardHeader>
-                        <CardBody>
-                            <p className="text-sm text-gray-600">
-                                {item.postCount !== undefined ? `${item.postCount} ${item.postCount === 1 ? 'post' : 'posts'}` : '0 posts'}
-                            </p>
-                        </CardBody>
-                    </Card>
-                </HeroLink>
+                <Link
+                    key={item._id}
+                    href={`${basePath}/${item.slug}`}
+                    className="group flex flex-col items-center justify-center p-6 bg-white rounded-xl shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 border border-transparent hover:border-gray-100"
+                >
+                    <span className="w-12 h-12 mb-3 rounded-full bg-gray-50 group-hover:bg-blue-50 flex items-center justify-center text-gray-400 group-hover:text-blue-500 text-lg transition-colors">
+                        {itemType === 'category' ? '#' : '•'}
+                    </span>
+                    <h2 className="text-md font-medium text-gray-800 group-hover:text-blue-600 text-center truncate max-w-full transition-colors">{item.name}</h2>
+                    <p className="text-xs text-gray-500 mt-1">
+                        {item.postCount !== undefined ? `${item.postCount} ${item.postCount === 1 ? 'post' : 'posts'}` : 'No posts'}
+                    </p>
+                </Link>
             ))}
         </div>
     );

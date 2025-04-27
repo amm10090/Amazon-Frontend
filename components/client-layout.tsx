@@ -30,7 +30,7 @@ export function ClientLayout({ children, session }: ClientLayoutProps) {
                         <Navbar />
                         <main className={clsx(
                             "grow",
-                            pathname?.startsWith('/about')
+                            pathname?.startsWith('/about') || pathname?.startsWith('/blog')
                                 ? ""
                                 : isDashboard
                                     ? ""

@@ -1,4 +1,6 @@
+import { CalendarIcon, ClockIcon, UserIcon } from '@heroicons/react/24/outline';
 import type { Metadata, ResolvingMetadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import ContentRenderer from '@/components/cms/ContentRenderer';
@@ -51,6 +53,7 @@ interface PageData {
         ogImage?: string;
     };
     products?: unknown[];
+    featuredImage?: string;
 }
 
 // 生成页面元数据
@@ -84,6 +87,15 @@ export async function generateMetadata(
     };
 }
 
+// 格式化日期
+function formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
 // 页面组件
 export default async function BlogPost({ params }: { params: { slug: string } }) {
     const resolvedParams = await params;
@@ -93,25 +105,85 @@ export default async function BlogPost({ params }: { params: { slug: string } })
         notFound();
     }
 
+    // 计算阅读时长
+    const wordCount = pageData.content.split(/\s+/).length;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 200)); // 假设平均阅读速度为每分钟200词
+
     return (
-        <main className="container mx-auto px-4 py-8">
-            <article className="prose lg:prose-xl max-w-none bg-white p-6 rounded shadow">
-                <h1 className="mb-4">{pageData.title}</h1>
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+            <div className="container mx-auto px-4 max-w-4xl">
+                <article>
+                    <header className="mb-12 text-center">
+                        <Link href="/blog" className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium mb-8 hover:bg-blue-100 transition-colors">
+                            Back to Blog
+                        </Link>
+                        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{pageData.title}</h1>
 
-                <ContentRenderer content={pageData.content} />
+                        {pageData.excerpt && (
+                            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                                {pageData.excerpt}
+                            </p>
+                        )}
 
-                {pageData.products && pageData.products.length > 0 && (
-                    <div className="mt-8 pt-4 border-t">
-                        <h2 className="text-xl font-semibold mb-4">Related Products</h2>
-                        <p className="text-gray-500">(Product rendering logic to be implemented)</p>
+                        <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
+                            <div className="flex items-center">
+                                <UserIcon className="h-4 w-4 mr-1" />
+                                <span>{pageData.author}</span>
+                            </div>
+                            <div className="flex items-center">
+                                <CalendarIcon className="h-4 w-4 mr-1" />
+                                <span>{formatDate(pageData.publishedAt || pageData.updatedAt)}</span>
+                            </div>
+                            <div className="flex items-center">
+                                <ClockIcon className="h-4 w-4 mr-1" />
+                                <span>{readingTime} min read</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div className="bg-white rounded-2xl shadow-sm p-8">
+                        <div className="prose prose-lg max-w-none">
+                            <ContentRenderer content={pageData.content} />
+                        </div>
+
+                        {pageData.tags && pageData.tags.length > 0 && (
+                            <div className="mt-12 pt-6 border-t border-gray-100">
+                                <h3 className="text-sm font-medium text-gray-500 mb-3">Tags</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {pageData.tags.map((tag: string) => (
+                                        <Link
+                                            key={tag}
+                                            href={`/blog/tags/${tag}`}
+                                            className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs hover:bg-blue-100 hover:text-blue-700 transition-colors"
+                                        >
+                                            {tag}
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {pageData.products && pageData.products.length > 0 && (
+                            <div className="mt-12 pt-6 border-t border-gray-100">
+                                <h3 className="text-xl font-semibold mb-4">Related Products</h3>
+                                <p className="text-gray-500">(Product display to be implemented)</p>
+                            </div>
+                        )}
                     </div>
-                )}
 
-                <div className="mt-8 text-sm text-gray-500 pt-4 border-t">
-                    <span>Author: {pageData.author}</span> |
-                    <span> Last Updated: {new Date(pageData.updatedAt).toLocaleDateString()}</span>
-                </div>
-            </article>
-        </main>
+                    <div className="mt-12 text-center">
+                        <Link
+                            href="/blog"
+                            className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                            </svg>
+                            Back to All Posts
+                        </Link>
+                    </div>
+                </article>
+            </div>
+        </div>
     );
 } 
