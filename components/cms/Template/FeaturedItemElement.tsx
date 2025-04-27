@@ -63,12 +63,12 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
                             {formattedBrand}
                         </div>
                     )}
-                    {/* 这里将h3独立出来，不放在span内部 */}
-                    <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-2 flex-grow">
+                    {/* 将h3替换为div，保持样式不变 */}
+                    <div className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-2 flex-grow">
                         <Link href={productUrl} className="hover:text-primary-button dark:hover:text-primary transition-colors no-underline">
                             {title}
                         </Link>
-                    </h3>
+                    </div>
 
                     {/* 价格与折扣 */}
                     <div className="flex items-baseline mb-3">
