@@ -39,7 +39,7 @@ function MyComponent() {
 }
 ```
 
-## 可用模板
+## Available Templates
 
 系统目前提供以下几种预设的产品模板：
 
@@ -47,86 +47,126 @@ function MyComponent() {
 
 **文件:** `components/cms/Template/CardProductElement.tsx`
 
-**描述:**
-提供功能丰富的卡片式产品展示，适用于网格布局或需要突出显示单个产品的场景。
+**Description:**
+Provides a feature-rich card-style product display, suitable for grid layouts or scenarios requiring highlighting individual products.
 
-**特点:**
-
--   **布局:** 垂直卡片布局，包含图片、品牌、标题、价格、折扣/优惠券信息和操作按钮。
--   **图片:** 占据卡片顶部，支持懒加载和占位符。
--   **品牌:** 在标题上方显示格式化的品牌名称（如果可用）。
--   **Prime 标记:** 如果 `isPrime` 为 `true`，在左上角显示 Prime 徽章。
--   **价格显示:** 显示当前价格 (`price`)。如果 `originalPrice` 高于 `price`，则会显示划线的原价。
--   **折扣/优惠券:**
-    -   优先显示优惠券信息 (`couponLabel`)，支持百分比和固定金额。
-    -   如果没有优惠券但存在折扣 (`savingsPercentage > 0`)，则显示折扣百分比 (`discountLabel`)。
-    -   折扣徽章颜色会根据折扣力度变化（默认蓝色，>=25% 橙色，>=50% 红色）。
--   **优惠券有效期:** 如果提供了 `couponExpirationDate`，会显示格式化的到期日期。
--   **标题:** 自动将标题每个单词首字母大写。
--   **交互:** 鼠标悬停时有轻微上移和阴影效果。
--   **链接:** 整个卡片链接到产品详情页 (`/product/{id}`)。
--   **按钮:** 底部包含一个"查看详情"按钮。
+**Features:**
+*   **Layout:** Vertical card layout including image, brand, title, price, discount/coupon info, and action button.
+*   **Image:** Occupies the top of the card, supports lazy loading and placeholders.
+*   **Brand:** Displays formatted brand name above the title (if available).
+*   **Prime Badge:** Shows a Prime badge in the top-left corner if `isPrime` is `true`.
+*   **Price Display:** Shows the current price (`price`). If `originalPrice` is higher than `price`, the strikethrough original price is displayed.
+*   **Discount/Coupon:**
+    *   Prioritizes coupon information (`couponLabel`), supporting percentage and fixed amounts.
+    *   If no coupon exists but a discount is present (`savingsPercentage > 0`), displays the discount percentage (`discountLabel`).
+    *   Discount badge color changes based on the discount amount (default blue, >=25% orange, >=50% red).
+*   **Coupon Expiry:** If `couponExpirationDate` is provided, displays the formatted expiration date.
+*   **Title:** Automatically capitalizes the first letter of each word in the title.
+*   **Interaction:** Slight upward movement and shadow effect on hover.
+*   **Link:** The entire card links to the product detail page (`/product/{id}`).
+*   **Button:** Includes a "View Details" button at the bottom.
 
 **Props:**
+*   `product` (ComponentProduct, required): The product data object.
 
--   `product` (ComponentProduct, 必需): 产品数据对象。
+**描述:**
+提供功能丰富的卡片式产品展示，适用于网格布局或需要突出显示单个产品的场景。
 
 ### 2. `HorizontalProductElement` (水平样式)
 
 **文件:** `components/cms/Template/HorizontalProductElement.tsx`
 
-**描述:**
-水平排列的列表项样式，适用于产品列表或搜索结果页面。
+**Description:**
+A horizontal list item style, suitable for product lists or search result pages.
 
-**特点:**
-
--   **布局:** 图片在左侧（或移动端顶部），产品信息在右侧（或移动端下方）。
--   **响应式:** 在小屏幕上会调整为垂直布局。
--   **图片:** 固定大小的方形图片区域。
--   **信息:** 显示标题、价格、来源商店标识和"查看详情"按钮。
--   **标题:** 支持换行截断。
--   **交互:** 鼠标悬停时有轻微上移效果。
--   **链接:** 图片和标题链接到产品详情页 (`/product/{id}`)。"查看详情"按钮也链接到详情页。
+**Features:**
+*   **Layout:** Image on the left (or top on mobile), product info on the right (or bottom on mobile).
+*   **Responsive:** Adjusts to a vertical layout on smaller screens.
+*   **Image:** Fixed-size square image area.
+*   **Information:** Displays title, price, store identifier, and "View Details" button.
+*   **Title:** Supports line clamping.
+*   **Interaction:** Slight upward movement effect on hover.
+*   **Link:** Image and title link to the product detail page (`/product/{id}`). The "View Details" button also links to the detail page.
 
 **Props:**
+*   `product` (ComponentProduct, required): The product data object.
 
--   `product` (ComponentProduct, 必需): 产品数据对象。
+**描述:**
+水平排列的列表项样式，适用于产品列表或搜索结果页面。
 
 ### 3. `MiniProductElement` (迷你样式)
 
 **文件:** `components/cms/Template/MiniProductElement.tsx`
 
-**描述:**
-非常紧凑的行内样式，适用于空间有限或需要嵌入到文本段落中的场景。
+**Description:**
+A very compact inline style, suitable for space-constrained areas or embedding within text paragraphs.
 
-**特点:**
-
--   **布局:** 小型图片在左侧，标题和价格在中间，商店标识在右侧。
--   **大小:** 固定宽度，高度自适应内容。
--   **信息:** 显示图片、标题（截断）、价格和来源商店标识（仅图标）。
--   **交互:** 鼠标悬停时有轻微放大效果。
--   **链接:** 整个组件链接到产品详情页 (`/product/{id}`)。
+**Features:**
+*   **Layout:** Small image on the left, title and price in the middle, store identifier on the right.
+*   **Size:** Fixed width, height adapts to content.
+*   **Information:** Displays image, truncated title, price, and store identifier (icon only).
+*   **Interaction:** Slight scaling effect on hover.
+*   **Link:** The entire component links to the product detail page (`/product/{id}`).
 
 **Props:**
+*   `product` (ComponentProduct, required): The product data object.
 
--   `product` (ComponentProduct, 必需): 产品数据对象。
+**描述:**
+非常紧凑的行内样式，适用于空间有限或需要嵌入到文本段落中的场景。
 
 ### 4. `SimpleProductElement` (简单样式)
 
 **文件:** `components/cms/Template/SimpleProductElement.tsx`
 
+**Description:**
+A basic inline row layout providing core product information, suitable for default display within the CMS editor or simple lists.
+
+**Features:**
+*   **Layout:** Optional image on the left, title, price, and optional ASIN in the middle, store identifier on the right.
+*   **Information:** Displays image, truncated title, price. Displays ASIN if `asin` exists.
+*   **Link:** Image and title link to the product detail page (`/product/{id}`).
+
+**Props:**
+*   `product` (ComponentProduct, required): The product data object.
+
 **描述:**
 基础的行式布局，提供最核心的产品信息，适用于 CMS 编辑器内的默认展示或简洁列表。
 
-**特点:**
+### 5. `CompactGridItemElement` (Compact Grid Style)
 
--   **布局:** 图片（可选）在左侧，标题、价格和 ASIN（可选）在中间，商店标识在右侧。
--   **信息:** 显示图片、标题（截断）、价格。如果 `asin` 存在，会显示 ASIN。
--   **链接:** 图片和标题链接到产品详情页 (`/product/{id}`)。
+**File:** `components/cms/Template/CompactGridItemElement.tsx`
+
+**Description:**
+Designed for dense grid layouts, such as related products or category pages. Optimized for displaying multiple items efficiently.
+
+**Features:**
+*   **Layout:** Vertical stack. Image at the top, followed by truncated title, price, and store identifier.
+*   **Size:** Relatively small fixed width, suitable for multi-column grids.
+*   **Image:** Square aspect ratio, with a subtle zoom effect on hover.
+*   **Information:** Focuses on essential details: image, title (line-clamped), price, store icon.
+*   **Interaction:** Slight upward movement and border highlight on hover.
+*   **Link:** The entire component links to the product detail page (`/product/{id}`).
 
 **Props:**
+*   `product` (ComponentProduct, required): The product data object.
 
--   `product` (ComponentProduct, 必需): 产品数据对象。
+### 6. `FeaturedItemElement` (Featured Item Style)
+
+**File:** `components/cms/Template/FeaturedItemElement.tsx`
+
+**Description:**
+Highlights a single product prominently, suitable for homepages, blog post integrations, or promotional sections.
+
+**Features:**
+*   **Layout:** Horizontal on desktop (image left, details right), stacks vertically on mobile.
+*   **Responsive:** Adapts layout structure based on screen size.
+*   **Image:** Larger image area (4:3 aspect ratio on desktop) with Prime badge if applicable.
+*   **Information:** Displays brand (if available), full title, current price, strikethrough original price (if applicable), calculated savings percentage, store identifier (with name), and a prominent "View Details" button.
+*   **Interaction:** Subtle shadow enhancement on hover.
+*   **Link:** Image, title, and button link to the product detail page (`/product/{id}`).
+
+**Props:**
+*   `product` (ComponentProduct, required): The product data object.
 
 ## 数据获取
 

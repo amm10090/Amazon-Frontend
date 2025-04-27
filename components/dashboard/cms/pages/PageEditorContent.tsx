@@ -11,6 +11,7 @@ import { useState, useEffect, useRef } from 'react';
 import ContentRenderer from '@/components/cms/ContentRenderer';
 import { RichTextEditor } from '@/components/cms/RichTextEditor';
 import { cmsApi } from '@/lib/api/cms';
+import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { generateSlug } from '@/lib/utils';
 import type { ContentPageCreateRequest, ContentPageUpdateRequest, ContentCategory, ContentTag } from '@/types/cms';
 
@@ -148,13 +149,19 @@ const PageEditorContent = () => {
         e.preventDefault();
 
         if (!formData.title) {
-            alert('请输入页面标题');
+            showErrorToast({
+                title: "Validation Error",
+                description: "Please enter a page title",
+            });
 
             return;
         }
 
         if (!formData.slug) {
-            alert('请输入页面URL路径');
+            showErrorToast({
+                title: "Validation Error",
+                description: "Please enter a page URL path",
+            });
 
             return;
         }
@@ -190,17 +197,24 @@ const PageEditorContent = () => {
             }
 
             if (response.data?.status === 200) {
-                alert('页面保存成功');
-                if (!params.id && response.data.data) {
-                    router.push(`/dashboard/cms/pages/${response.data.data._id}`);
-                }
+                // 显示成功提示
+                showSuccessToast({
+                    title: "Save Successful",
+                    description: params.id ? "Page has been updated successfully" : "Page has been created successfully",
+                });
+
+                // 导航回页面列表
+                router.push('/dashboard/cms/pages');
             } else {
                 throw new Error(response.data?.message || 'Failed to save page');
             }
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
 
-            alert(errorMessage);
+            showErrorToast({
+                title: "Save Failed",
+                description: errorMessage,
+            });
         } finally {
             setIsSubmitting(false);
         }

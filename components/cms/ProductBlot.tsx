@@ -13,6 +13,8 @@ import type { ComponentProduct, Product } from '@/types'; // Import ComponentPro
 
 // Import the actual display components
 import CardProductElement from './Template/CardProductElement';
+import CompactGridItemElement from './Template/CompactGridItemElement';
+import FeaturedItemElement from './Template/FeaturedItemElement';
 import HorizontalProductElement from './Template/HorizontalProductElement';
 import MiniProductElement from './Template/MiniProductElement';
 import SimpleProductElement from './Template/SimpleProductElement';
@@ -22,14 +24,18 @@ const ProductSkeletonPlaceholder = ({ style }: { style: string }) => {
     let className = "w-full h-24 my-2 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md";
 
     if (style === 'card') {
-        className = "my-2 w-full max-w-[280px] mx-auto h-96 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg shadow-md";
+        className = "my-4 w-full max-w-[280px] h-96 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg shadow-md inline-block align-middle";
     } else if (style === 'horizontal') {
-        className = "flex w-full h-28 my-2 border rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse p-3 items-center";
+        className = " w-full max-w-xl h-32 my-4 border rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse p-4 items-center inline-block align-middle";
     } else if (style === 'mini') {
-        className = "inline-flex items-center my-2 border rounded-lg p-2 bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse max-w-full w-64 overflow-hidden";
+        className = "inline-flex items-center my-2 border rounded-lg p-2 bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse max-w-full w-64 h-14 overflow-hidden align-middle";
+    } else if (style === 'compact-grid') {
+        className = "inline-block align-middle w-full max-w-[200px] h-64 my-2 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg shadow-sm";
+    } else if (style === 'featured') {
+        className = " flex-col md:flex-row w-full max-w-3xl h-auto md:h-64 my-4 border rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-lg animate-pulse inline-block align-middle";
     }
 
-    return <div className={className} />;
+    return <span className={className} />;
 };
 
 // Fetcher function for SWR (similar to DynamicProductLoader)
@@ -91,7 +97,9 @@ export const PRODUCT_STYLES = [
     { id: 'simple', name: 'Simple' },
     { id: 'card', name: 'Card' },
     { id: 'horizontal', name: 'Horizontal' },
-    { id: 'mini', name: 'Mini' }
+    { id: 'mini', name: 'Mini' },
+    { id: 'compact-grid', name: 'Compact Grid' },
+    { id: 'featured', name: 'Featured Item' }
 ];
 
 // 产品节点组件 - 应用 inline-block 样式
@@ -117,9 +125,9 @@ const ProductComponent: FC<ProductComponentProps> = ({ node, selected }) => {
 
         if (error || !product) {
             return (
-                <div className="flex items-center justify-center my-2 p-3 border rounded-md bg-red-50 text-red-700 shadow-sm text-xs">
+                <span className="inline-flex items-center justify-center my-2 p-3 border rounded-md bg-red-50 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300 shadow-sm text-xs align-middle">
                     Failed to load product preview (ID: {productId}).
-                </div>
+                </span>
             );
         }
 
@@ -131,6 +139,10 @@ const ProductComponent: FC<ProductComponentProps> = ({ node, selected }) => {
                 return <HorizontalProductElement product={product} />;
             case 'mini':
                 return <MiniProductElement product={product} />;
+            case 'compact-grid':
+                return <CompactGridItemElement product={product} />;
+            case 'featured':
+                return <FeaturedItemElement product={product} />;
             case 'simple':
             default:
                 return <SimpleProductElement product={product} />;
@@ -140,23 +152,23 @@ const ProductComponent: FC<ProductComponentProps> = ({ node, selected }) => {
     // 移除 alignmentClass 计算
 
     return (
-        // 应用 inline-block 样式
-        <NodeViewWrapper as="span" className="product-node-wrapper relative group inline-block align-middle">
-            {/* 内部容器 */}
-            <div
+        // NodeViewWrapper 渲染为 <span class="... inline-block ...">
+        <NodeViewWrapper as="span" className="flex-shrink-0">
+            {/* 内部容器 - 改为 span 并添加 inline-block */}
+            <span
                 data-product-id={productId}
                 data-node-type="product"
                 data-style={style}
-                // 移除内联的 textAlign 样式
-                className={`relative p-1 border ${selected ? 'ring-2 ring-blue-500 border-transparent' : 'border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800'} rounded-lg overflow-hidden bg-white dark:bg-gray-800`} // 添加背景色以防透明
+                // 复制原有样式并添加 inline-block - 使用 group 类来应用悬停效果
+                className={`relative p-1 border ${selected ? 'ring-2 ring-blue-500 border-transparent' : 'border-gray-200 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-800'} rounded-lg overflow-visible bg-white dark:bg-gray-800 inline-block align-middle group flex-shrink-0`}
             >
                 {renderFetchedProduct()}
 
-                {/* 产品标签 */}
-                <div className={`absolute top-1 right-1 flex items-center gap-1 z-10 transition-opacity duration-200 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                    <div className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 rounded-full shadow-sm transition-colors" contentEditable={false}>Product</div>
-                </div>
-            </div>
+                {/* 产品标签 - 改进可见性 */}
+                <span className={`absolute top-1 right-1 flex items-center gap-1 z-20 transition-opacity duration-200 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                    <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 rounded-full shadow-sm transition-colors" contentEditable={false}>Product</span>
+                </span>
+            </span>
         </NodeViewWrapper>
     );
 };
@@ -167,7 +179,7 @@ export const ProductBlot = Node.create<ProductAttributes>({
     group: 'inline',
     atom: true,
     inline: true,
-    draggable: true,
+    // draggable: true, // 移除或注释掉 draggable
     content: '',
 
     addAttributes() {

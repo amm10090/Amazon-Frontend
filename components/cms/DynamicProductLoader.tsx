@@ -10,6 +10,8 @@ import type { ComponentProduct, Product } from '@/types';
 // Assuming product display components are moved or accessible from here
 // You might need to adjust these import paths
 import CardProductElement from './Template/CardProductElement';
+import CompactGridItemElement from './Template/CompactGridItemElement';
+import FeaturedItemElement from './Template/FeaturedItemElement';
 import HorizontalProductElement from './Template/HorizontalProductElement';
 import MiniProductElement from './Template/MiniProductElement';
 import SimpleProductElement from './Template/SimpleProductElement';
@@ -24,19 +26,22 @@ import SimpleProductElement from './Template/SimpleProductElement';
 // --- Skeleton Placeholder ---
 // 修改 ProductSkeletonPlaceholder 返回 span
 const ProductSkeletonPlaceholder = ({ style }: { style: string }) => {
-    const baseClasses = "my-4 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700 align-middle"; // Add align-middle
-    let styleClasses = "inline-block w-full h-24"; // Default inline-block
+    let className = "w-full h-24 my-2 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md"; // Default (Simple)
 
     if (style === 'card') {
-        styleClasses = "inline-block w-full max-w-[280px] h-96 rounded-lg shadow-md mx-auto"; // Card needs specific size and margin
+        className = "my-4 w-full max-w-[280px] h-96 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg shadow-md inline-block align-middle";
     } else if (style === 'horizontal') {
-        styleClasses = "inline-flex items-center w-full h-28 border rounded-lg overflow-hidden shadow-sm p-3"; // Horizontal uses inline-flex
+        className = " w-full max-w-xl h-32 my-4 border rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse p-4 items-center inline-block align-middle";
     } else if (style === 'mini') {
-        styleClasses = "inline-flex items-center space-x-2 h-16 w-60 border rounded-lg p-2 shadow-sm overflow-hidden"; // Mini uses inline-flex
+        className = "inline-flex items-center my-2 border rounded-lg p-2 bg-gray-200 dark:bg-gray-700 shadow-sm animate-pulse max-w-full w-64 h-14 overflow-hidden align-middle";
+    } else if (style === 'compact-grid') {
+        className = "inline-block align-middle w-full max-w-[200px] h-64 my-2 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg shadow-sm";
+    } else if (style === 'featured') {
+        className = " flex-col md:flex-row w-full max-w-3xl h-auto md:h-64 my-4 border rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-lg animate-pulse inline-block align-middle";
     }
+    // Simple style uses default class
 
-    // Return span
-    return <span className={`${baseClasses} ${styleClasses}`} />;
+    return <span className={className} />; // 使用 span 作为根元素
 };
 
 // --- DynamicProductLoader ---
@@ -48,17 +53,17 @@ interface DynamicProductLoaderProps {
 }
 
 // Fetcher function for SWR
-const fetchProduct = async (productId: string): Promise<ComponentProduct | null> => {
-    if (!productId) return null;
+const fetchProduct = async (productIdOrAsin: string): Promise<ComponentProduct | null> => {
+    if (!productIdOrAsin) return null;
     try {
         // Prefer getProductById if it's not an ASIN, otherwise try queryProduct
-        const isAsin = /^[A-Z0-9]{10,13}$/.test(productId.toUpperCase());
+        const isAsin = /^[A-Z0-9]{10,13}$/.test(productIdOrAsin.toUpperCase());
         let apiResponse;
 
         if (isAsin) {
-            apiResponse = await productsApi.queryProduct({ asins: [productId.toUpperCase()], include_browse_nodes: null });
+            apiResponse = await productsApi.queryProduct({ asins: [productIdOrAsin.toUpperCase()], include_browse_nodes: null });
         } else {
-            apiResponse = await productsApi.getProductById(productId);
+            apiResponse = await productsApi.getProductById(productIdOrAsin);
         }
 
         if (apiResponse?.data) {
@@ -82,7 +87,7 @@ const fetchProduct = async (productId: string): Promise<ComponentProduct | null>
     }
 };
 
-export default function DynamicProductLoader({ productId, style = 'simple' }: DynamicProductLoaderProps) {
+export default function DynamicProductLoader({ productId, style = 'simple', alignment = 'left' }: DynamicProductLoaderProps) {
     const { data: product, error, isLoading } = useSWR<ComponentProduct | null>(
         productId ? ['product', productId] : null,
         () => fetchProduct(productId),
@@ -93,10 +98,20 @@ export default function DynamicProductLoader({ productId, style = 'simple' }: Dy
         }
     );
 
+    const alignmentClasses = {
+        left: 'text-left', // Or mr-auto if using flex/grid container
+        center: 'mx-auto', // For block-level elements in a container
+        right: 'text-right', // Or ml-auto if using flex/grid container
+    };
+
+    // Apply alignment to a wrapper span. Note: mx-auto only works if the parent is a block/flex container.
+    // For true inline centering/right alignment relative to text, more complex CSS might be needed outside this component.
+    const wrapperClassName = `inline-block ${alignmentClasses[alignment]}`;
+
     // Loading state - now also needs to consider alignment
     if (isLoading) {
         return (
-            <span className="inline-block align-middle">
+            <span className={wrapperClassName}>
                 <ProductSkeletonPlaceholder style={style} />
             </span>
         );
@@ -105,10 +120,8 @@ export default function DynamicProductLoader({ productId, style = 'simple' }: Dy
     // Error state - use span and apply inline styles
     if (error || !product) {
         return (
-            <span className="inline-block align-middle my-4 text-center">
-                <span className="inline-flex items-center justify-center p-3 border rounded-md bg-red-50 text-red-700 shadow-sm text-xs max-w-md">
-                    Failed to load product information (ID: {productId}).
-                </span>
+            <span className={`${wrapperClassName} inline-flex items-center text-red-500 text-xs p-2 border border-red-200 rounded align-middle bg-red-50 dark:bg-red-900/20 dark:border-red-800`}>
+                Error loading product (ID: {productId})
             </span>
         );
     }
@@ -120,9 +133,15 @@ export default function DynamicProductLoader({ productId, style = 'simple' }: Dy
         case 'card': productElement = <CardProductElement product={product} />; break;
         case 'horizontal': productElement = <HorizontalProductElement product={product} />; break;
         case 'mini': productElement = <MiniProductElement product={product} />; break;
+        case 'compact-grid': productElement = <CompactGridItemElement product={product} />; break;
+        case 'featured': productElement = <FeaturedItemElement product={product} />; break;
         case 'simple': default: productElement = <SimpleProductElement product={product} />; break;
     }
 
     // Return product element directly, remove wrapping span
-    return productElement;
+    return (
+        <span className={wrapperClassName}>
+            {productElement}
+        </span>
+    );
 } 

@@ -16,7 +16,7 @@ const HorizontalProductElement = ({ product }: { product: ComponentProduct }) =>
 
     return (
         <motion.span
-            className="inline-flex items-center my-4 p-4 border rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow max-w-xl align-middle w-full"
+            className="inline-flex items-center my-4 p-4 border rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-shadow max-w-xl align-middle"
             whileHover={{ y: -4 }}
             transition={{ duration: 0.2 }}
         >

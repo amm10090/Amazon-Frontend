@@ -74,7 +74,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
     // --- End reusable logic ---
 
     return (
-        <span className="inline-block align-middle my-4 w-full max-w-[280px] mx-auto relative">
+        <span className="inline-block align-middle max-w-[280px] relative">
             {/* Prime badge */}
             {isPrime && (
                 <span className="absolute top-3 left-3 z-10">
@@ -124,7 +124,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                             <StoreIdentifier url={effectiveUrl} align="right" />
                         </span>
 
-                        <strong className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-gray-100">
+                        <strong className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-gray-100 min-h-[3.5rem]">
                             {title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                         </strong>
 

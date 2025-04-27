@@ -294,428 +294,416 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
     const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
     return (
-        <div className="p-2 border-b border-gray-300 flex items-center justify-between bg-white sticky top-0 z-10 w-full">
-            <div className="flex flex-1 flex-wrap items-center gap-2">
-                {/* 撤销/重做 */}
-                <div className="flex items-center gap-1">
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().undo().run()}
-                        className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="撤销 (Ctrl+Z)"
-                        disabled={!editor.can().undo()}
-                    >
-                        <Undo size={16} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().redo().run()}
-                        className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="重做 (Ctrl+Shift+Z)"
-                        disabled={!editor.can().redo()}
-                    >
-                        <Redo size={16} />
-                    </button>
-                </div>
-                <div className="h-6 w-px bg-gray-300" />
+        <div className="p-2 border-b border-gray-300 flex items-center flex-wrap gap-1 bg-white sticky top-0 z-10 w-full">
+            {/* 撤销/重做 */}
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().undo().run()}
+                className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Undo (Ctrl+Z)"
+                disabled={!editor.can().undo()}
+            >
+                <Undo size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().redo().run()}
+                className="p-1.5 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Redo (Ctrl+Shift+Z)"
+                disabled={!editor.can().redo()}
+            >
+                <Redo size={16} />
+            </button>
 
-                {/* 文本格式化 */}
-                <div className="flex items-center space-x-1">
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleBold().run()}
-                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bold') ? 'bg-gray-200' : ''}`}
-                        title="Bold (Ctrl+B)"
-                    >
-                        <Bold size={16} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleItalic().run()}
-                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('italic') ? 'bg-gray-200' : ''}`}
-                        title="Italic (Ctrl+I)"
-                    >
-                        <Italic size={16} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleUnderline().run()}
-                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('underline') ? 'bg-gray-200' : ''}`}
-                        title="Underline (Ctrl+U)"
-                    >
-                        <Underline size={16} />
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleStrike().run()}
-                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('strike') ? 'bg-gray-200' : ''}`}
-                        title="Strikethrough (Ctrl+Shift+S)"
-                    >
-                        <Strikethrough size={16} />
-                    </button>
+            <div className="h-6 w-px bg-gray-300 mx-1" /> {/* 分隔符 */}
 
-                    {/* 高亮颜色选择器 Popover */}
-                    <div className="flex items-center">
-                        <ColorPickerPopover
-                            editor={editor}
-                            mode="highlight"
-                            trigger={
-                                <button
-                                    type="button"
-                                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('highlight') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                    title="Highlight (Ctrl+Shift+H)"
-                                >
-                                    <Highlighter size={16} />
-                                </button>
-                            }
-                        />
-                    </div>
-                </div>
+            {/* 文本格式化 */}
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBold().run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bold') ? 'bg-gray-200' : ''}`}
+                title="Bold (Ctrl+B)"
+            >
+                <Bold size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleItalic().run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('italic') ? 'bg-gray-200' : ''}`}
+                title="Italic (Ctrl+I)"
+            >
+                <Italic size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleUnderline().run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('underline') ? 'bg-gray-200' : ''}`}
+                title="Underline (Ctrl+U)"
+            >
+                <Underline size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleStrike().run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('strike') ? 'bg-gray-200' : ''}`}
+                title="Strikethrough (Ctrl+Shift+S)"
+            >
+                <Strikethrough size={16} />
+            </button>
 
-                {/* 文本颜色选择器 Popover */}
-                <div className="flex items-center">
-                    <ColorPickerPopover
-                        editor={editor}
-                        mode="textColor"
-                        trigger={
-                            <button
-                                type="button"
-                                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('textStyle') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                title="Text Color"
-                            >
-                                <Palette size={16} />
-                            </button>
-                        }
-                    />
-                </div>
+            {/* 高亮颜色选择器 Popover */}
+            <ColorPickerPopover
+                editor={editor}
+                mode="highlight"
+                trigger={
+                    <button
+                        type="button"
+                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('highlight') ? 'bg-blue-100 text-blue-600' : ''}`}
+                        title="Highlight (Ctrl+Shift+H)"
+                    >
+                        <Highlighter size={16} />
+                    </button>
+                }
+            />
 
-                <button
-                    type="button"
-                    onClick={clearFormatting}
-                    className="p-1.5 rounded hover:bg-gray-100"
-                    title="Clear Formatting"
-                >
-                    <Trash2 size={16} />
-                </button>
-            </div>
-            <div className="h-6 w-px bg-gray-300" />
+            {/* 文本颜色选择器 Popover */}
+            <ColorPickerPopover
+                editor={editor}
+                mode="textColor"
+                trigger={
+                    <button
+                        type="button"
+                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('textStyle') ? 'bg-blue-100 text-blue-600' : ''}`}
+                        title="Text Color"
+                    >
+                        <Palette size={16} />
+                    </button>
+                }
+            />
+
+            <button
+                type="button"
+                onClick={clearFormatting}
+                className="p-1.5 rounded hover:bg-gray-100"
+                title="Clear Formatting"
+            >
+                <Trash2 size={16} />
+            </button>
+
+            <div className="h-6 w-px bg-gray-300 mx-1" /> {/* 分隔符 */}
 
             {/* 标题 - 改为下拉菜单 */}
-            <div className="flex items-center space-x-1">
-                <Dropdown>
-                    <DropdownTrigger>
-                        <Button
-                            variant="light" // 或其他你喜欢的样式
-                            className="p-1.5 rounded hover:bg-gray-100 data-[hover=true]:bg-gray-100 min-w-0" // 调整样式以适应按钮
-                            title="Heading Level"
-                        >
-                            {/* 可以根据当前级别显示不同内容，或保持通用图标 */}
-                            <Heading size={16} />
-                        </Button>
-                    </DropdownTrigger>
-                    <DropdownMenu
-                        aria-label="Heading Levels"
-                        onAction={(key) => {
-                            if (typeof key === 'string') {
-                                handleMetadataSelect(key);
-                            }
-                        }}
-                        selectedKeys={[selectedProduct?.title || 'Normal Text']} // 高亮当前级别
-                        selectionMode="single"
+            <Dropdown>
+                <DropdownTrigger>
+                    <Button
+                        variant="light" // 或其他你喜欢的样式
+                        className="p-1.5 rounded hover:bg-gray-100 data-[hover=true]:bg-gray-100 min-w-0 h-auto" // 调整样式以适应按钮
+                        title="Heading Level"
                     >
-                        <DropdownItem key="普通文本">Normal Text</DropdownItem>
-                        <DropdownItem key="一级标题">Heading 1</DropdownItem>
-                        <DropdownItem key="二级标题">Heading 2</DropdownItem>
-                        <DropdownItem key="三级标题">Heading 3</DropdownItem>
-                    </DropdownMenu>
-                </Dropdown>
+                        {/* 可以根据当前级别显示不同内容，或保持通用图标 */}
+                        <Heading size={16} />
+                    </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                    aria-label="Heading Levels"
+                    onAction={(key) => {
+                        const level = Number(String(key).split('-')[1]);
 
-                <button
-                    type="button"
-                    onClick={applyTypography}
-                    className="p-1.5 rounded hover:bg-gray-100"
-                    title="Smart Typography (auto-converts special symbols)"
+                        if (level === 0) {
+                            editor.chain().focus().setParagraph().run();
+                        } else if (level >= 1 && level <= 3) {
+                            editor.chain().focus().toggleHeading({ level: level as 1 | 2 | 3 }).run();
+                        }
+                    }}
+                    selectedKeys={editor.isActive('heading', { level: 1 }) ? ['h-1'] : editor.isActive('heading', { level: 2 }) ? ['h-2'] : editor.isActive('heading', { level: 3 }) ? ['h-3'] : ['h-0']} // 高亮当前级别
+                    selectionMode="single"
                 >
-                    <Type size={16} />
-                </button>
-            </div>
-            <div className="h-6 w-px bg-gray-300" />
+                    <DropdownItem key="h-0">Normal Text</DropdownItem>
+                    <DropdownItem key="h-1">Heading 1</DropdownItem>
+                    <DropdownItem key="h-2">Heading 2</DropdownItem>
+                    <DropdownItem key="h-3">Heading 3</DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+
+            <button
+                type="button"
+                onClick={applyTypography}
+                className="p-1.5 rounded hover:bg-gray-100"
+                title="Smart Typography (auto-converts special symbols)"
+            >
+                <Type size={16} />
+            </button>
+
+            <div className="h-6 w-px bg-gray-300 mx-1" /> {/* 分隔符 */}
 
             {/* 对齐方式 */}
-            <div className="flex items-center space-x-1">
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().setTextAlign('left').run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : ''}`}
-                    title="Align Left (Ctrl+Shift+L)"
-                >
-                    <AlignLeft size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().setTextAlign('center').run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : ''}`}
-                    title="Center (Ctrl+Shift+E)"
-                >
-                    <AlignCenter size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().setTextAlign('right').run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : ''}`}
-                    title="Align Right (Ctrl+Shift+R)"
-                >
-                    <AlignRight size={16} />
-                </button>
-            </div>
-            <div className="h-6 w-px bg-gray-300" />
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : ''}`}
+                title="Align Left (Ctrl+Shift+L)"
+            >
+                <AlignLeft size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : ''}`}
+                title="Center (Ctrl+Shift+E)"
+            >
+                <AlignCenter size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : ''}`}
+                title="Align Right (Ctrl+Shift+R)"
+            >
+                <AlignRight size={16} />
+            </button>
+
+            <div className="h-6 w-px bg-gray-300 mx-1" /> {/* 分隔符 */}
 
             {/* 列表 */}
-            <div className="flex items-center space-x-1">
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleBulletList().run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bulletList') ? 'bg-gray-200' : ''}`}
-                    title="Bullet List (Ctrl+Shift+8)"
-                >
-                    <List size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('orderedList') ? 'bg-gray-200' : ''}`}
-                    title="Ordered List (Ctrl+Shift+7)"
-                >
-                    <ListOrdered size={16} />
-                </button>
-            </div>
-            <div className="h-6 w-px bg-gray-300" />
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('bulletList') ? 'bg-gray-200' : ''}`}
+                title="Bullet List (Ctrl+Shift+8)"
+            >
+                <List size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('orderedList') ? 'bg-gray-200' : ''}`}
+                title="Ordered List (Ctrl+Shift+7)"
+            >
+                <ListOrdered size={16} />
+            </button>
+
+            <div className="h-6 w-px bg-gray-300 mx-1" /> {/* 分隔符 */}
 
             {/* 引用和代码块 */}
-            <div className="flex items-center space-x-1">
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('blockquote') ? 'bg-gray-200' : ''}`}
-                    title="Quote (Ctrl+Shift+B)"
-                >
-                    <Quote size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                    className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('codeBlock') ? 'bg-gray-200' : ''}`}
-                    title="Code Block (Ctrl+Alt+C)"
-                >
-                    <Code size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={toggleHardBreak}
-                    className="p-1.5 rounded hover:bg-gray-100"
-                    title="Hard Break (Shift+Enter)"
-                >
-                    <CornerDownLeft size={16} />
-                </button>
-            </div>
-            <div className="h-6 w-px bg-gray-300" />
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('blockquote') ? 'bg-gray-200' : ''}`}
+                title="Quote (Ctrl+Shift+B)"
+            >
+                <Quote size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('codeBlock') ? 'bg-gray-200' : ''}`}
+                title="Code Block (Ctrl+Alt+C)"
+            >
+                <Code size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={toggleHardBreak}
+                className="p-1.5 rounded hover:bg-gray-100"
+                title="Hard Break (Shift+Enter)"
+            >
+                <CornerDownLeft size={16} />
+            </button>
+
+            <div className="h-6 w-px bg-gray-300 mx-1" /> {/* 分隔符 */}
 
             {/* 链接、图片、产品、YouTube */}
-            <div className="flex items-center space-x-1">
-                {/* 链接 Popover */}
-                <Popover placement="bottom" isOpen={isLinkPopoverOpen} onOpenChange={setIsLinkPopoverOpen}>
-                    <PopoverTrigger>
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const attrs = editor?.getAttributes('link');
-                                const currentUrl = attrs?.href || '';
-                                const currentTarget = attrs?.target;
+            {/* 链接 Popover */}
+            <Popover placement="bottom" isOpen={isLinkPopoverOpen} onOpenChange={setIsLinkPopoverOpen}>
+                <PopoverTrigger>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const attrs = editor?.getAttributes('link');
+                            const currentUrl = attrs?.href || '';
+                            const currentTarget = attrs?.target;
 
-                                setLinkUrl(currentUrl);
-                                setLinkOpenInNewTab(currentTarget === '_blank');
-                                setIsLinkPopoverOpen(true);
-                            }}
-                            className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('link') ? 'bg-gray-200' : ''}`}
-                            title="Add/Edit Link"
-                        >
-                            <LinkIcon size={16} />
-                        </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-3 w-72">
-                        <div className="space-y-3">
-                            <label htmlFor="toolbar-link-url-input" className="block text-sm font-medium text-gray-700 mb-1">
-                                Link URL
+                            setLinkUrl(currentUrl);
+                            setLinkOpenInNewTab(currentTarget === '_blank');
+                            setIsLinkPopoverOpen(true);
+                        }}
+                        className={`p-1.5 rounded hover:bg-gray-100 ${editor.isActive('link') ? 'bg-gray-200' : ''}`}
+                        title="Add/Edit Link"
+                    >
+                        <LinkIcon size={16} />
+                    </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-3 w-72">
+                    <div className="space-y-3">
+                        <label htmlFor="toolbar-link-url-input" className="block text-sm font-medium text-gray-700 mb-1">
+                            Link URL
+                        </label>
+                        <Input
+                            id="toolbar-link-url-input"
+                            placeholder="https://example.com"
+                            value={linkUrl}
+                            onChange={(e) => setLinkUrl(e.target.value)}
+                            type="url"
+                            size="sm"
+                        />
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                            <label htmlFor="toolbar-link-new-tab" className="text-sm text-gray-600 select-none">
+                                Open in new tab
                             </label>
-                            <Input
-                                id="toolbar-link-url-input"
-                                placeholder="https://example.com"
-                                value={linkUrl}
-                                onChange={(e) => setLinkUrl(e.target.value)}
-                                type="url"
+                            <Switch
+                                id="toolbar-link-new-tab"
+                                isSelected={linkOpenInNewTab}
+                                onValueChange={setLinkOpenInNewTab}
                                 size="sm"
                             />
-                            <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
-                                <label htmlFor="toolbar-link-new-tab" className="text-sm text-gray-600 select-none">
-                                    Open in new tab
-                                </label>
-                                <Switch
-                                    id="toolbar-link-new-tab"
-                                    isSelected={linkOpenInNewTab}
-                                    onValueChange={setLinkOpenInNewTab}
+                        </div>
+                        <div className="flex justify-end gap-2 mt-4">
+                            <Button size="sm" variant="bordered" onPress={handleLinkRemove}>
+                                Remove
+                            </Button>
+                            <Button size="sm" color="primary" onPress={applyLinkUrl}>
+                                Apply
+                            </Button>
+                        </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
+
+            {/* 图片 Popover */}
+            <Popover placement="bottom" isOpen={isImagePopoverOpen} onOpenChange={setIsImagePopoverOpen}>
+                <PopoverTrigger>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setImageUrl('');
+                            setIsImagePopoverOpen(true);
+                        }}
+                        className="p-1.5 rounded hover:bg-gray-100"
+                        title="Insert Image (URL)"
+                    >
+                        <ImageIcon size={16} />
+                    </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-3 w-72">
+                    <div className="space-y-3">
+                        <label htmlFor="image-url-input" className="block text-sm font-medium text-gray-700 mb-1">
+                            Image URL
+                        </label>
+                        <Input
+                            id="image-url-input"
+                            placeholder="https://example.com/image.jpg"
+                            value={imageUrl}
+                            onChange={(e) => setImageUrl(e.target.value)}
+                            type="url"
+                            size="sm"
+                        />
+                        <div className="flex justify-end gap-2 mt-4">
+                            <Button size="sm" variant="bordered" onPress={handleImageCancel}>
+                                Cancel
+                            </Button>
+                            <Button size="sm" color="primary" onPress={applyImageUrl}>
+                                Apply
+                            </Button>
+                        </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
+
+            {/* YouTube Popover */}
+            <Popover placement="bottom" isOpen={isYoutubePopoverOpen} onOpenChange={setIsYoutubePopoverOpen}>
+                <PopoverTrigger>
+                    <button
+                        type="button"
+                        onClick={handleYoutubeAdd}
+                        className="p-1.5 rounded hover:bg-gray-100"
+                        title="Insert YouTube Video"
+                    >
+                        <YoutubeIcon size={16} />
+                    </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-3 w-72">
+                    <div className="space-y-3">
+                        <label htmlFor="youtube-url-input" className="block text-sm font-medium text-gray-700 mb-1">
+                            YouTube URL
+                        </label>
+                        <Input
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            value={youtubeUrl}
+                            onChange={(e) => setYoutubeUrl(e.target.value)}
+                            type="url"
+                            size="sm"
+                            id="youtube-url-input"
+                            className=""
+                        />
+                        <div className="flex gap-3 mb-3">
+                            <div className="flex-1">
+                                <label htmlFor="youtube-width-input" className="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
+                                <Input
+                                    placeholder="640"
+                                    value={youtubeWidth}
+                                    onChange={(e) => setYoutubeWidth(e.target.value)}
+                                    type="number"
+                                    min="1"
                                     size="sm"
+                                    id="youtube-width-input"
+                                    className=""
                                 />
                             </div>
-                            <div className="flex justify-end gap-2 mt-4">
-                                <Button size="sm" variant="bordered" onPress={handleLinkRemove}>
-                                    Remove
-                                </Button>
-                                <Button size="sm" color="primary" onPress={applyLinkUrl}>
-                                    Apply
-                                </Button>
+                            <div className="flex-1">
+                                <label htmlFor="youtube-height-input" className="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
+                                <Input
+                                    placeholder="480"
+                                    value={youtubeHeight}
+                                    onChange={(e) => setYoutubeHeight(e.target.value)}
+                                    type="number"
+                                    min="1"
+                                    size="sm"
+                                    id="youtube-height-input"
+                                    className=""
+                                />
                             </div>
                         </div>
-                    </PopoverContent>
-                </Popover>
-
-                {/* 图片 Popover */}
-                <Popover placement="bottom" isOpen={isImagePopoverOpen} onOpenChange={setIsImagePopoverOpen}>
-                    <PopoverTrigger>
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setImageUrl('');
-                                setIsImagePopoverOpen(true);
-                            }}
-                            className="p-1.5 rounded hover:bg-gray-100"
-                            title="Insert Image (URL)"
-                        >
-                            <ImageIcon size={16} />
-                        </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-3 w-72">
-                        <div className="space-y-3">
-                            <label htmlFor="image-url-input" className="block text-sm font-medium text-gray-700 mb-1">
-                                Image URL
-                            </label>
-                            <Input
-                                id="image-url-input"
-                                placeholder="https://example.com/image.jpg"
-                                value={imageUrl}
-                                onChange={(e) => setImageUrl(e.target.value)}
-                                type="url"
-                                size="sm"
-                            />
-                            <div className="flex justify-end gap-2 mt-4">
-                                <Button size="sm" variant="bordered" onPress={handleImageCancel}>
-                                    Cancel
-                                </Button>
-                                <Button size="sm" color="primary" onPress={applyImageUrl}>
-                                    Apply
-                                </Button>
-                            </div>
+                        <div className="flex justify-end gap-2 mt-4">
+                            <Button size="sm" variant="bordered" onPress={handleYoutubeCancel}>
+                                Cancel
+                            </Button>
+                            <Button size="sm" color="primary" onPress={applyYoutubeUrl}>
+                                Apply
+                            </Button>
                         </div>
-                    </PopoverContent>
-                </Popover>
-
-                {/* YouTube Popover */}
-                <Popover placement="bottom" isOpen={isYoutubePopoverOpen} onOpenChange={setIsYoutubePopoverOpen}>
-                    <PopoverTrigger>
-                        <button
-                            type="button"
-                            onClick={handleYoutubeAdd}
-                            className="p-1.5 rounded hover:bg-gray-100"
-                            title="Insert YouTube Video"
-                        >
-                            <YoutubeIcon size={16} />
-                        </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-3 w-72">
-                        <div className="space-y-3">
-                            <label htmlFor="youtube-url-input" className="block text-sm font-medium text-gray-700 mb-1">
-                                YouTube URL
-                            </label>
-                            <Input
-                                placeholder="https://www.youtube.com/watch?v=..."
-                                value={youtubeUrl}
-                                onChange={(e) => setYoutubeUrl(e.target.value)}
-                                type="url"
-                                size="sm"
-                                id="youtube-url-input"
-                                className=""
-                            />
-                            <div className="flex gap-3 mb-3">
-                                <div className="flex-1">
-                                    <label htmlFor="youtube-width-input" className="block text-sm font-medium text-gray-700 mb-1">Width (px)</label>
-                                    <Input
-                                        placeholder="640"
-                                        value={youtubeWidth}
-                                        onChange={(e) => setYoutubeWidth(e.target.value)}
-                                        type="number"
-                                        min="1"
-                                        size="sm"
-                                        id="youtube-width-input"
-                                        className=""
-                                    />
-                                </div>
-                                <div className="flex-1">
-                                    <label htmlFor="youtube-height-input" className="block text-sm font-medium text-gray-700 mb-1">Height (px)</label>
-                                    <Input
-                                        placeholder="480"
-                                        value={youtubeHeight}
-                                        onChange={(e) => setYoutubeHeight(e.target.value)}
-                                        type="number"
-                                        min="1"
-                                        size="sm"
-                                        id="youtube-height-input"
-                                        className=""
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-2 mt-4">
-                                <Button size="sm" variant="bordered" onPress={handleYoutubeCancel}>
-                                    Cancel
-                                </Button>
-                                <Button size="sm" color="primary" onPress={applyYoutubeUrl}>
-                                    Apply
-                                </Button>
-                            </div>
-                        </div>
-                    </PopoverContent>
-                </Popover>
-                <button
-                    type="button"
-                    onClick={handleAddProductClick}
-                    className="p-1.5 rounded hover:bg-gray-100"
-                    title="Add Product"
-                >
-                    <Tag size={16} />
-                </button>
-                <button
-                    type="button"
-                    onClick={handleAddMetadataClick}
-                    className="p-1.5 rounded hover:bg-gray-100"
-                    title="Insert Product Metadata"
-                >
-                    <Database size={16} />
-                </button>
-            </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
+            <button
+                type="button"
+                onClick={handleAddProductClick}
+                className="p-1.5 rounded hover:bg-gray-100"
+                title="Add Product"
+            >
+                <Tag size={16} />
+            </button>
+            <button
+                type="button"
+                onClick={handleAddMetadataClick}
+                className="p-1.5 rounded hover:bg-gray-100"
+                title="Insert Product Metadata"
+            >
+                <Database size={16} />
+            </button>
 
             {/* 新增：快捷键说明按钮 */}
-            <div className="flex items-center ml-4">
-                <button
-                    type="button"
-                    onClick={toggleShortcutModal}
-                    className="p-1.5 rounded hover:bg-gray-100"
-                    title="View Keyboard Shortcuts"
-                >
-                    <Keyboard size={16} />
-                </button>
-            </div>
+            <button
+                type="button"
+                onClick={toggleShortcutModal}
+                className="p-1.5 rounded hover:bg-gray-100 ml-auto" /* 使用 ml-auto 推到右边 */
+                title="View Keyboard Shortcuts"
+            >
+                <Keyboard size={16} />
+            </button>
 
             {/* Typography Explanation Modal */}
             <Modal isOpen={isTypographyModalOpen} onOpenChange={setIsTypographyModalOpen}>

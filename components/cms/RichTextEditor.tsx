@@ -75,6 +75,26 @@ export function RichTextEditor({
     // 客户端渲染检测
     useEffect(() => {
         setIsClient(true);
+
+        // 添加全局样式以修复气泡菜单宽度问题
+        const style = document.createElement('style');
+
+        style.innerHTML = `
+            .tippy-box {
+                width: auto !important;
+                max-width: none !important;
+            }
+            .tippy-content {
+                width: auto !important;
+                max-width: none !important;
+                white-space: nowrap !important;
+            }
+        `;
+        document.head.appendChild(style);
+
+        return () => {
+            document.head.removeChild(style);
+        };
     }, []);
 
     // 初始化编辑器
@@ -452,6 +472,18 @@ export function RichTextEditor({
                         background-color: rgba(59, 130, 246, 0.3);
                         color: inherit;
                     }
+
+                    /* 修复气泡菜单宽度问题 */
+                    .tippy-box {
+                        width: auto !important;
+                        max-width: none !important;
+                        white-space: nowrap !important;
+                    }
+                    .tippy-content {
+                        width: auto !important;
+                        max-width: none !important;
+                        white-space: nowrap !important;
+                    }
                 `}</style>
 
                 {/* Markdown快捷方式提示 */}
@@ -515,17 +547,53 @@ export function RichTextEditor({
             )}
 
             {editor && (
+                /* 气泡菜单：添加 whitespace-nowrap 和 min-w-max 类解决菜单宽度不自适应内容的问题 */
                 <BubbleMenu
                     editor={editor}
                     tippyOptions={{
-                        duration: 150,
+                        duration: 100,
+                        maxWidth: 'none', // 允许菜单完全扩展到其内容的宽度
                         placement: 'top',
                         offset: [0, 10],
                         zIndex: 50,
                         animation: 'shift-away',
                         interactive: true,
                         appendTo: () => document.body,
-                        onShow: () => {
+                        // 确保菜单不会超出视口
+                        popperOptions: {
+                            modifiers: [
+                                {
+                                    name: 'preventOverflow',
+                                    options: {
+                                        boundary: 'viewport',
+                                        padding: 5,
+                                    },
+                                },
+                                {
+                                    name: 'flip',
+                                    options: {
+                                        fallbackPlacements: ['bottom', 'right', 'left'],
+                                        padding: 5,
+                                    },
+                                },
+                                {
+                                    name: 'sizeByReference', // 添加确保宽度自适应的修饰符
+                                    enabled: true,
+                                    options: {
+                                        width: 'auto',
+                                    },
+                                },
+                            ],
+                        },
+                        onCreate: ({ popper }) => {
+                            // 直接设置popper样式
+                            if (popper && popper.firstElementChild) {
+                                (popper.firstElementChild as HTMLElement).style.width = 'auto';
+                                (popper.firstElementChild as HTMLElement).style.maxWidth = 'none';
+                                (popper.firstElementChild as HTMLElement).style.whiteSpace = 'nowrap';
+                            }
+                        },
+                        onShow: (instance) => {
                             // 防止谷歌翻译触发
                             const selection = window.getSelection();
 
@@ -543,9 +611,16 @@ export function RichTextEditor({
                                     }
                                 }, 0);
                             }
+
+                            // 修复宽度问题
+                            if (instance.popper && instance.popper.firstElementChild) {
+                                (instance.popper.firstElementChild as HTMLElement).style.width = 'auto';
+                                (instance.popper.firstElementChild as HTMLElement).style.maxWidth = 'none';
+                                (instance.popper.firstElementChild as HTMLElement).style.whiteSpace = 'nowrap';
+                            }
                         }
                     }}
-                    className="bg-white border border-gray-200 rounded-lg shadow-lg p-1.5 flex gap-1.5 transition-opacity duration-150 items-center"
+                    className="bg-white border border-gray-200 rounded-lg shadow-lg p-1.5 flex items-center gap-1.5 transition-opacity duration-150 whitespace-nowrap w-auto min-w-fit"
                     shouldShow={({ state }) => {
                         const { selection } = state;
                         const { $from, empty } = selection;
@@ -565,104 +640,102 @@ export function RichTextEditor({
                             // const currentAlignment = currentNode?.attrs.alignment || 'left'; // Alignment no longer needed here
 
                             return (
-                                <div className="flex items-center gap-1.5">
-                                    {/* 样式按钮 */}
-                                    <span className="text-xs text-gray-500 mr-1">布局:</span>
-                                    {PRODUCT_STYLES.map((styleOption) => (
-                                        <button
-                                            key={styleOption.id}
-                                            type="button"
-                                            onClick={() => handleProductStyleChange(styleOption.id)}
-                                            className={`px-1.5 py-0.5 rounded text-xs hover:bg-gray-100 transition-colors ${currentStyle === styleOption.id ? 'bg-blue-100 text-blue-600' : 'text-gray-700'}`}
-                                            title={styleOption.name}
-                                        >
-                                            {styleOption.name}
-                                        </button>
-                                    ))}
-                                    {/* 移除分隔符和对齐按钮 */}
-                                    {/* <div className="h-4 w-px bg-gray-200 mx-1"></div> */}
-                                    {/* <span className="text-xs text-gray-500 mr-1">对齐:</span> */}
-                                    {/* <button ... AlignLeft ... /> */}
-                                    {/* <button ... AlignCenter ... /> */}
-                                    {/* <button ... AlignRight ... /> */}
+                                <div className="flex items-center gap-1.5 whitespace-nowrap min-w-max overflow-visible flex-shrink-0 flex-nowrap">
+                                    {/* 样式按钮 - 使用 nowrap，移除 flex-wrap */}
+                                    <span className="text-xs text-gray-500 mr-1 flex-shrink-0">layout:</span>
+                                    <div className="flex items-center flex-shrink-0 flex-nowrap">
+                                        {PRODUCT_STYLES.map((styleOption) => (
+                                            <button
+                                                key={styleOption.id}
+                                                type="button"
+                                                onClick={() => handleProductStyleChange(styleOption.id)}
+                                                className={`px-1.5 py-0.5 rounded text-xs hover:bg-gray-100 transition-colors flex-shrink-0 ${currentStyle === styleOption.id ? 'bg-blue-100 text-blue-600' : 'text-gray-700'}`}
+                                                title={styleOption.name}
+                                            >
+                                                {styleOption.name}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             );
                         })()
                     ) : (
                         // --- 文本格式化工具 (保持不变) ---
                         <>
-                            <button
-                                type="button"
-                                onClick={() => editor?.chain().focus().toggleBold().run()}
-                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('bold') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                title="加粗"
-                            >
-                                <Bold size={16} />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => editor?.chain().focus().toggleItalic().run()}
-                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('italic') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                title="斜体"
-                            >
-                                <Italic size={16} />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => editor?.chain().focus().toggleStrike().run()}
-                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('strike') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                title="删除线"
-                            >
-                                <Strikethrough size={16} />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleHighlight}
-                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('highlight') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                title="高亮文本"
-                            >
-                                <Highlighter size={16} />
-                            </button>
-                            <Popover placement="bottom" isOpen={isLinkPopoverOpen} onOpenChange={handleLinkOpenChange}>
-                                <PopoverTrigger>
-                                    <div>
+                            <div className="flex items-center whitespace-nowrap min-w-max flex-shrink-0 flex-nowrap">
+                                <button
+                                    type="button"
+                                    onClick={() => editor?.chain().focus().toggleBold().run()}
+                                    className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 ${editor?.isActive('bold') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                    title="加粗"
+                                >
+                                    <Bold size={16} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => editor?.chain().focus().toggleItalic().run()}
+                                    className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 ${editor?.isActive('italic') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                    title="斜体"
+                                >
+                                    <Italic size={16} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => editor?.chain().focus().toggleStrike().run()}
+                                    className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 ${editor?.isActive('strike') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                    title="删除线"
+                                >
+                                    <Strikethrough size={16} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleHighlight}
+                                    className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors flex-shrink-0 ${editor?.isActive('highlight') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                    title="高亮文本"
+                                >
+                                    <Highlighter size={16} />
+                                </button>
+                                <Popover placement="bottom" isOpen={isLinkPopoverOpen} onOpenChange={handleLinkOpenChange}>
+                                    <PopoverTrigger>
+                                        <div>
+                                            <button
+                                                type="button"
+                                                className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('link') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                                title="添加/编辑链接"
+                                            >
+                                                <LinkIcon size={16} />
+                                            </button>
+                                        </div>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="p-2 w-64">
+                                        <div className="space-y-2">
+                                            <Input
+                                                type="url"
+                                                placeholder="https://example.com"
+                                                value={linkUrl}
+                                                onChange={(e) => setLinkUrl(e.target.value)}
+                                                className="w-full"
+                                            />
+                                            <div className="flex justify-end gap-2">
+                                                <Button size="sm" onClick={handleApplyLink}>应用</Button>
+                                                <Button size="sm" onClick={handleRemoveLink}>移除</Button>
+                                            </div>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                                <ColorPickerPopover
+                                    editor={editor}
+                                    trigger={
                                         <button
                                             type="button"
-                                            className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('link') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                            title="添加/编辑链接"
+                                            className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('textStyle') ? 'bg-blue-100 text-blue-600' : ''}`}
+                                            title="文本颜色"
                                         >
-                                            <LinkIcon size={16} />
+                                            <Palette size={16} />
                                         </button>
-                                    </div>
-                                </PopoverTrigger>
-                                <PopoverContent className="p-2 w-64">
-                                    <div className="space-y-2">
-                                        <Input
-                                            type="url"
-                                            placeholder="https://example.com"
-                                            value={linkUrl}
-                                            onChange={(e) => setLinkUrl(e.target.value)}
-                                            className="w-full"
-                                        />
-                                        <div className="flex justify-end gap-2">
-                                            <Button size="sm" onClick={handleApplyLink}>应用</Button>
-                                            <Button size="sm" onClick={handleRemoveLink}>移除</Button>
-                                        </div>
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
-                            <ColorPickerPopover
-                                editor={editor}
-                                trigger={
-                                    <button
-                                        type="button"
-                                        className={`p-1.5 rounded-md text-gray-700 hover:bg-gray-100 transition-colors ${editor?.isActive('textStyle') ? 'bg-blue-100 text-blue-600' : ''}`}
-                                        title="文本颜色"
-                                    >
-                                        <Palette size={16} />
-                                    </button>
-                                }
-                            />
+                                    }
+                                />
+                            </div>
                         </>
                     )}
                 </BubbleMenu>
