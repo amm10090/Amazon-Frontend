@@ -76,6 +76,29 @@ export function ProductMetadataSelector({
         }
     };
 
+    // 如果没有产品，显示提示信息
+    if (!product) {
+        return (
+            <Modal isOpen={isOpen} onClose={onClose} size="lg">
+                <ModalContent>
+                    <ModalHeader>
+                        <h3 className="text-lg font-medium">选择产品元数据</h3>
+                    </ModalHeader>
+                    <ModalBody>
+                        <div className="py-10 text-center">
+                            <p className="text-gray-500">请先选择一个产品</p>
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button variant="light" onPress={onClose}>
+                            关闭
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        );
+    }
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="lg">
             <ModalContent>
