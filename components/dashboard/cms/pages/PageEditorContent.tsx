@@ -1,9 +1,8 @@
 'use client';
 
-import { Badge, Input, Autocomplete, AutocompleteItem } from "@heroui/react";
+import { Badge, Autocomplete, AutocompleteItem } from "@heroui/react";
 import type { Editor } from '@tiptap/react';
 import { Save, FileQuestion, ArrowLeft, AlertTriangle, Eye, Edit3, X } from 'lucide-react';
-import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useRef } from 'react';
@@ -14,6 +13,8 @@ import { cmsApi } from '@/lib/api/cms';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { generateSlug } from '@/lib/utils';
 import type { ContentPageCreateRequest, ContentPageUpdateRequest, ContentCategory, ContentTag } from '@/types/cms';
+
+import CoverImageUploader from './CoverImageUploader';
 
 
 interface FormData {
@@ -105,16 +106,16 @@ const PageEditorContent = () => {
                         setTags(Array.isArray(pageData.tags) ? pageData.tags : []);
                         setFeaturedImage(pageData.featuredImage || '');
                     } else {
-                        setLoadError('无法加载页面数据 - 页面数据格式错误');
+                        setLoadError('Failed to load page data - Page data format error');
                     }
                 } else {
-                    setLoadError(`无法加载页面数据 - API状态码: ${response.data.status || '未知'}, 消息: ${response.data.message || '未提供'}`);
+                    setLoadError(`Failed to load page data - API status code: ${response.data.status || 'Unknown'}, message: ${response.data.message || 'Not provided'}`);
                 }
             } else {
-                setLoadError('无法加载页面数据 - API响应格式错误');
+                setLoadError('Failed to load page data - API response format error');
             }
         } catch (err) {
-            setLoadError(`加载页面时出错: ${err instanceof Error ? err.message : '未知错误'}`);
+            setLoadError(`Failed to load page data - Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
         } finally {
             setLoadingPage(false);
         }
@@ -670,26 +671,10 @@ const PageEditorContent = () => {
 
                     {/* 特色图片 */}
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Featured Image</label>
-                        <div className="flex items-center gap-4">
-                            {featuredImage && (
-                                <Image
-                                    src={featuredImage}
-                                    alt="Featured Image"
-                                    width={80}
-                                    height={80}
-                                    className="h-20 w-20 object-cover rounded-md"
-                                />
-                            )}
-                            <div className="flex-1">
-                                <Input
-                                    type="text"
-                                    value={featuredImage}
-                                    onChange={(e) => setFeaturedImage(e.target.value)}
-                                    placeholder="Enter image URL"
-                                />
-                            </div>
-                        </div>
+                        <CoverImageUploader
+                            currentImageUrl={featuredImage}
+                            onImageUploaded={(url) => setFeaturedImage(url)}
+                        />
                     </div>
 
                     {/* 内容编辑器 */}

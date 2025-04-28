@@ -92,16 +92,16 @@ export function ProductMetadataSelector({
             >
                 <ModalContent>
                     <ModalHeader>
-                        <h3 className="text-lg font-medium">选择产品元数据</h3>
+                        <h3 className="text-lg font-medium">Select Product Metadata</h3>
                     </ModalHeader>
                     <ModalBody>
                         <div className="py-10 text-center">
-                            <p className="text-gray-500">请先选择一个产品</p>
+                            <p className="text-gray-500">Please select a product first</p>
                         </div>
                     </ModalBody>
                     <ModalFooter>
                         <Button variant="light" onPress={onClose}>
-                            关闭
+                            Close
                         </Button>
                     </ModalFooter>
                 </ModalContent>

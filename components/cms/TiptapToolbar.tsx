@@ -9,13 +9,15 @@ import {
     CornerDownLeft,
     Video as YoutubeIcon, // 使用 Video 图标替代已弃用的 Youtube 图标
     Keyboard,
-    Database
+    Database,
+    Upload
 } from 'lucide-react';
 import { useState, useCallback, type MouseEvent } from 'react';
 
 import type { ComponentProduct } from '@/types';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
+import { ImageUploader } from './ImageUploader';
 import type { ProductAttributes } from './ProductBlot'; // Import ProductAttributes
 import type { ProductMetadataAttributes } from './ProductMetadataBlot';
 import { ProductMetadataSelector } from './ProductMetadataSelector';
@@ -62,6 +64,7 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
     const [showMetadataSelector, setShowMetadataSelector] = useState(false);
     const [pickerMode, setPickerMode] = useState<string | null>(null);
     const [productForMetadata, setProductForMetadata] = useState<ComponentProduct | null>(null);
+    const [showImageUploader, setShowImageUploader] = useState(false);
 
     // 新增：切换快捷键模态框
     const toggleShortcutModal = useCallback(() => {
@@ -198,6 +201,12 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
         setIsImagePopoverOpen(false);
         setImageUrl(''); // 取消时清空
     }, []);
+
+    // 处理本地图片上传
+    const handleLocalImageUpload = useCallback((url: string) => {
+        if (!editor) return;
+        editor.chain().focus().setImage({ src: url }).run();
+    }, [editor]);
 
     // 新增：处理从 ProductPickerModal 返回的产品选择
     const handleProductPicked = useCallback((product: ComponentProduct) => {
@@ -646,24 +655,43 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
                             setIsImagePopoverOpen(true);
                         }}
                         className="p-1.5 rounded hover:bg-gray-100"
-                        title="Insert Image (URL)"
+                        title="Insert Image"
                     >
                         <ImageIcon size={16} />
                     </button>
                 </PopoverTrigger>
                 <PopoverContent className="p-3 w-72">
                     <div className="space-y-3">
-                        <label htmlFor="image-url-input" className="block text-sm font-medium text-gray-700 mb-1">
-                            Image URL
-                        </label>
-                        <Input
-                            id="image-url-input"
-                            placeholder="https://example.com/image.jpg"
-                            value={imageUrl}
-                            onChange={(e) => setImageUrl(e.target.value)}
-                            type="url"
-                            size="sm"
-                        />
+                        <button
+                            onClick={() => {
+                                setIsImagePopoverOpen(false);
+                                setShowImageUploader(true);
+                            }}
+                            className="w-full py-2 px-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center justify-center"
+                            type="button"
+                        >
+                            <Upload size={16} className="mr-2" /> Upload Local Image
+                        </button>
+
+                        <div className="relative flex items-center">
+                            <div className="flex-grow border-t border-gray-300" />
+                            <span className="mx-2 text-xs text-gray-500">Or add through URL</span>
+                            <div className="flex-grow border-t border-gray-300" />
+                        </div>
+
+                        <div>
+                            <label htmlFor="image-url-input" className="block text-sm font-medium text-gray-700 mb-1">
+                                Image URL
+                            </label>
+                            <Input
+                                id="image-url-input"
+                                placeholder="https://example.com/image.jpg"
+                                value={imageUrl}
+                                onChange={(e) => setImageUrl(e.target.value)}
+                                type="url"
+                                size="sm"
+                            />
+                        </div>
                         <div className="flex justify-end gap-2 mt-4">
                             <Button size="sm" variant="bordered" onPress={handleImageCancel}>
                                 Cancel
@@ -869,6 +897,13 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
                 }}
                 product={productForMetadata}
                 onSelect={handleMetadataSelect}
+            />
+
+            {/* 添加图片上传模态框 */}
+            <ImageUploader
+                isOpen={showImageUploader}
+                onClose={() => setShowImageUploader(false)}
+                onImageUpload={handleLocalImageUpload}
             />
         </div>
     );
