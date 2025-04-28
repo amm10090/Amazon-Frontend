@@ -340,30 +340,100 @@ const PageEditorContent = () => {
 
     // 切换预览模式
     const togglePreview = () => {
+        // 如果是新建页面且未保存，则不允许预览
+        if (mode === 'create' && !params.id && !formData.slug) {
+            showErrorToast({
+                title: "Cannot preview",
+                description: "Please save the page or at least set the URL path first",
+            });
+
+            return;
+        }
+
         setIsPreviewActive(!isPreviewActive);
+    };
+
+    // 生成预览链接
+    const generatePreviewLink = () => {
+        if (!formData.slug) {
+            showErrorToast({
+                title: "Failed to generate preview link",
+                description: "Please set the page URL path first",
+            });
+
+            return;
+        }
+
+        // 构建预览链接，使用?preview=true参数
+        const baseUrl = window.location.origin;
+        const previewUrl = `${baseUrl}/blog/${formData.slug}?preview=true`;
+
+        // 复制链接到剪贴板
+        navigator.clipboard.writeText(previewUrl)
+            .then(() => {
+                showSuccessToast({
+                    title: "Preview link copied",
+                    description: "You can share this link with others to preview the draft",
+                });
+            })
+            .catch(() => {
+                showErrorToast({
+                    title: "copy failed",
+                    description: "Unable to copy preview link to clipboard",
+                });
+            });
+
+        return previewUrl;
     };
 
     // 渲染页面预览
     const renderPreview = () => {
-        const currentDate = new Date().toLocaleDateString();
+        if (!formData.content) {
+            return (
+                <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg p-10">
+                    <p className="text-gray-500">No content to preview</p>
+                </div>
+            );
+        }
 
         return (
-            <main className="container mx-auto px-4 py-8">
-                <article className="prose lg:prose-xl max-w-none bg-white p-6 rounded shadow">
-                    <h1 className="mb-4">{formData.title}</h1>
-
-                    {formData.excerpt && (
-                        <p className="text-gray-600 mb-6 italic">{formData.excerpt}</p>
-                    )}
-
-                    <ContentRenderer content={formData.content} className="prose max-w-none" />
-
-                    <div className="mt-8 text-sm text-gray-500 pt-4 border-t">
-                        <span>Author: {session?.user?.name || session?.user?.email || 'Unknown'}</span> |
-                        <span> Last Updated: {currentDate}</span>
+            <div className="rounded-lg shadow bg-white">
+                {/* 添加在新窗口中查看的按钮 - 仅当有slug时显示 */}
+                <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <div>
+                        {!formData.slug && (
+                            <div className="text-amber-600 text-sm flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Please save with URL path to enable full page preview
+                            </div>
+                        )}
                     </div>
-                </article>
-            </main>
+                    {formData.slug && (
+                        <a
+                            href={`/blog/${formData.slug}?preview=true`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center px-4 py-2 rounded-md border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            Open in New Window
+                        </a>
+                    )}
+                </div>
+                <div className="p-8">
+                    <h1 className="text-3xl font-bold mb-4">{formData.title}</h1>
+                    {formData.excerpt && (
+                        <p className="text-gray-600 mb-6">{formData.excerpt}</p>
+                    )}
+                    <div className="prose max-w-none">
+                        <ContentRenderer content={formData.content} />
+                    </div>
+                </div>
+            </div>
         );
     };
 
@@ -374,7 +444,7 @@ const PageEditorContent = () => {
                     <button
                         onClick={() => router.push('/dashboard/cms/pages')}
                         className="mr-4 p-2 rounded-full hover:bg-gray-200 transition-colors"
-                        aria-label="返回"
+                        aria-label="Back to page list"
                     >
                         <ArrowLeft size={20} />
                     </button>
@@ -382,23 +452,39 @@ const PageEditorContent = () => {
                         {mode === 'create' ? 'Create New Blog Post' : 'Edit Blog Post'}
                     </h1>
                 </div>
-                <button
-                    type="button"
-                    onClick={togglePreview}
-                    className="flex items-center px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50"
-                >
-                    {isPreviewActive ? (
-                        <>
-                            <Edit3 size={18} className="mr-2" />
-                            Back to Edit
-                        </>
-                    ) : (
-                        <>
-                            <Eye size={18} className="mr-2" />
-                            Preview Post
-                        </>
+                <div className="flex space-x-2">
+                    {/* 预览链接按钮 - 仅对已有slug的页面显示 */}
+                    {formData.slug && (formData.status === 'draft' || mode === 'create') && (
+                        <button
+                            type="button"
+                            onClick={generatePreviewLink}
+                            className="flex items-center px-4 py-2 rounded-md border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102-1.101" />
+                            </svg>
+                            Get Preview Link
+                        </button>
                     )}
-                </button>
+                    <button
+                        type="button"
+                        onClick={togglePreview}
+                        className="flex items-center px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50"
+                    >
+                        {isPreviewActive ? (
+                            <>
+                                <Edit3 size={18} className="mr-2" />
+                                Back to Edit
+                            </>
+                        ) : (
+                            <>
+                                <Eye size={18} className="mr-2" />
+                                Preview Post
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
 
             {isPreviewActive ? (

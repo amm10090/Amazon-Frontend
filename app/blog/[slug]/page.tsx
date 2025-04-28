@@ -6,11 +6,16 @@ import { notFound } from 'next/navigation';
 import ContentRenderer from '@/components/cms/ContentRenderer';
 
 // 获取文章数据
-async function getPageData(slug: string): Promise<PageData | null> {
+async function getPageData(slug: string, preview: boolean = false): Promise<PageData | null> {
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
 
     try {
-        const res = await fetch(`${apiBaseUrl}/api/cms/content/${slug}`, { cache: 'no-store' });
+        // 添加preview参数以支持草稿预览
+        const url = preview
+            ? `${apiBaseUrl}/api/cms/content/${slug}?preview=true`
+            : `${apiBaseUrl}/api/cms/content/${slug}`;
+
+        const res = await fetch(url, { cache: 'no-store' });
 
         if (!res.ok) {
             if (res.status === 404) {
@@ -54,6 +59,7 @@ interface PageData {
     };
     products?: unknown[];
     featuredImage?: string;
+    isDraft?: boolean; // 添加草稿标记
 }
 
 // 生成页面元数据
@@ -97,9 +103,13 @@ function formatDate(dateString: string): string {
 }
 
 // 页面组件
-export default async function BlogPost({ params }: { params: { slug: string } }) {
+export default async function BlogPost({ params, searchParams }: {
+    params: { slug: string },
+    searchParams?: { [key: string]: string | string[] | undefined }
+}) {
     const resolvedParams = await params;
-    const pageData: PageData | null = await getPageData(resolvedParams.slug);
+    const isPreview = searchParams?.preview !== undefined;
+    const pageData: PageData | null = await getPageData(resolvedParams.slug, isPreview);
 
     if (!pageData) {
         notFound();
@@ -111,6 +121,17 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
+            {/* 草稿模式提示条 */}
+            {pageData.isDraft && (
+                <div className="fixed top-0 left-0 w-full bg-amber-500 text-white py-2 px-4 text-center z-50">
+                    <div className="container mx-auto">
+                        <p className="font-medium">
+                            Preview Mode: This is a draft post that has not been published yet. It can only be accessed via preview link.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             <div className="container mx-auto px-4 max-w-4xl">
                 <article>
                     <header className="mb-12 text-center">
@@ -118,6 +139,13 @@ export default async function BlogPost({ params }: { params: { slug: string } })
                             Back to Blog
                         </Link>
                         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">{pageData.title}</h1>
+
+                        {/* 草稿状态标签 */}
+                        {pageData.isDraft && (
+                            <div className="inline-block px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium mb-4">
+                                Draft
+                            </div>
+                        )}
 
                         {pageData.excerpt && (
                             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">

@@ -441,10 +441,10 @@ const CmsPagesContent = () => {
                                                     <Trash2 size={18} />
                                                 </button>
                                                 <Link
-                                                    href={`/blog/${page.slug}`}
+                                                    href={`/blog/${page.slug}${page.status === 'draft' ? '?preview=true' : ''}`}
                                                     target="_blank"
                                                     className="text-green-600 hover:text-green-800"
-                                                    title="View post"
+                                                    title={page.status === 'draft' ? "Preview draft post" : "View published post"}
                                                 >
                                                     <Eye size={18} />
                                                 </Link>

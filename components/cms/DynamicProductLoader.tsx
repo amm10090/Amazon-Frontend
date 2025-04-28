@@ -50,6 +50,7 @@ interface DynamicProductLoaderProps {
     productId: string;
     style?: string;
     alignment?: 'left' | 'center' | 'right';
+    containerElement?: 'div' | 'span'; // 添加容器元素属性
 }
 
 // Fetcher function for SWR
@@ -87,7 +88,12 @@ const fetchProduct = async (productIdOrAsin: string): Promise<ComponentProduct |
     }
 };
 
-export default function DynamicProductLoader({ productId, style = 'simple', alignment = 'left' }: DynamicProductLoaderProps) {
+export default function DynamicProductLoader({
+    productId,
+    style = 'simple',
+    alignment = 'left',
+    containerElement = 'div' // 默认为div，可以指定为span
+}: DynamicProductLoaderProps) {
     const { data: product, error, isLoading } = useSWR<ComponentProduct | null>(
         productId ? ['product', productId] : null,
         () => fetchProduct(productId),
@@ -104,43 +110,48 @@ export default function DynamicProductLoader({ productId, style = 'simple', alig
         right: 'text-right', // Or ml-auto if using flex/grid container
     };
 
-    // 将wrapper类名修改为div，但保持相同的样式效果
+    // 将wrapper类名修改为动态容器，但保持相同的样式效果
     const wrapperClassName = `inline-block ${alignmentClasses[alignment]}`;
 
-    // Loading state - now also needs to consider alignment
-    if (isLoading) {
-        return (
-            <div className={wrapperClassName}>
-                <ProductSkeletonPlaceholder style={style} />
-            </div>
-        );
-    }
+    // 创建渲染内容的函数
+    const renderContent = () => {
+        // Loading state
+        if (isLoading) {
+            return <ProductSkeletonPlaceholder style={style} />;
+        }
 
-    // Error state - 使用div而不是span
-    if (error || !product) {
-        return (
-            <div className={`${wrapperClassName} inline-flex items-center text-red-500 text-xs p-2 border border-red-200 rounded align-middle bg-red-50 dark:bg-red-900/20 dark:border-red-800`}>
-                Error loading product (ID: {productId})
-            </div>
-        );
-    }
+        // Error state
+        if (error || !product) {
+            return (
+                <span className="inline-flex items-center text-red-500 text-xs p-2 border border-red-200 rounded align-middle bg-red-50 dark:bg-red-900/20 dark:border-red-800">
+                    Error loading product (ID: {productId})
+                </span>
+            );
+        }
 
-    // Render product component (unchanged)
-    let productElement: React.ReactNode | null = null;
+        // Render product component
+        let productElement: React.ReactNode | null = null;
 
-    switch (style) {
-        case 'card': productElement = <CardProductElement product={product} />; break;
-        case 'horizontal': productElement = <HorizontalProductElement product={product} />; break;
-        case 'mini': productElement = <MiniProductElement product={product} />; break;
-        case 'compact-grid': productElement = <CompactGridItemElement product={product} />; break;
-        case 'featured': productElement = <FeaturedItemElement product={product} />; break;
-        case 'simple': default: productElement = <SimpleProductElement product={product} />; break;
-    }
+        switch (style) {
+            case 'card': productElement = <CardProductElement product={product} />; break;
+            case 'horizontal': productElement = <HorizontalProductElement product={product} />; break;
+            case 'mini': productElement = <MiniProductElement product={product} />; break;
+            case 'compact-grid': productElement = <CompactGridItemElement product={product} />; break;
+            case 'featured': productElement = <FeaturedItemElement product={product} />; break;
+            case 'simple': default: productElement = <SimpleProductElement product={product} />; break;
+        }
 
-    // 返回产品元素，使用div包装
-    return (
+        return productElement;
+    };
+
+    // 根据containerElement动态渲染适当的容器
+    return containerElement === 'span' ? (
+        <span className={wrapperClassName}>
+            {renderContent()}
+        </span>
+    ) : (
         <div className={wrapperClassName}>
-            {productElement}
+            {renderContent()}
         </div>
     );
 } 

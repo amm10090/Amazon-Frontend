@@ -13,6 +13,24 @@ interface ContentRendererProps {
     className?: string;
 }
 
+// 检查节点是否在p标签内
+function checkIfInsideParagraph(node: Element): boolean {
+    let parent = node.parent as Element | null;
+
+    while (parent) {
+        if (parent.name === 'p') {
+            return true;
+        }
+        // 已经到达了根元素或者其他块级元素，不再继续向上检查
+        if (!parent.parent || ['div', 'section', 'article'].includes(parent.name)) {
+            break;
+        }
+        parent = parent.parent as Element | null;
+    }
+
+    return false;
+}
+
 // 内容渲染器组件
 const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
     const [isMounted, setIsMounted] = useState(false);
@@ -39,8 +57,16 @@ const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
                     return <span className="text-red-500 text-xs p-2 border border-red-200 rounded align-middle">Product ID missing</span>;
                 }
 
-                // 直接返回 DynamicProductLoader，它内部会处理自己的包装元素
-                return <DynamicProductLoader productId={productId} style={productStyle} alignment={alignment} />;
+                // 检查是否在p标签内部，以决定使用哪种容器元素
+                const isInsideParagraph = checkIfInsideParagraph(domNode);
+
+                // 在p标签内使用span，否则使用div
+                return <DynamicProductLoader
+                    productId={productId}
+                    style={productStyle}
+                    alignment={alignment}
+                    containerElement={isInsideParagraph ? 'span' : 'div'}
+                />;
             }
 
             // 新增: 处理 productMetadata 节点

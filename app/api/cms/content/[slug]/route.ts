@@ -34,9 +34,10 @@ interface FormattedPage {
     };
     productIds?: string[];
     products?: ProductInfo[];
+    isDraft?: boolean;
 }
 
-// 通过slug获取已发布的内容页面
+// 通过slug获取内容页面，支持预览草稿
 export async function GET(
     request: NextRequest,
     { params }: { params: { slug: string } }
@@ -46,6 +47,8 @@ export async function GET(
         const resolvedParams = await params;
         const slug = resolvedParams.slug;
 
+        // 检查是否是预览模式
+        const isPreview = request.nextUrl.searchParams.has('preview');
 
         // 获取数据库连接
         const dbName = process.env.MONGODB_DB || 'oohunt';
@@ -53,14 +56,18 @@ export async function GET(
         const db = client.db(dbName);
         const collection = db.collection('cms_pages');
 
-        // 查询页面，只获取已发布的页面
-        const page = await collection.findOne({
-            slug: slug,
-            status: 'published'
-        });
+        // 构建查询条件，如果是预览模式，则不限制状态
+        const query: { slug: string; status?: string } = { slug: slug };
+
+        // 非预览模式下，只获取已发布的页面
+        if (!isPreview) {
+            query.status = 'published';
+        }
+
+        // 查询页面
+        const page = await collection.findOne(query);
 
         if (!page) {
-
             return NextResponse.json(
                 {
                     status: false,
@@ -70,13 +77,17 @@ export async function GET(
             );
         }
 
+        // 如果是预览且页面是草稿状态，添加预览标记
+        const isDraft = page.status === 'draft';
+
         // 转换格式
         const formattedPage = {
             ...page,
             _id: page._id.toString(),
             createdAt: page.createdAt instanceof Date ? page.createdAt.toISOString() : page.createdAt,
             updatedAt: page.updatedAt instanceof Date ? page.updatedAt.toISOString() : page.updatedAt,
-            publishedAt: page.publishedAt instanceof Date ? page.publishedAt.toISOString() : page.publishedAt
+            publishedAt: page.publishedAt instanceof Date ? page.publishedAt.toISOString() : page.publishedAt,
+            isDraft: isDraft && isPreview // 添加草稿标记
         };
 
         // 如果页面包含产品ID，获取产品信息
