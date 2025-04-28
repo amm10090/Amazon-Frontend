@@ -20,7 +20,7 @@ import type {
 
 // 服务器端环境下的BASE URL
 // 忽略环境变量中的SERVER_API_URL，强制使用本地URL
-const SERVER_API_URL = 'http://localhost:3000/api';
+const SERVER_API_URL = 'api';
 const isServer = () => typeof window === 'undefined';
 
 // 为服务器端和客户端创建单独的API客户端
@@ -40,7 +40,7 @@ apiClient.interceptors.request.use((config) => {
     // 强制使用本地URL
     if (isServer()) {
         // 总是使用本地URL
-        config.baseURL = 'http://localhost:3000/api';
+        config.baseURL = '/api';
     }
 
     return config;

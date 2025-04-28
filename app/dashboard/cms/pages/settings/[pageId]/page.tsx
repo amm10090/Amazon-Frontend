@@ -22,7 +22,6 @@ import { useFormStatus } from 'react-dom';
 // 导入cms专用API客户端
 import { cmsApi } from '@/lib/api/cms';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import { formatDate } from '@/lib/utils';
 import type { ContentPage, ContentCategory, ContentTag } from '@/types/cms';
 
 import { updatePageSettingsAction } from './actions';
@@ -527,8 +526,8 @@ export default function PageSettingsPage() {
             <Card shadow="sm">
                 <CardBody className="flex flex-col md:flex-row justify-between items-center p-6 gap-4">
                     <div className="text-sm text-gray-600 space-y-1 text-center md:text-left">
-                        <p>Created: {pageData.createdAt ? formatDate(new Date(pageData.createdAt)) : 'N/A'}</p>
-                        <p>Last Updated: {pageData.updatedAt ? formatDate(new Date(pageData.updatedAt)) : 'N/A'}</p>
+                        <p>Created: {pageData.createdAt ? new Date(pageData.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}</p>
+                        <p>Last Updated: {pageData.updatedAt ? new Date(pageData.updatedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}</p>
                     </div>
                     <Button
                         type="submit"
