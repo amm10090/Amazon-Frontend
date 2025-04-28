@@ -12,8 +12,7 @@ import {
     CardBody,
     Spinner,
     Autocomplete,
-    AutocompleteItem,
-
+    AutocompleteItem
 } from "@heroui/react";
 import { X } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
@@ -27,6 +26,7 @@ import { formatDate } from '@/lib/utils';
 import type { ContentPage, ContentCategory, ContentTag } from '@/types/cms';
 
 import { updatePageSettingsAction } from './actions';
+import SettingsImageUploader from './SettingsImageUploader';
 
 // Type guard to check for object with string _id
 function isObjectWithId(item: unknown): item is { _id: string } {
@@ -297,22 +297,32 @@ export default function PageSettingsPage() {
                         variant="flat"
                         minRows={3}
                     />
-                    <Input
-                        id="featuredImage"
-                        name="featuredImage"
-                        label="Featured Image URL"
-                        labelPlacement="outside-left"
-                        classNames={{
-                            label: "mb-1",
-                            inputWrapper: "bg-transparent shadow-none",
-                            input: "focus:outline-none"
-                        }}
-                        value={featuredImage}
-                        onValueChange={setFeaturedImage}
-                        placeholder="https://example.com/image.jpg"
-                        fullWidth
-                        variant="flat"
-                    />
+                    <div className="flex items-center gap-2">
+                        <Input
+                            id="featuredImage"
+                            name="featuredImage"
+                            label="Featured Image URL"
+                            labelPlacement="outside-left"
+                            classNames={{
+                                label: "mb-1",
+                                inputWrapper: "bg-transparent shadow-none",
+                                input: "focus:outline-none"
+                            }}
+                            value={featuredImage}
+                            onValueChange={setFeaturedImage}
+                            placeholder="https://example.com/image.jpg"
+                            fullWidth
+                            variant="flat"
+                        />
+                        <div className="w-40 flex-shrink-0">
+                            <SettingsImageUploader
+                                currentImageUrl={featuredImage}
+                                onImageUploaded={setFeaturedImage}
+                                label="Featured Image"
+                                id="featured-image-uploader"
+                            />
+                        </div>
+                    </div>
                 </CardBody>
             </Card>
 
@@ -484,23 +494,33 @@ export default function PageSettingsPage() {
                         fullWidth
                         variant="flat"
                     />
-                    <Input
-                        id="ogImage"
-                        name="ogImage"
-                        label="Social Sharing Image URL"
-                        type="url"
-                        labelPlacement="outside-left"
-                        classNames={{
-                            label: "mb-1",
-                            inputWrapper: "bg-transparent shadow-none",
-                            input: "focus:outline-none"
-                        }}
-                        value={ogImage}
-                        onValueChange={setOgImage}
-                        placeholder="Image URL displayed when sharing on social media"
-                        fullWidth
-                        variant="flat"
-                    />
+                    <div className="flex items-center gap-2">
+                        <Input
+                            id="ogImage"
+                            name="ogImage"
+                            label=" Sharing Image URL"
+                            type="url"
+                            labelPlacement="outside-left"
+                            classNames={{
+                                label: "mb-1",
+                                inputWrapper: "bg-transparent shadow-none",
+                                input: "focus:outline-none"
+                            }}
+                            value={ogImage}
+                            onValueChange={setOgImage}
+                            placeholder="Image URL displayed when sharing on social media"
+                            fullWidth
+                            variant="flat"
+                        />
+                        <div className="w-40 flex-shrink-0">
+                            <SettingsImageUploader
+                                currentImageUrl={ogImage}
+                                onImageUploaded={setOgImage}
+                                label="Social Sharing Image"
+                                id="og-image-uploader"
+                            />
+                        </div>
+                    </div>
                 </CardBody>
             </Card>
 
