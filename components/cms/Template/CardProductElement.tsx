@@ -5,17 +5,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { StoreIdentifier } from '@/lib/store';
-import { formatPrice, calculateDiscount } from '@/lib/utils'; // Assuming calculateDiscount is still needed based on ComponentProduct structure
+import { formatPrice } from '@/lib/utils';
 import type { ComponentProduct } from '@/types';
 
-// 卡片样式的产品组件
+/**
+ * Card-style product component for rich text editor
+ */
 const CardProductElement = ({ product }: { product: ComponentProduct }) => {
     const { id, title, price, image, url, cj_url, originalPrice, discount, couponType, couponValue, couponExpirationDate, isPrime, brand } = product;
 
     const effectiveUrl = cj_url || url || '';
     const productUrl = `/product/${id}`; // Link to the product detail page
 
-    // --- Reusable logic (similar to ProductInfo.tsx or Blot) ---
+    // Format expiry date for coupons
     const formatExpiryDate = (dateString: string | null | undefined): string => {
         if (!dateString) return '';
         try {
@@ -29,26 +31,33 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
 
             return date.toLocaleDateString('en-US', options);
         } catch {
-
             return 'Invalid Date';
         }
     };
 
+    // Check if product has a coupon
     const hasCoupon = couponType && couponValue && couponValue > 0;
-    // Use the discount directly from ComponentProduct if available and > 0
-    const _hasDiscount = typeof discount === 'number' && discount > 0;
-    // Use the originalPrice directly from ComponentProduct if available and greater than current price
-    const displayOriginalPrice = (typeof originalPrice === 'number' && originalPrice > price) ? originalPrice : null;
-    // Calculate savings based on available data
-    const savingsPercentage = displayOriginalPrice ? calculateDiscount(displayOriginalPrice, price) : (discount ?? 0);
 
+    // Calculate discount percentage
+    let discountPercentage = discount ?? 0;
+
+    // If no discount is provided but we have original price and current price, calculate the percentage
+    if (discountPercentage <= 0 && originalPrice && originalPrice > price) {
+        discountPercentage = Math.round(((originalPrice - price) / originalPrice) * 100);
+    }
+
+    // Display original price if it's higher than current price
+    const displayOriginalPrice = (typeof originalPrice === 'number' && originalPrice > price) ? originalPrice : null;
+
+    // Prepare display labels
     let discountLabel = '';
     let couponLabel = '';
 
-    // Only show discount label if there's a discount AND no coupon
-    if (savingsPercentage > 0 && !hasCoupon) {
-        discountLabel = `-${Math.round(savingsPercentage)}%`;
+    // Always show discount label if there's a percentage to show
+    if (discountPercentage > 0) {
+        discountLabel = `-${Math.round(discountPercentage)}%`;
     }
+
     // Show coupon label if a valid coupon exists
     if (hasCoupon) {
         if (couponType === 'percentage') {
@@ -59,19 +68,16 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
         }
     }
 
-    // Determine badge color based on savings percentage
+    // Determine badge color based on discount percentage
     let discountBadgeClass = 'bg-primary-badge'; // Default badge color
 
-    if (savingsPercentage >= 50) discountBadgeClass = 'bg-red-600'; // Higher discount
-    else if (savingsPercentage >= 25) discountBadgeClass = 'bg-orange-500'; // Medium discount
-
+    if (discountPercentage >= 50) discountBadgeClass = 'bg-red-600'; // Higher discount
+    else if (discountPercentage >= 25) discountBadgeClass = 'bg-orange-500'; // Medium discount
 
     // Format brand name
     const formattedBrand = brand
         ? brand.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')
         : null;
-
-    // --- End reusable logic ---
 
     return (
         <span className="inline-block align-middle max-w-[280px] relative">
@@ -89,7 +95,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                     whileHover={{ y: -8, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.03)' }}
                     transition={{ duration: 0.3 }}
                 >
-                    {/* 产品图片 */}
+                    {/* Product image */}
                     <span className="relative w-full aspect-[1/1] bg-white dark:bg-gray-700 pt-0.5 block">
                         <motion.span whileHover={{ scale: 1.05 }} className="h-full w-full relative block">
                             {image ? (
@@ -112,9 +118,9 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                         </motion.span>
                     </span>
 
-                    {/* 产品信息 */}
+                    {/* Product information */}
                     <span className="p-3 flex-grow flex flex-col">
-                        {/* 品牌信息和商店标识 */}
+                        {/* Brand info and store identifier */}
                         <span className="flex items-center justify-between mb-1.5 min-h-[20px]">
                             {formattedBrand ? (
                                 <span className="text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded inline-block truncate max-w-[50%]">
@@ -128,7 +134,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                             {title.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                         </strong>
 
-                        {/* 价格和折扣 */}
+                        {/* Price and discount */}
                         <span className="flex items-center justify-between mt-1 mb-2 min-h-[28px]">
                             <span className="flex items-baseline min-w-0 overflow-hidden mr-2">
                                 <span className="text-lg font-semibold text-primary dark:text-primary-light whitespace-nowrap">
@@ -157,7 +163,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                         )}
                     </span>
 
-                    {/* 查看详情按钮 */}
+                    {/* View details button */}
                     <span className="block px-3 pb-3 mt-auto">
                         <motion.span
                             whileHover={{ scale: 1.03 }}

@@ -8,45 +8,55 @@ import {
 } from '@heroui/react';
 import { debounce } from 'lodash';
 import { Search } from 'lucide-react';
-import Image from 'next/image';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useSWR from 'swr';
 
 import { showErrorToast } from '@/lib/toast';
-import { formatPrice } from '@/lib/utils';
 import type { ComponentProduct } from '@/types';
-import type { Product as ApiProduct, ListResponse } from '@/types/api';
+import type { Product as ApiProduct, ListResponse, ProductOffer } from '@/types/api';
 
-import type { ProductAttributes } from './ProductBlot';
+import { PRODUCT_STYLES, type ProductAttributes } from './ProductBlot';
+import ProductCard from './ProductCard';
 
 /**
- * 产品数据接口 (显式定义所需字段，并使其可选)
+ * Product data interface (explicitly define required fields and make them optional)
  */
-interface Product { // 不再继承 ApiProduct，显式定义
+interface Product { // No longer extends ApiProduct, explicitly defined
     id?: string;
     title?: string;
     price?: number;
     main_image?: string;
     image_url?: string;
-    image?: string; // 保持以防万一
+    image?: string; // Keep just in case
     images?: string[];
     sku?: string;
     asin?: string;
     url?: string;
-    cj_url?: string | null; // 允许 null
+    cj_url?: string | null; // Allow null
     brand?: string | null;
     original_price?: number | null;
     discount?: number | null;
+    discount_percentage?: number | null; // Added discount_percentage
     coupon_type?: 'percentage' | 'fixed' | null;
     coupon_value?: number | null;
     coupon_expiration_date?: string | null;
     is_prime?: boolean | null;
     is_free_shipping?: boolean | null;
+    is_free_shipping_eligible?: boolean | null; // Added for compatibility
     category?: string;
+    offers?: ProductOffer[]; // Changed from ApiProduct to ProductOffer
+    coupon_history?: {
+        coupon_type?: 'percentage' | 'fixed' | null;
+        coupon_value?: number | null;
+        expiration_date?: string | null;
+    };
+    product_group?: string;
+    binding?: string;
+    categories?: string[];
 }
 
 /**
- * 产品选择器模态框属性
+ * Product Picker Modal Props
  */
 interface ProductPickerModalProps {
     isOpen: boolean;
@@ -55,93 +65,160 @@ interface ProductPickerModalProps {
 }
 
 /**
- * 产品选择器模态框组件
- * 用于在富文本编辑器中选择和插入产品
+ * Product Picker Modal Component
+ * Used to select and insert products in the rich text editor
  */
 const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
     isOpen,
     onClose,
     onProductSelect
 }) => {
-    // 产品列表和搜索状态
+    // Product list and search state
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+    const [products, setProducts] = useState<Product[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [selectedStyle, setSelectedStyle] = useState('card'); // Default card style
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const pageSize = 20; // Load 20 products per page
 
-    // 新增：使用 SWR 获取数据
-    const fetcher = async (url: string) => {
-        const res = await fetch(url);
-
-        if (!res.ok) {
-            const error = new Error('An error occurred while fetching the data.');
-
-            // Attach extra info to the error object.
-            error.message = await res.text();
-            throw error;
+    // Reset search and pagination state
+    useEffect(() => {
+        if (isOpen) {
+            setCurrentPage(1);
+            setProducts([]);
         }
+    }, [isOpen, debouncedSearchTerm]);
 
-        return res.json();
-    };
+    // Build request URL
+    const apiUrl = `/api/search/products?keyword=${encodeURIComponent(debouncedSearchTerm || '')}&page=${currentPage}&page_size=${pageSize}`;
 
-    // 构建请求 URL - 始终调用 /api/search/products
-    const apiUrl = `/api/search/products?keyword=${encodeURIComponent(debouncedSearchTerm || '')}&limit=50`; // 始终构建 URL，无搜索词时 keyword 为空
+    // Use SWR to fetch data
+    const { data, error, isLoading } = useSWR<ApiResponse<ListResponse<ApiProduct>>>(
+        isOpen ? apiUrl : null, // Only request when modal is open
+        async (url) => {
+            const res = await fetch(url);
 
-    const { data, error, isLoading } = useSWR<ApiResponse<ListResponse<ApiProduct>>>(apiUrl, fetcher, {
-        revalidateOnFocus: false, // 聚焦时不重新验证
-        dedupingInterval: 2000, // 2秒内重复请求去重
-    });
+            if (!res.ok) {
+                const error = new Error('Error fetching product data');
 
-    // 处理 SWR 错误
+                error.message = await res.text();
+                throw error;
+            }
+
+            return res.json();
+        },
+        {
+            revalidateOnFocus: false, // Don't revalidate on focus
+            dedupingInterval: 2000, // Deduplicate requests within 2 seconds
+        }
+    );
+
+    // Handle SWR data
+    useEffect(() => {
+        if (data?.data) {
+            const newProducts = data.data.items || [];
+
+            // Carefully cast the products to the correct type to fix the type error
+            setProducts(prev =>
+                currentPage === 1 ? newProducts as Product[] : [...prev, ...(newProducts as Product[])]
+            );
+            setTotalPages(Math.ceil((data.data.total || 0) / pageSize));
+            setIsLoadingMore(false);
+        }
+    }, [data, currentPage, pageSize]);
+
+    // Handle SWR error
     useEffect(() => {
         if (error) {
             showErrorToast({
                 title: 'Failed to fetch products',
                 description: error.message || 'Unable to fetch product data'
             });
+            setIsLoadingMore(false);
         }
     }, [error]);
 
-    // 从 SWR 数据中提取产品列表 - 确保类型匹配
-    const products: Product[] = data?.data?.items || [];
-
-    // 新增：防抖处理搜索输入
+    // Debounce search input
     useEffect(() => {
         const handler = debounce(() => {
             setDebouncedSearchTerm(searchTerm);
-        }, 500); // 500ms 防抖
+            setCurrentPage(1); // Reset page number on search
+            setProducts([]); // Clear loaded products
+        }, 500); // 500ms debounce
 
         handler();
 
-        // 清理函数
+        // Cleanup function
         return () => {
             handler.cancel();
         };
     }, [searchTerm]);
 
-    // 处理产品选择 (传递所有需要的属性，使用修正后的字段名)
+    // Handle scroll to load more
+    const handleScroll = useCallback(() => {
+        if (scrollRef.current) {
+            const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+
+            // Load more when scrolled to within 100px of the bottom
+            if (scrollHeight - scrollTop - clientHeight < 100 &&
+                !isLoading &&
+                !isLoadingMore &&
+                currentPage < totalPages) {
+                setIsLoadingMore(true);
+                setCurrentPage(prev => prev + 1);
+            }
+        }
+    }, [isLoading, isLoadingMore, currentPage, totalPages]);
+
+    // Handle product selection
     const handleProductSelect = (product: Product) => {
-        // 提取所有需要的属性，提供默认值
+        // Get offer information from the offers array
+        const mainOffer = product.offers && product.offers.length > 0 ? product.offers[0] : null;
+        // Get coupon information
+        const couponType = product.coupon_type || mainOffer?.coupon_type || product.coupon_history?.coupon_type || null;
+        const couponValue = product.coupon_value || mainOffer?.coupon_value || product.coupon_history?.coupon_value || 0;
+        // Calculate or use existing discount percentage
+        const discountPercentage = product.discount_percentage ||
+            (product.original_price && product.price ?
+                Math.round(((product.original_price - product.price) / product.original_price) * 100) : null);
+
+        // Extract all needed attributes
         const attributes: ProductAttributes = {
             id: product.id || product.asin || '',
             title: product.title || 'Unnamed Product',
-            price: product.price || 0,
+            price: mainOffer?.price || product.price || 0,
             image: product.main_image || product.image_url || product.images?.[0] || '/placeholder-product.jpg',
             asin: product.asin || '',
-            style: 'card',
+            style: selectedStyle, // Use selected style
             url: product.url || '',
             cj_url: product.cj_url || '',
             brand: product.brand ?? null,
-            originalPrice: product.original_price ?? null,
-            discount: product.discount ?? null,
-            couponType: product.coupon_type ?? null,
-            couponValue: product.coupon_value ?? null,
-            couponExpirationDate: product.coupon_expiration_date ?? null,
-            isPrime: product.is_prime ?? null,
-            isFreeShipping: product.is_free_shipping ?? null,
-            category: product.category || ''
+            originalPrice: mainOffer?.original_price || product.original_price || null,
+            discount: discountPercentage ?? product.discount ?? null, // Use calculated or existing discount percentage
+            couponType: couponType as 'percentage' | 'fixed' | null,
+            couponValue: couponValue,
+            couponExpirationDate: product.coupon_expiration_date || product.coupon_history?.expiration_date || null,
+            isPrime: product.is_prime ?? mainOffer?.is_prime ?? null,
+            isFreeShipping: product.is_free_shipping ?? mainOffer?.is_free_shipping_eligible ?? null,
+            category: product.categories?.[0] || product.product_group || product.binding || ''
         };
 
         onProductSelect(attributes as ComponentProduct);
         onClose();
+    };
+
+    // Determine grid columns
+    const getGridColumns = () => {
+        // Dynamically adjust column count based on screen size and card size
+        switch (true) {
+            case products.length <= 4:
+                return 'grid-cols-1 sm:grid-cols-2';
+            default:
+                return 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+        }
     };
 
     return (
@@ -154,69 +231,88 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
                 base: "z-[9999]",
                 wrapper: "z-[9999]"
             }}
+            size="3xl" // Adjust modal size
         >
-            <ModalContent className="min-w-[500px] max-w-[800px]">
+            <ModalContent className="max-h-[80vh] overflow-hidden">
                 <ModalHeader>
                     <h3 className="text-lg font-medium">Select Product</h3>
                 </ModalHeader>
 
-                {/* 搜索框 */}
-                <div className="relative mb-4">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                {/* Search box */}
+                <div className="relative mb-4 px-4">
+                    <Search className="absolute left-6 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search by product name or SKU..."
+                        placeholder="Search for product name or SKU..."
                         className="pl-8"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
 
-                {/* 产品列表 */}
-                <ScrollShadow className="h-[400px] pr-4">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center h-full">
+                {/* Product list - use scroll event to load more */}
+                <ScrollShadow
+                    ref={scrollRef}
+                    className="h-[400px] px-4"
+                    onScroll={handleScroll}
+                >
+                    {isLoading && products.length === 0 ? (
+                        <div className="flex justify-center items-center h-40">
                             <p>Loading...</p>
                         </div>
                     ) : products.length === 0 && debouncedSearchTerm ? (
-                        <div className="flex justify-center items-center h-full">
-                            <p>No products found</p>
+                        <div className="flex justify-center items-center h-40">
+                            <p>No related products found</p>
                         </div>
                     ) : products.length === 0 && !debouncedSearchTerm ? (
-                        <div className="flex justify-center items-center h-full">
-                            <p>Please enter keywords to search products</p>
+                        <div className="flex justify-center items-center h-40">
+                            <p>Please enter a keyword to search for products</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 gap-4">
-                            {products.map((product) => (
-                                <button
-                                    key={product.id || product.asin || product.sku || product.title || Math.random().toString()}
-                                    className="border rounded-md p-3 cursor-pointer hover:border-primary transition-colors text-left"
-                                    onClick={() => handleProductSelect(product)}
-                                >
-                                    <div className="aspect-square relative mb-2 bg-muted rounded-md overflow-hidden">
-                                        <Image
-                                            src={product.main_image || product.image_url || product.images?.[0] || '/placeholder-product.jpg'}
-                                            alt={product.title || 'Product'}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                    <h3 className="font-medium text-sm line-clamp-1">{product.title || 'No Title'}</h3>
-                                    <div className="flex justify-between items-center mt-1">
-                                        <span className="text-sm font-semibold text-primary">
-                                            {formatPrice(product.price || 0)}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {product.asin || product.sku}
-                                        </span>
-                                    </div>
-                                </button>
+                        <div className={`grid ${getGridColumns()} gap-3`}>
+                            {products.map((product, index) => (
+                                <ProductCard
+                                    key={`${product.id || product.asin || index}`}
+                                    product={product as any} // Type assertion to fix compatibility issue
+                                    onClick={(p) => handleProductSelect(p as Product)} // Type assertion to fix compatibility issue
+                                    size="medium"
+                                />
                             ))}
+                        </div>
+                    )}
+
+                    {/* Load more indicator */}
+                    {isLoadingMore && (
+                        <div className="flex justify-center py-4">
+                            <p className="text-sm text-gray-500">Loading more products...</p>
+                        </div>
+                    )}
+
+                    {/* Pagination info */}
+                    {products.length > 0 && (
+                        <div className="text-center py-2 text-xs text-gray-500">
+                            {currentPage} / {totalPages} pages · Total {data?.data?.total || 0} products
                         </div>
                     )}
                 </ScrollShadow>
 
-                <div className="flex justify-end gap-2 mt-4">
+                {/* Footer action area */}
+                <div className="flex justify-between items-center mt-4 px-4 pb-2 border-t pt-3">
+                    {/* Add style selector */}
+                    <div className="flex items-center">
+                        <span className="text-sm mr-2">Display style:</span>
+                        <select
+                            value={selectedStyle}
+                            onChange={(e) => setSelectedStyle(e.target.value)}
+                            className="w-32 text-sm py-1 px-2 border rounded"
+                        >
+                            {PRODUCT_STYLES.map(style => (
+                                <option key={style.id} value={style.id}>
+                                    {style.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <Button variant="light" onClick={onClose}>
                         Cancel
                     </Button>
