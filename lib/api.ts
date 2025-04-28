@@ -44,8 +44,9 @@ const createApiClient = (config?: AxiosRequestConfig) => {
 
 const api = createApiClient();
 
+// 修改cmsApiClient配置，添加动态baseURL决定
 const cmsApiClient = axios.create({
-    baseURL: '/api',
+    baseURL: isServer() ? SERVER_API_URL : '/api', // 根据环境使用正确的baseURL
     timeout: DEFAULT_TIMEOUT,
     headers: {
         'Content-Type': 'application/json',
@@ -57,10 +58,28 @@ const cmsApiClient = axios.create({
     withCredentials: false,
 });
 
-// 请求拦截器
+// 添加请求拦截器确保使用本地URL
 api.interceptors.request.use(
     (config) => {
+        // 在服务器端运行时，强制使用本地URL
+        if (isServer()) {
+            config.baseURL = 'http://localhost:3000/api';
+        }
 
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// 为cmsApiClient添加同样的拦截器
+cmsApiClient.interceptors.request.use(
+    (config) => {
+        // 在服务器端运行时，强制使用本地URL
+        if (isServer()) {
+            config.baseURL = 'http://localhost:3000/api';
+        }
 
         return config;
     },

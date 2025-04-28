@@ -108,7 +108,8 @@ export default async function BlogPost({ params, searchParams }: {
     searchParams?: { [key: string]: string | string[] | undefined }
 }) {
     const resolvedParams = await params;
-    const isPreview = searchParams?.preview !== undefined;
+    const resolvedSearchParams = await searchParams;
+    const isPreview = resolvedSearchParams?.preview !== undefined;
     const pageData: PageData | null = await getPageData(resolvedParams.slug, isPreview);
 
     if (!pageData) {

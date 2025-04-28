@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 
 import CategoriesManagement from '@/components/dashboard/cms/pages/CategoriesManagement';
 import TagsManagement from '@/components/dashboard/cms/pages/TagsManagement';
-import { cmsApi } from '@/lib/api';
+import { cmsApi } from '@/lib/api/cms';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { ContentPage } from '@/types/cms';
 

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { cmsApi } from '@/lib/api';
+// 从cms.ts导入cmsApi以避免冲突
+import { cmsApi } from '@/lib/api/cms';
 import type { ContentPageUpdateRequest } from '@/types/cms';
 
 // MongoDB ObjectId验证函数
@@ -18,7 +19,6 @@ export async function updatePageSettingsAction(
     formData: FormData
 ): Promise<{ success: boolean; error?: string; newSlug?: string; debug?: string }> {
 
-    // 添加调试信息
 
     // 检查pageId的有效性
     if (!pageId || pageId === 'undefined') {
@@ -39,7 +39,6 @@ export async function updatePageSettingsAction(
         // 首先获取现有页面数据，确保保留内容
         const existingPage = await cmsApi.getPageById(pageId);
 
-
         const data: ContentPageUpdateRequest = {
             title: formData.get('title') as string,
             slug: formData.get('slug') as string,
@@ -58,7 +57,6 @@ export async function updatePageSettingsAction(
             },
         };
 
-        // 记录即将提交的数据
 
         // Simple validation (can add more complex validation logic here)
         if (!data.title || !data.slug || !data.status) {
@@ -94,11 +92,17 @@ export async function updatePageSettingsAction(
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
 
+
         // 检查是否为网络错误或服务器错误
         let debugInfo = `错误详情: ${errorMessage}`;
 
         if (error instanceof Error && 'cause' in error) {
             debugInfo += `, 原因: ${JSON.stringify(error.cause)}`;
+        }
+
+        // 尝试以完整形式记录错误对象
+        try {
+        } catch {
         }
 
         // Check if it's a slug conflict error (requires backend API to support specific error messages)

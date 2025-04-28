@@ -20,7 +20,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useActionState, type Key, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
 
-import { cmsApi } from '@/lib/api';
+// 导入cms专用API客户端
+import { cmsApi } from '@/lib/api/cms';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { formatDate } from '@/lib/utils';
 import type { ContentPage, ContentCategory, ContentTag } from '@/types/cms';
