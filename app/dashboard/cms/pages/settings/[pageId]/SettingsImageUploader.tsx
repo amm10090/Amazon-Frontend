@@ -114,7 +114,7 @@ export default function SettingsImageUploader({
             {isUploading ? (
                 <div className="flex items-center justify-center border border-gray-300 rounded-md p-2">
                     <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin mr-2" />
-                    <span className="text-sm text-gray-600">上传中...</span>
+                    <span className="text-sm text-gray-600">Uploading...</span>
                 </div>
             ) : (
 

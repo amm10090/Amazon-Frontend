@@ -19,8 +19,9 @@ import type {
 } from '@/types/cms';
 
 // 服务器端环境下的BASE URL
-// 忽略环境变量中的SERVER_API_URL，强制使用本地URL
-const SERVER_API_URL = 'api';
+const SERVER_API_URL = process.env.NEXT_PUBLIC_SITE_URL
+    ? `${process.env.NEXT_PUBLIC_SITE_URL}/api`
+    : 'http://localhost:3000/api';
 const isServer = () => typeof window === 'undefined';
 
 // 为服务器端和客户端创建单独的API客户端
@@ -33,19 +34,24 @@ const apiClient = axios.create({
     }
 });
 
-// 添加请求拦截器，确保始终使用本地URL
+// 添加请求拦截器，确保使用正确的URL
 apiClient.interceptors.request.use((config) => {
-    // 调试信息
-
-    // 强制使用本地URL
+    // 强制使用正确的URL格式
     if (isServer()) {
-        // 总是使用本地URL
-        config.baseURL = '/api';
+        // 确保服务器端使用的是完整URL
+        if (!config.baseURL?.startsWith('http')) {
+            config.baseURL = SERVER_API_URL;
+        }
+
+        // 确保baseURL后面不要有多余的/api，因为URL路径已经包含/api
+        if (config.baseURL.endsWith('/api') && config.url?.startsWith('/api')) {
+            // 去掉URL路径开头的/api，避免重复
+            config.url = config.url.replace(/^\/api/, '');
+        }
     }
 
     return config;
 }, (error) => {
-
     return Promise.reject(error);
 });
 

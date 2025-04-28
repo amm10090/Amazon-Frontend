@@ -168,7 +168,14 @@ export default function PageSettingsPage() {
     }, [actionState, router]);
 
     const validateAndSubmit = async (formData: FormData) => {
-        formAction(formData);
+        try {
+            formAction(formData);
+        } catch (err) {
+            showErrorToast({
+                title: 'Submission Error',
+                description: err instanceof Error ? err.message : 'Unknown error during form submission'
+            });
+        }
     };
 
     if (isLoading) {
@@ -208,7 +215,7 @@ export default function PageSettingsPage() {
     return (
         <form action={validateAndSubmit} className="space-y-6 max-w-4xl mx-auto p-4 md:p-6">
             <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Page Settings: {pageData.title}</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Page Settings: {pageData?.title}</h1>
                 <Button
                     variant="light"
                     onClick={() => router.push('/dashboard/cms/pages')}

@@ -19,7 +19,6 @@ export async function updatePageSettingsAction(
     formData: FormData
 ): Promise<{ success: boolean; error?: string; newSlug?: string; debug?: string }> {
 
-
     // 检查pageId的有效性
     if (!pageId || pageId === 'undefined') {
         return { success: false, error: '无效的页面ID', debug: `无效ID: ${pageId}` };
@@ -27,7 +26,6 @@ export async function updatePageSettingsAction(
 
     // 验证MongoDB ObjectId格式
     if (!isValidObjectId(pageId)) {
-
         return {
             success: false,
             error: '页面ID格式无效，请确认URL中的ID是否正确',
@@ -37,7 +35,17 @@ export async function updatePageSettingsAction(
 
     try {
         // 首先获取现有页面数据，确保保留内容
-        const existingPage = await cmsApi.getPageById(pageId);
+        let existingPage;
+
+        try {
+            existingPage = await cmsApi.getPageById(pageId);
+        } catch (fetchError) {
+            throw new Error(`获取页面数据失败: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`);
+        }
+
+        if (!existingPage?.data?.data) {
+            throw new Error(`无法获取页面数据，API响应格式不正确`);
+        }
 
         const data: ContentPageUpdateRequest = {
             title: formData.get('title') as string,
@@ -57,18 +65,22 @@ export async function updatePageSettingsAction(
             },
         };
 
-
         // Simple validation (can add more complex validation logic here)
         if (!data.title || !data.slug || !data.status) {
             return { success: false, error: 'Title, path and status cannot be empty', debug: '表单验证失败' };
         }
 
         // Call API to update page
-        const response = await cmsApi.updatePage(pageId, data);
+        let response;
 
+        try {
+            response = await cmsApi.updatePage(pageId, data);
+        } catch (updateError) {
+            throw new Error(`API调用失败: ${updateError instanceof Error ? updateError.message : String(updateError)}`);
+        }
 
-        if (!response.data?.status) {
-            const errMsg = response.data?.message || 'Failed to update page';
+        if (!response?.data?.status) {
+            const errMsg = response?.data?.message || 'Failed to update page';
 
             throw new Error(errMsg);
         }
@@ -92,18 +104,8 @@ export async function updatePageSettingsAction(
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
 
-
         // 检查是否为网络错误或服务器错误
-        let debugInfo = `错误详情: ${errorMessage}`;
-
-        if (error instanceof Error && 'cause' in error) {
-            debugInfo += `, 原因: ${JSON.stringify(error.cause)}`;
-        }
-
-        // 尝试以完整形式记录错误对象
-        try {
-        } catch {
-        }
+        const debugInfo = `错误详情: ${errorMessage}`;
 
         // Check if it's a slug conflict error (requires backend API to support specific error messages)
         if (errorMessage.includes('slug') && (errorMessage.includes('unique') || errorMessage.includes('duplicate'))) {
@@ -120,6 +122,15 @@ export async function updatePageSettingsAction(
                 success: false,
                 error: `找不到指定的页面 (ID: ${pageId})，可能已被删除或ID无效`,
                 debug: debugInfo
+            };
+        }
+
+        // 检查是否为URL错误
+        if (errorMessage.includes('Invalid URL') || errorMessage.includes('ERR_INVALID_URL')) {
+            return {
+                success: false,
+                error: `API请求URL无效，请检查服务器配置`,
+                debug: `${debugInfo} - URL错误可能是由于服务器端缺少完整的URL配置导致`
             };
         }
 
