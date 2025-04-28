@@ -79,7 +79,17 @@ export function ProductMetadataSelector({
     // 如果没有产品，显示提示信息
     if (!product) {
         return (
-            <Modal isOpen={isOpen} onClose={onClose} size="lg">
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                size="lg"
+                disableAnimation={false}
+                classNames={{
+                    backdrop: "z-[9998]",
+                    base: "z-[9999]",
+                    wrapper: "z-[9999]"
+                }}
+            >
                 <ModalContent>
                     <ModalHeader>
                         <h3 className="text-lg font-medium">选择产品元数据</h3>
@@ -100,7 +110,17 @@ export function ProductMetadataSelector({
     }
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="lg">
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            size="lg"
+            disableAnimation={false}
+            classNames={{
+                backdrop: "z-[9998]",
+                base: "z-[9999]",
+                wrapper: "z-[9999]"
+            }}
+        >
             <ModalContent>
                 <ModalHeader>
                     <h3 className="text-lg font-medium">Select Product Metadata</h3>

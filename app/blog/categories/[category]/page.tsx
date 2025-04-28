@@ -145,7 +145,7 @@ export default async function CategoryPage({ params }: { params: { category: str
 
                             return (
                                 <article key={page._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full group">
-                                    <Link href={`/blog/${page.slug}`} className="block aspect-video relative overflow-hidden">
+                                    <Link href={`/blog/${page.slug}`} className="block aspect-[12/7] relative overflow-hidden">
                                         {imageUrl ? (
                                             <SafeImage
                                                 src={imageUrl}

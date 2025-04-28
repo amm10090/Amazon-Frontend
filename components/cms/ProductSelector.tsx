@@ -160,7 +160,16 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
     }, [loadMoreProducts]);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            disableAnimation={false}
+            classNames={{
+                backdrop: "z-[9998]",
+                base: "z-[9999]",
+                wrapper: "z-[9999]"
+            }}
+        >
             <ModalContent className="sm:max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
                 <ModalHeader>
                     <h3 className="text-lg font-medium">Select Product</h3>
@@ -224,7 +233,7 @@ export function ProductSelector({ isOpen, onClose, onSelect }: ProductSelectorPr
                                     </div>
                                     <div className="flex-1 min-w-0"> {/* Prevent text overflow affecting layout */}
                                         <h4 className="font-medium text-sm truncate">{product.title}</h4> {/* Use truncate */}
-                                        <div className="text-sm text-green-600">¥{(product.price || 0).toFixed(2)}</div>
+                                        <div className="text-sm text-green-600">${(product.price || 0).toFixed(2)}</div>
                                         {product.asin && (
                                             <div className="text-xs text-gray-500 truncate">SKU: {product.asin}</div>
                                         )}

@@ -39,16 +39,7 @@ const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
                     return <span className="text-red-500 text-xs p-2 border border-red-200 rounded align-middle">Product ID missing</span>;
                 }
 
-                // 检查父元素是否为 p 标签
-                if (domNode.parent && domNode.parent instanceof Element && domNode.parent.name === 'p') {
-                    // 如果父元素是p标签，我们需要将这个节点替换为一个特殊的标记
-                    // 然后在parse完后处理这个标记
-                    return <div className="my-4 w-full">
-                        <DynamicProductLoader productId={productId} style={productStyle} alignment={alignment} />
-                    </div>;
-                }
-
-                // 否则正常返回DynamicProductLoader
+                // 直接返回 DynamicProductLoader，它内部会处理自己的包装元素
                 return <DynamicProductLoader productId={productId} style={productStyle} alignment={alignment} />;
             }
 

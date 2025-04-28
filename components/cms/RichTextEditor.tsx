@@ -5,7 +5,12 @@ import {
     PopoverTrigger,
     PopoverContent,
     Input,
-    Button
+    Button,
+    Modal,
+    ModalContent,
+    ModalHeader,
+    ModalBody,
+    ModalFooter
 } from '@heroui/react';
 import { type Editor as EditorType } from '@tiptap/core';
 import CharacterCount from '@tiptap/extension-character-count';
@@ -71,6 +76,9 @@ export function RichTextEditor({
     const [wordsCount, setWordsCount] = useState(0);
     const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false);
     const [linkUrl, setLinkUrl] = useState('');
+    const [showProductPicker] = useState(false);
+    const [showMetadataSelector] = useState(false);
+    const [showFloatingImageInput, setShowFloatingImageInput] = useState(false);
 
     // 客户端渲染检测
     useEffect(() => {
@@ -88,6 +96,36 @@ export function RichTextEditor({
                 width: auto !important;
                 max-width: none !important;
                 white-space: nowrap !important;
+            }
+            
+            /* 确保模态框在编辑器浮动菜单之上 */
+            .modal-backdrop, .modal-content {
+                z-index: 9999 !important; /* 使用更高的z-index值 */
+            }
+            
+            /* 针对HeroUI Modal组件的CSS选择器 */
+            [data-overlay-container] [role="dialog"],
+            [aria-labelledby="modal-title"] {
+                z-index: 9999 !important;
+            }
+            [data-overlay-container] [data-backdrop],
+            [data-backdrop] {
+                z-index: 9998 !important;
+            }
+            div[role="presentation"][data-overlay] {
+                z-index: 9999 !important;
+            }
+            /* 修复模态框叠加问题 */
+            div[data-overlay-container="true"] {
+                isolation: isolate;
+            }
+            
+            /* 新增：隐藏 FloatingMenu 的 CSS 类 */
+            .floating-menu-hidden {
+                opacity: 0 !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+                transition: none !important; /* 确保立即隐藏 */
             }
         `;
         document.head.appendChild(style);
@@ -361,21 +399,37 @@ export function RichTextEditor({
         e.stopPropagation();
 
         if (!editor) return;
-        const url = prompt('Enter image URL:', 'https://');
+
+        // 立即使编辑器失去焦点，确保菜单消失
+        editor.commands.blur();
+
+        // 不再使用原生prompt，改用状态控制的模态框或Popover
+        // 恢复直接设置状态
+        setShowFloatingImageInput(true);
+    }, [editor]);
+
+    // 处理图片URL应用
+    const handleApplyImageUrl = useCallback((url: string) => {
+        if (!editor || !url) return;
 
         if (url && url !== 'https://') {
             editor.chain().focus().setImage({ src: url }).run();
         }
+
+        setShowFloatingImageInput(false);
     }, [editor]);
 
     // 打开产品选择器的回调
     const handleAddProductClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
-        // 阻止事件冒泡，防止触发表单提交
         e.preventDefault();
         e.stopPropagation();
 
+        // 立即使编辑器失去焦点，确保菜单消失
+        editor?.commands.blur();
+
+        // 恢复直接设置状态
         setShowProductSelector(true);
-    }, []);
+    }, [editor]);
 
     // 或者你可能需要创建一个新的工具栏调用包装器
     const handleAddProductWrapper = () => {
@@ -388,6 +442,13 @@ export function RichTextEditor({
             editor.chain().focus().updateAttributes('product', { style }).run();
         }
     }, [editor]);
+
+    // 当任何模态框打开时，确保编辑器失去焦点
+    useEffect(() => {
+        if (showProductSelector || showProductPicker || showMetadataSelector || showFloatingImageInput) {
+            editor?.commands.blur();
+        }
+    }, [editor, showProductSelector, showProductPicker, showMetadataSelector, showFloatingImageInput]);
 
     // 如果不在客户端，返回占位符
     if (!isClient) {
@@ -483,6 +544,19 @@ export function RichTextEditor({
                         width: auto !important;
                         max-width: none !important;
                         white-space: nowrap !important;
+                    }
+                    
+                    /* 确保模态框在编辑器浮动菜单之上 */
+                    .modal-backdrop, .modal-content {
+                        z-index: 9999 !important; /* 使用更高的z-index值 */
+                    }
+                    
+                    /* 新增：隐藏 FloatingMenu 的 CSS 类 */
+                    .floating-menu-hidden {
+                        opacity: 0 !important;
+                        visibility: hidden !important;
+                        pointer-events: none !important;
+                        transition: none !important; /* 确保立即隐藏 */
                     }
                 `}</style>
 
@@ -741,139 +815,152 @@ export function RichTextEditor({
                 </BubbleMenu>
             )}
 
+            {/* 只有在没有任何模态框打开时才显示FloatingMenu */}
             {editor && (
-                <FloatingMenu
-                    editor={editor}
-                    tippyOptions={{
-                        duration: 100,
-                        appendTo: () => document.body, // 附加到 body
-                        placement: 'bottom-start',      // 初始位置
-                        popperOptions: {
-                            modifiers: [
-                                {
-                                    name: 'flip',
-                                    options: {
-                                        fallbackPlacements: ['top-start', 'right-start', 'left-start'], // 翻转顺序
-                                        padding: 5, // 距离视口边缘的内边距
-                                    },
-                                },
-                                {
-                                    name: 'preventOverflow',
-                                    options: {
-                                        boundary: 'viewport', // 防止溢出视口
-                                        padding: 5, // 距离视口边缘的内边距
-                                    },
-                                },
-                                {
-                                    name: 'offset',
-                                    options: {
-                                        offset: [0, 8], // 向下偏移 8px
-                                    },
-                                },
-                            ],
-                        },
-                    }}
-                    className="bg-white border border-gray-200 p-1 rounded shadow-lg flex flex-col gap-0.5 z-50" // 增加 z-index 确保在最上层
-                    shouldShow={({ state }) => {
-                        const { $from } = state.selection;
-                        const currentLineIsEmpty = $from.parent.content.size === 0;
+                () => {
+                    // 计算模态框是否打开的状态
+                    const isModalOpen = showProductSelector || showFloatingImageInput || showMetadataSelector;
 
-                        return currentLineIsEmpty && $from.parent.type.name === 'paragraph';
-                    }}
-                >
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Heading1 size={16} /> H1 Title
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Heading2 size={16} /> H2 Title
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Heading2 size={15} /> H3 Title
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Heading2 size={14} /> H4 Title
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Heading2 size={13} /> H5 Title
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Heading2 size={12} /> H6 Title
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleBulletList().run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <List size={16} /> Unordered List
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <ListOrdered size={16} /> Ordered List
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Quote size={16} /> Quote
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Code size={16} /> Code Block
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => editor.chain().focus().setHorizontalRule().run()}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Minus size={16} /> Horizontal Rule
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleFloatingImageAdd}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <ImageIcon size={16} /> Insert Image (URL)
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleAddProductClick}
-                        className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                    >
-                        <Tag size={16} /> Insert Product
-                    </button>
-                </FloatingMenu>
-            )}
+                    return (
+                        <FloatingMenu
+                            editor={editor}
+                            tippyOptions={{
+                                duration: 100,
+                                appendTo: () => document.body, // 附加到 body
+                                placement: 'bottom-start',      // 初始位置
+                                popperOptions: {
+                                    modifiers: [
+                                        {
+                                            name: 'flip',
+                                            options: {
+                                                fallbackPlacements: ['top-start', 'right-start', 'left-start'], // 翻转顺序
+                                                padding: 5, // 距离视口边缘的内边距
+                                            },
+                                        },
+                                        {
+                                            name: 'preventOverflow',
+                                            options: {
+                                                boundary: 'viewport', // 防止溢出视口
+                                                padding: 5, // 距离视口边缘的内边距
+                                            },
+                                        },
+                                        {
+                                            name: 'offset',
+                                            options: {
+                                                offset: [0, 8], // 向下偏移 8px
+                                            },
+                                        },
+                                    ],
+                                },
+                            }}
+                            // 动态添加隐藏类
+                            className={`bg-white border border-gray-200 p-1 rounded shadow-lg flex flex-col gap-0.5 z-[50] ${isModalOpen ? 'floating-menu-hidden' : ''}`}
+                            shouldShow={({ state }) => {
+                                const { $from } = state.selection;
+                                const currentLineIsEmpty = $from.parent.content.size === 0;
+                                const baseCondition = currentLineIsEmpty && $from.parent.type.name === 'paragraph';
+
+                                // 不再需要在此处检查模态框状态，交给 className 处理
+                                // const modalIsOpen = showProductSelector || showFloatingImageInput || showMetadataSelector;
+                                // return baseCondition && !modalIsOpen; 
+                                return baseCondition;
+                            }}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Heading1 size={16} /> H1 Title
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Heading2 size={16} /> H2 Title
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Heading2 size={15} /> H3 Title
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Heading2 size={14} /> H4 Title
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Heading2 size={13} /> H5 Title
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Heading2 size={12} /> H6 Title
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleBulletList().run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <List size={16} /> Unordered List
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <ListOrdered size={16} /> Ordered List
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Quote size={16} /> Quote
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Code size={16} /> Code Block
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Minus size={16} /> Horizontal Rule
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleFloatingImageAdd}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <ImageIcon size={16} /> Insert Image (URL)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleAddProductClick}
+                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
+                            >
+                                <Tag size={16} /> Insert Product
+                            </button>
+                        </FloatingMenu>
+                    );
+                }
+            )()}
 
             {showProductSelector && (
                 <ProductSelector
@@ -881,6 +968,64 @@ export function RichTextEditor({
                     onClose={() => setShowProductSelector(false)}
                     onSelect={handleProductSelect}
                 />
+            )}
+
+            {/* 图片URL输入模态框 */}
+            {showFloatingImageInput && (
+                <Modal
+                    isOpen={showFloatingImageInput}
+                    onClose={() => setShowFloatingImageInput(false)}
+                    disableAnimation={false}
+                    classNames={{
+                        backdrop: "z-[9998]",
+                        base: "z-[9999]",
+                        wrapper: "z-[9999]"
+                    }}
+                >
+                    <ModalContent className="max-w-md">
+                        <ModalHeader>
+                            <h3 className="text-lg font-medium">Insert Image</h3>
+                        </ModalHeader>
+                        <ModalBody>
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="image-url-input" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Image URL
+                                    </label>
+                                    <Input
+                                        id="image-url-input"
+                                        placeholder="https://example.com/image.jpg"
+                                        defaultValue="https://"
+                                        type="url"
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                const input = e.currentTarget as HTMLInputElement;
+
+                                                handleApplyImageUrl(input.value);
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button variant="light" onClick={() => setShowFloatingImageInput(false)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                color="primary"
+                                onClick={() => {
+                                    const input = document.getElementById('image-url-input') as HTMLInputElement;
+
+                                    handleApplyImageUrl(input.value);
+                                }}
+                            >
+                                Insert
+                            </Button>
+                        </ModalFooter>
+                    </ModalContent>
+                </Modal>
             )}
         </div>
     );

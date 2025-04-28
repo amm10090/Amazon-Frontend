@@ -145,7 +145,16 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            disableAnimation={false}
+            classNames={{
+                backdrop: "z-[9998]",
+                base: "z-[9999]",
+                wrapper: "z-[9999]"
+            }}
+        >
             <ModalContent className="min-w-[500px] max-w-[800px]">
                 <ModalHeader>
                     <h3 className="text-lg font-medium">Select Product</h3>

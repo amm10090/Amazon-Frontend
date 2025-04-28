@@ -1,5 +1,6 @@
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Popover, PopoverTrigger, PopoverContent, Input, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Switch } from '@heroui/react';
 import type { Editor } from '@tiptap/core';
+import type { RawCommands } from '@tiptap/react'; // Import RawCommands
 import {
     Bold, Italic, Underline, Strikethrough, List, ListOrdered, Undo, Redo,
     Link as LinkIcon, Image as ImageIcon, Tag, Heading,
@@ -15,6 +16,7 @@ import { useState, useCallback, type MouseEvent } from 'react';
 import type { ComponentProduct } from '@/types';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
+import type { ProductAttributes } from './ProductBlot'; // Import ProductAttributes
 import type { ProductMetadataAttributes } from './ProductMetadataBlot';
 import { ProductMetadataSelector } from './ProductMetadataSelector';
 import ProductPickerModal from './ProductPickerModal';
@@ -22,6 +24,11 @@ import ProductPickerModal from './ProductPickerModal';
 // 定义用于类型断言的接口
 interface ProductMetadataCommands {
     insertProductMetadata: (attributes: ProductMetadataAttributes) => boolean;
+}
+
+// 新增：为产品卡片添加命令接口
+interface ProductCardCommands {
+    insertProduct: (attributes: ProductAttributes) => boolean;
 }
 
 interface TiptapToolbarProps {
@@ -50,9 +57,11 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
     const [imageUrl, setImageUrl] = useState('');
     // 新增：快捷键模态框状态
     const [isShortcutModalOpen, setIsShortcutModalOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<ComponentProduct | null>(null);
+    const [_selectedProduct, _setSelectedProduct] = useState<ComponentProduct | null>(null);
     const [showProductPicker, setShowProductPicker] = useState(false);
     const [showMetadataSelector, setShowMetadataSelector] = useState(false);
+    const [pickerMode, setPickerMode] = useState<string | null>(null);
+    const [productForMetadata, setProductForMetadata] = useState<ComponentProduct | null>(null);
 
     // 新增：切换快捷键模态框
     const toggleShortcutModal = useCallback(() => {
@@ -190,75 +199,97 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
         setImageUrl(''); // 取消时清空
     }, []);
 
-    // 处理产品选择 - 完全重写
-    const handleProductSelect = useCallback((product: ComponentProduct) => {
+    // 新增：处理从 ProductPickerModal 返回的产品选择
+    const handleProductPicked = useCallback((product: ComponentProduct) => {
         if (!editor) return;
 
-        try {
-            // 在实际编辑器中尝试直接调用命令
-            if (editor.commands && typeof (editor.commands as unknown as ProductMetadataCommands).insertProductMetadata === 'function') {
-                // 当插件正确注册时使用直接方法
-                (editor.commands as unknown as ProductMetadataCommands).insertProductMetadata({
-                    productId: product.id || product.asin || '',
-                    fieldId: 'title',
-                    value: product.title
-                });
+        if (pickerMode === 'product') {
+            // 插入产品卡片
+            const attributes: ProductAttributes = {
+                id: product.id || product.asin || '',
+                title: product.title || 'Unnamed Product',
+                price: product.price || 0,
+                image: product.image || '/placeholder-product.jpg',
+                asin: product.asin || '',
+                style: 'card', // 默认样式，或从其他地方获取
+                alignment: 'left', // 默认对齐
+                url: product.url || '',
+                cj_url: product.cj_url || '',
+                brand: product.brand ?? null,
+                originalPrice: product.originalPrice ?? null,
+                discount: product.discount ?? null,
+                couponType: product.couponType as ProductAttributes['couponType'] ?? null,
+                couponValue: product.couponValue ?? null,
+                couponExpirationDate: product.couponExpirationDate ?? null,
+                isPrime: product.isPrime ?? null,
+                isFreeShipping: product.isFreeShipping ?? null,
+                category: product.category || ''
+            };
 
-                setShowMetadataSelector(true);
-                setSelectedProduct(product);
-            } else {
-                // 回退到链式调用
-                editor.chain().focus().insertContent({
-                    type: 'productMetadata',
-                    attrs: {
-                        productId: product.id || product.asin || '',
-                        fieldId: 'title'
-                    }
-                }).run();
+            try {
+                // 确保 editor.commands.insertProduct 存在
+                // 断言编辑器命令类型
+                const commands = editor.commands as unknown as Partial<RawCommands & ProductCardCommands>;
 
-                setShowMetadataSelector(true);
-                setSelectedProduct(product);
+                if (commands.insertProduct) {
+                    commands.insertProduct(attributes);
+                } else {
+                    alert('插入产品卡片时出错：命令未找到。');
+                }
+            } catch {
+                alert('插入产品卡片时出错。');
             }
-        } catch {
-            alert('插入产品元数据时出错，请稍后再试');
+        } else if (pickerMode === 'metadata') {
+            // 准备插入元数据
+            setProductForMetadata(product);
+            setShowMetadataSelector(true);
         }
-    }, [editor]);
+
+        // 重置模式并关闭选择器
+        setPickerMode(null);
+        setShowProductPicker(false);
+    }, [editor, pickerMode]);
 
     // 处理元数据选择 - 同样重写
     const handleMetadataSelect = useCallback((fieldId: string) => {
-        if (!editor || !selectedProduct) return;
+        // 使用 productForMetadata
+        if (!editor || !productForMetadata) return;
 
         try {
+            const attributes: ProductMetadataAttributes = {
+                productId: productForMetadata.id || productForMetadata.asin || '',
+                fieldId,
+                // value 字段由 ProductMetadataBlot/View 内部获取，这里不需要传递
+            };
             // 在实际编辑器中尝试直接调用命令
-            if (editor.commands && typeof (editor.commands as unknown as ProductMetadataCommands).insertProductMetadata === 'function') {
+            // 断言以访问自定义命令
+            const commands = editor.commands as unknown as Partial<RawCommands & ProductMetadataCommands>;
+
+            if (commands.insertProductMetadata) {
                 // 当插件正确注册时使用直接方法
-                (editor.commands as unknown as ProductMetadataCommands).insertProductMetadata({
-                    productId: selectedProduct.id || selectedProduct.asin || '',
-                    fieldId,
-                    value: selectedProduct[fieldId as keyof ComponentProduct]
-                });
+                commands.insertProductMetadata(attributes);
             } else {
-                // 回退到链式调用
+                // 回退到链式调用（如果命令没有正确扩展）
                 editor.chain().focus().insertContent({
                     type: 'productMetadata',
-                    attrs: {
-                        productId: selectedProduct.id || selectedProduct.asin || '',
-                        fieldId
-                    }
+                    attrs: attributes
                 }).run();
             }
 
-            setShowMetadataSelector(false);
-            setSelectedProduct(null);
         } catch {
             alert('插入元数据时出错，请稍后再试');
+        } finally {
+            // 不论成功失败，都关闭选择器并重置状态
+            setShowMetadataSelector(false);
+            setProductForMetadata(null); // 重置关联的产品
         }
-    }, [editor, selectedProduct]);
+    }, [editor, productForMetadata]); // 依赖 productForMetadata
 
     // 处理添加产品点击
     const handleAddProductClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
+        setPickerMode('product');
         setShowProductPicker(true);
     }, []);
 
@@ -266,6 +297,7 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
     const handleAddMetadataClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
+        setPickerMode('metadata');
         setShowProductPicker(true);
     }, []);
 
@@ -825,7 +857,7 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
             <ProductPickerModal
                 isOpen={showProductPicker}
                 onClose={() => setShowProductPicker(false)}
-                onProductSelect={handleProductSelect}
+                onProductSelect={handleProductPicked}
             />
 
             {/* 元数据选择器 - 逻辑改进 */}
@@ -833,14 +865,10 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
                 isOpen={showMetadataSelector}
                 onClose={() => {
                     setShowMetadataSelector(false);
-                    // 注意：不要在这里重置selectedProduct
-                    // 只有在成功选择元数据后才重置
+                    // 关闭时不重置 productForMetadata，handleMetadataSelect 会处理
                 }}
-                product={selectedProduct}
-                onSelect={(fieldId) => {
-                    handleMetadataSelect(fieldId);
-                    // 在handleMetadataSelect中已处理关闭选择器和重置selectedProduct
-                }}
+                product={productForMetadata}
+                onSelect={handleMetadataSelect}
             />
         </div>
     );

@@ -9,11 +9,11 @@ import type { Product } from '@/types/api';
 /**
  * 格式化价格为货币显示格式
  * @param price 价格数值
- * @param currency 货币代码，默认CNY
+ * @param currency 货币代码，默认USD
  * @returns 格式化后的价格字符串
  */
-export function formatPrice(price: number, currency: string = 'CNY'): string {
-    return new Intl.NumberFormat('zh-CN', {
+export function formatPrice(price: number, currency: string = 'USD'): string {
+    return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency,
         minimumFractionDigits: 2,
