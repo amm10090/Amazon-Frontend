@@ -38,6 +38,7 @@ import {
 import { useState, useEffect, useCallback, type MouseEvent } from 'react';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
+import { EmailCollectionFormBlot } from './EmailCollectionFormBlot';
 import { ProductBlot, type ProductAttributes, PRODUCT_STYLES } from './ProductBlot';
 import { ProductMetadataBlot } from './ProductMetadataBlot';
 import { ProductSelector, type Product } from './ProductSelector';
@@ -203,6 +204,7 @@ export function RichTextEditor({
             Underline,
             ProductBlot,
             ProductMetadataBlot,
+            EmailCollectionFormBlot,
             // 字符计数扩展
             CharacterCount.configure({
                 limit: charLimit, // 设置字符限制

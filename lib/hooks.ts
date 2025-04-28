@@ -676,6 +676,7 @@ export function useContactMessages(params?: {
     sort_order?: 'asc' | 'desc';
     search?: string;
     is_processed?: boolean;
+    formSource?: string | { $exists: boolean }; // 添加formSource过滤
 }): SWRHookResponse<{ items: ContactMessage[], total: number, page: number, page_size: number }> {
     const cacheKey = JSON.stringify(['/api/contact/list', params]);
 
@@ -688,7 +689,12 @@ export function useContactMessages(params?: {
             if (params) {
                 Object.entries(params).forEach(([key, value]) => {
                     if (value !== undefined && value !== null) {
-                        queryParams[key] = String(value);
+                        // 特殊处理formSource字段
+                        if (key === 'formSource' && typeof value === 'object') {
+                            queryParams['formSourceExists'] = String(!(value.$exists === false));
+                        } else {
+                            queryParams[key] = String(value);
+                        }
                     }
                 });
             }

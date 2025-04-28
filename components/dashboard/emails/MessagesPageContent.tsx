@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, MessageSquare, Search, X, Trash2, Eye, CheckCircle, XCircle } from 'lucide-react';
+import { Download, MessageSquare, Search, X, Trash2, Eye, CheckCircle, XCircle, Mail } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 import { useContactMessages } from '@/lib/hooks';
@@ -8,7 +8,7 @@ import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import type { ContactMessage } from '@/types/api';
 
 // Tab type definition
-type MessageTab = 'all' | 'pending';
+type MessageTab = 'all' | 'pending' | 'contact' | 'general' | 'blog';
 
 // Message Detail Dialog component
 const MessageDetailDialog = ({
@@ -328,15 +328,37 @@ const MessagesPageContent = () => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
+    // 构建API参数
+    const getApiParams = () => {
+        const params: Record<string, string | number | boolean | object | undefined> = {
+            page,
+            limit: pageSize,
+            sort_by: sortBy,
+            sort_order: sortOrder,
+            search: debouncedSearchTerm
+        };
+
+        // 处理状态过滤
+        if (activeTab === 'pending') {
+            params.is_processed = false;
+        } else if (statusFilter) {
+            params.is_processed = statusFilter === 'true';
+        }
+
+        // 处理来源过滤
+        if (activeTab === 'contact') {
+            params.formSource = { $exists: false }; // 没有formSource字段的是联系表单
+        } else if (activeTab === 'general') {
+            params.formSource = 'general'; // 普通产品邮件订阅
+        } else if (activeTab === 'blog') {
+            params.formSource = 'blog'; // 博客内容邮件订阅
+        }
+
+        return params;
+    };
+
     // Get messages list data with tab filter
-    const { data: messagesData, isLoading, isError, mutate = () => Promise.resolve() } = useContactMessages({
-        page,
-        limit: pageSize,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        search: debouncedSearchTerm,
-        is_processed: activeTab === 'pending' ? false : (statusFilter ? statusFilter === 'true' : undefined)
-    });
+    const { data: messagesData, isLoading, isError, mutate = () => Promise.resolve() } = useContactMessages(getApiParams());
 
     // Set error details when error occurs
     useEffect(() => {
@@ -366,6 +388,18 @@ const MessagesPageContent = () => {
         setPage(newPage);
     };
 
+    // 获取当前标签页的名称
+    const getTabName = () => {
+        switch (activeTab) {
+            case 'all': return 'All Messages';
+            case 'pending': return 'Pending Messages';
+            case 'contact': return 'Contact Form Messages';
+            case 'general': return 'Product Newsletter Subscriptions';
+            case 'blog': return 'Blog Newsletter Subscriptions';
+            default: return 'Messages';
+        }
+    };
+
     // Handle CSV export
     const handleExportCSV = () => {
         // Build export URL with current filters
@@ -378,6 +412,15 @@ const MessagesPageContent = () => {
 
         if (statusFilter) {
             params.append('is_processed', statusFilter);
+        }
+
+        // 添加来源过滤参数
+        if (activeTab === 'contact') {
+            params.append('form_type', 'contact');
+        } else if (activeTab === 'general') {
+            params.append('form_source', 'general');
+        } else if (activeTab === 'blog') {
+            params.append('form_source', 'blog');
         }
 
         if (params.toString()) {
@@ -460,7 +503,7 @@ const MessagesPageContent = () => {
                 {/* Stats */}
                 <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                     <div className="text-sm text-gray-700">
-                        Total <span className="font-medium">{total}</span> message(s)
+                        Total <span className="font-medium">{total}</span> {getTabName().toLowerCase()}
                         {debouncedSearchTerm && <span>, search results for <span className="font-medium">{debouncedSearchTerm}</span></span>}
                         {statusFilter && <span>, status: <span className="font-medium">{statusFilter === 'true' ? 'Processed' : 'Pending'}</span></span>}
                     </div>
@@ -498,6 +541,12 @@ const MessagesPageContent = () => {
                                         Date {getSortIcon('createdAt')}
                                     </div>
                                 </th>
+                                {/* 来源列 - 仅在"全部"标签页显示 */}
+                                {activeTab === 'all' && (
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Source
+                                    </th>
+                                )}
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
@@ -509,7 +558,7 @@ const MessagesPageContent = () => {
                         <tbody className="bg-white divide-y divide-gray-200">
                             {items.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                                    <td colSpan={activeTab === 'all' ? 6 : 5} className="px-6 py-4 text-center text-gray-500">
                                         No messages found
                                     </td>
                                 </tr>
@@ -518,7 +567,10 @@ const MessagesPageContent = () => {
                                     <tr key={item.id} className="hover:bg-gray-50">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             <div className="flex items-center">
-                                                <MessageSquare className="mr-2 h-4 w-4 text-gray-400" />
+                                                {item.formSource ?
+                                                    <Mail className="mr-2 h-4 w-4 text-gray-400" /> :
+                                                    <MessageSquare className="mr-2 h-4 w-4 text-gray-400" />
+                                                }
                                                 {item.name}
                                             </div>
                                         </td>
@@ -534,6 +586,28 @@ const MessagesPageContent = () => {
                                                 minute: '2-digit'
                                             })}
                                         </td>
+                                        {/* 来源列 - 仅在"全部"标签页显示 */}
+                                        {activeTab === 'all' && (
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {!item.formSource ? (
+                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                        Contact Form
+                                                    </span>
+                                                ) : item.formSource === 'general' ? (
+                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                        Product Newsletter
+                                                    </span>
+                                                ) : item.formSource === 'blog' ? (
+                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                        Blog Newsletter
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                        {item.formSource}
+                                                    </span>
+                                                )}
+                                            </td>
+                                        )}
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.isProcessed
                                                 ? 'bg-green-100 text-green-800'
@@ -588,7 +662,10 @@ const MessagesPageContent = () => {
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center">
-                                                <MessageSquare className="mr-2 h-4 w-4 text-gray-400 flex-shrink-0" />
+                                                {item.formSource ?
+                                                    <Mail className="mr-2 h-4 w-4 text-gray-400 flex-shrink-0" /> :
+                                                    <MessageSquare className="mr-2 h-4 w-4 text-gray-400 flex-shrink-0" />
+                                                }
                                                 <div className="text-sm font-medium text-gray-900">
                                                     {item.name}
                                                 </div>
@@ -612,6 +689,15 @@ const MessagesPageContent = () => {
                                                 minute: '2-digit'
                                             })}
                                         </div>
+                                        {/* 来源行 - 仅在"全部"标签页显示 */}
+                                        {activeTab === 'all' && (
+                                            <div className="text-sm text-gray-500">
+                                                Source: {!item.formSource ? 'Contact Form' :
+                                                    item.formSource === 'general' ? 'Product Newsletter' :
+                                                        item.formSource === 'blog' ? 'Blog Newsletter' :
+                                                            item.formSource}
+                                            </div>
+                                        )}
                                         <div className="mt-2 flex justify-end space-x-2">
                                             <button
                                                 onClick={() => {
@@ -811,7 +897,7 @@ const MessagesPageContent = () => {
 
             {/* Tabs */}
             <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                <nav className="-mb-px flex flex-wrap gap-2" aria-label="Tabs">
                     <button
                         onClick={() => setActiveTab('all')}
                         className={`${activeTab === 'all'
@@ -834,6 +920,36 @@ const MessagesPageContent = () => {
                                 New
                             </span>
                         )}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('contact')}
+                        className={`${activeTab === 'contact'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                    >
+                        <MessageSquare className="w-4 h-4 mr-1" />
+                        Contact Form
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('general')}
+                        className={`${activeTab === 'general'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                    >
+                        <Mail className="w-4 h-4 mr-1" />
+                        Product Subscriptions
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('blog')}
+                        className={`${activeTab === 'blog'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center`}
+                    >
+                        <Mail className="w-4 h-4 mr-1" />
+                        Blog Subscriptions
                     </button>
                 </nav>
             </div>

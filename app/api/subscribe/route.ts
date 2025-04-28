@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-import { ensureTemplateExists } from '@/lib/email/email-template-init';
-import { EMAIL_TEMPLATE_TYPES } from '@/lib/email/email-template-types';
-import { getCompiledEmailTemplate } from '@/lib/email/email-templates';
 import clientPromise from '@/lib/mongodb';
 
 // 初始化Resend - 确保API密钥已设置在环境变量中
@@ -44,113 +41,93 @@ const DEFAULT_EMAIL_TEMPLATE = `
 </div>
 `;
 
+// 数据验证
+function isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    return emailRegex.test(email);
+}
+
+// 验证来源类型
+function isValidSourceType(sourceType: string): boolean {
+    return ['general', 'blog'].includes(sourceType);
+}
+
+// 处理订阅请求
 export async function POST(request: Request) {
     try {
-        const { email } = await request.json();
+        // 解析请求体
+        const body = await request.json();
+        const { email, sourceType = 'general', formId } = body;
 
-        if (!email) {
-            return NextResponse.json(
-                { success: false, message: 'Please provide an email address' },
-                { status: 400 }
-            );
+        // 验证邮箱
+        if (!email || !isValidEmail(email)) {
+            return NextResponse.json({
+                success: false,
+                message: '请提供有效的电子邮件地址'
+            }, { status: 400 });
         }
 
-        // 连接到MongoDB - 使用环境变量配置的数据库名
+        // 验证来源类型
+        if (!isValidSourceType(sourceType)) {
+            return NextResponse.json({
+                success: false,
+                message: '无效的来源类型'
+            }, { status: 400 });
+        }
+
+        // 连接数据库
         const client = await clientPromise;
-        const dbName = process.env.MONGODB_DB || 'oohunt';
-        const db = client.db(dbName);
+        const db = client.db(process.env.MONGODB_DB || 'oohunt');
+        const collection = db.collection('subscriptions');
 
-        // 使用email_subscription作为集合名，与其他API保持一致
-        const collection = db.collection('email_subscription');
+        // 检查是否已存在相同邮箱
+        const existingSubscription = await collection.findOne({ email });
 
-        // 检查邮箱是否已存在,允许测试邮箱重复发送
-        const existingSubscriber = await collection.findOne({ email });
-        const devEmail = process.env.DEV_EMAIL;
-
-        if (existingSubscriber && email !== devEmail) {
-            return NextResponse.json(
-                { success: false, message: 'This email is already subscribed' },
-                { status: 400 }
+        if (existingSubscription) {
+            // 更新已有订阅
+            await collection.updateOne(
+                { email },
+                {
+                    $set: {
+                        updatedAt: new Date(),
+                        lastFormId: formId || null,
+                    },
+                    $addToSet: {
+                        sourceTypes: sourceType
+                    }
+                }
             );
+
+            return NextResponse.json({
+                success: true,
+                message: '您已成功更新订阅！',
+                isUpdate: true
+            });
         }
 
-        // 将新订阅者添加到数据库
+        // 创建新订阅
         await collection.insertOne({
             email,
-            subscribedAt: new Date(),
-            isActive: true,
+            sourceTypes: [sourceType],
+            formId: formId || null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isActive: true
         });
 
-        // 检查是否启用邮件通知功能
-        const enableEmailNotification = process.env.ENABLE_CONTACT_EMAIL_NOTIFICATION === 'true';
+        // 返回成功响应
+        return NextResponse.json({
+            success: true,
+            message: '感谢订阅！我们将发送最新资讯到您的邮箱。'
+        });
 
-        // 如果不启用邮件通知，直接返回成功
-        if (!enableEmailNotification) {
-            return NextResponse.json(
-                { success: true, message: 'Subscription successful! Email notification is disabled.' },
-                { status: 200 }
-            );
-        }
+    } catch (error) {
+        console.error('订阅处理错误:', error);
 
-        try {
-            // 尝试从数据库获取并编译邮件模板，使用模板类型查询
-            const templateResult = await getCompiledEmailTemplate(
-                EMAIL_TEMPLATE_TYPES.SUBSCRIPTION_CONFIRMATION,
-                {
-                    email,
-                    date: new Date()
-                },
-                true // 标记为按类型查询
-            );
-
-            // 准备发送邮件的配置
-            const emailConfig = {
-                from: 'onboarding@resend.dev', // 默认发件人
-                to: [email],
-                subject: 'Welcome to OOHUNT!',
-                html: DEFAULT_EMAIL_TEMPLATE.replace('{{email}}', email)
-            };
-
-            // 如果成功获取到模板，则使用模板内容
-            if (templateResult.success) {
-                emailConfig.subject = templateResult.subject || emailConfig.subject;
-                emailConfig.html = templateResult.html || emailConfig.html;
-
-                // 如果模板指定了发件人且环境不是开发环境，则使用模板中的发件人
-                if (templateResult.from && process.env.NODE_ENV !== 'development') {
-                    emailConfig.from = templateResult.from;
-                }
-            } else {
-                // 如果模板不存在或未激活，尝试创建默认模板
-                // 这只会在订阅确认模板完全不存在时创建一个新模板
-                // 如果模板已存在但被禁用，此操作不会改变其状态
-                await ensureTemplateExists(EMAIL_TEMPLATE_TYPES.SUBSCRIPTION_CONFIRMATION);
-            }
-
-            // 使用Resend发送确认邮件
-            const { error } = await resend.emails.send(emailConfig);
-
-            if (error) {
-                return NextResponse.json(
-                    { success: false, message: 'Subscription failed, please try again later' },
-                    { status: 500 }
-                );
-            } else {
-                return NextResponse.json(
-                    { success: true, message: 'Subscription successful!' },
-                    { status: 200 }
-                );
-            }
-        } catch {
-            return NextResponse.json(
-                { success: false, message: 'Subscription failed, please try again later' },
-                { status: 500 }
-            );
-        }
-    } catch {
-        return NextResponse.json(
-            { success: false, message: 'Subscription failed, please try again later' },
-            { status: 500 }
-        );
+        return NextResponse.json({
+            success: false,
+            message: '处理您的请求时出错，请稍后再试'
+        }, { status: 500 });
     }
 } 

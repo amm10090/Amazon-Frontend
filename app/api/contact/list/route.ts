@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import clientPromise from '@/lib/mongodb';
 
@@ -9,17 +9,24 @@ type _MongoQueryValue = string | number | boolean | { $regex: string, $options: 
 interface Query {
     $or?: Array<{ [key: string]: { $regex: string; $options: string } }>;
     isProcessed?: boolean; // 可选属性
+    formSource?: string | { $exists: boolean, $ne?: null }; // 表单来源类型
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(req: Request) {
     try {
-        const searchParams = request.nextUrl.searchParams;
-        const page = parseInt(searchParams.get('page') || '1');
-        const limit = parseInt(searchParams.get('limit') || '10');
-        const sort_by = searchParams.get('sort_by') || 'createdAt';
-        const sort_order = searchParams.get('sort_order') || 'desc';
-        const search = searchParams.get('search') || '';
-        const is_processed = searchParams.get('is_processed');
+        // 从URL获取查询参数
+        const { searchParams } = new URL(req.url);
+        const page = searchParams.get("page") ? parseInt(searchParams.get("page") as string) : 1;
+        const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit") as string) : 10;
+        const search = searchParams.get("search") as string;
+        const isProcessed = searchParams.get("isProcessed");
+        const formSource = searchParams.get("formSource") as string;
+        const formSourceExists = searchParams.get("formSourceExists");
+
+        // 验证分页参数
+        const validPage = page > 0 ? page : 1;
+        const validLimit = limit > 0 ? limit : 10;
+        const skip = (validPage - 1) * validLimit;
 
         // Use database name from environment variables
         const dbName = process.env.MONGODB_DB || 'oohunt';
@@ -42,8 +49,19 @@ export async function GET(request: NextRequest) {
         }
 
         // If filtering by processing status
-        if (is_processed !== null) {
-            query.isProcessed = is_processed === 'true';
+        if (isProcessed === "true") {
+            query.isProcessed = true;
+        } else if (isProcessed === "false") {
+            query.isProcessed = false;
+        }
+
+        // If filtering by formSource
+        if (formSource) {
+            query.formSource = formSource;
+        } else if (formSourceExists === "true") {
+            query.formSource = { $exists: true, $ne: null };
+        } else if (formSourceExists === "false") {
+            query.formSource = { $exists: false };
         }
 
         // Calculate total
@@ -51,9 +69,9 @@ export async function GET(request: NextRequest) {
 
         // Get data
         const items = await collection.find(query)
-            .sort({ [sort_by]: sort_order === 'asc' ? 1 : -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(validLimit)
             .toArray();
 
         // Convert to format needed by frontend
@@ -67,8 +85,21 @@ export async function GET(request: NextRequest) {
             createdAt: item.createdAt instanceof Date ? item.createdAt.toISOString() : item.createdAt,
             isProcessed: item.isProcessed,
             processedAt: item.processedAt instanceof Date ? item.processedAt.toISOString() : item.processedAt,
-            notes: item.notes
+            notes: item.notes,
+            formSource: item.formSource,
+            formId: item.formId,
         }));
+
+        // Calculate total pages
+        const totalPages = Math.ceil(total / validLimit);
+
+        // Build pagination object
+        const pagination = {
+            currentPage: validPage,
+            totalPages,
+            totalItems: total,
+            itemsPerPage: validLimit,
+        };
 
         // Set response headers to allow cross-domain and avoid caching
         const headers = new Headers();
@@ -86,13 +117,14 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json({
+            success: true,
             data: {
                 items: formattedItems,
                 total,
-                page,
-                page_size: limit
+                page: validPage,
+                page_size: validLimit,
             },
-            success: true
+            pagination,
         }, {
             headers: headers
         });

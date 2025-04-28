@@ -1,4 +1,4 @@
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Popover, PopoverTrigger, PopoverContent, Input, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Switch } from '@heroui/react';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Popover, PopoverTrigger, PopoverContent, Input, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, Switch, Radio, RadioGroup } from '@heroui/react';
 import type { Editor } from '@tiptap/core';
 import type { RawCommands } from '@tiptap/react'; // Import RawCommands
 import {
@@ -10,13 +10,16 @@ import {
     Video as YoutubeIcon, // 使用 Video 图标替代已弃用的 Youtube 图标
     Keyboard,
     Database,
-    Upload
+    Upload,
+    Mail,
+    ArrowRight
 } from 'lucide-react';
 import { useState, useCallback, type MouseEvent } from 'react';
 
 import type { ComponentProduct } from '@/types';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
+import { type EmailFormAttributes } from './EmailCollectionFormBlot';
 import { ImageUploader } from './ImageUploader';
 import type { ProductAttributes } from './ProductBlot'; // Import ProductAttributes
 import type { ProductMetadataAttributes } from './ProductMetadataBlot';
@@ -31,6 +34,11 @@ interface ProductMetadataCommands {
 // 新增：为产品卡片添加命令接口
 interface ProductCardCommands {
     insertProduct: (attributes: ProductAttributes) => boolean;
+}
+
+// 新增：为邮件收集表单添加命令接口
+interface EmailFormCommands {
+    insertEmailCollectionForm: (attributes: Partial<EmailFormAttributes>) => boolean;
 }
 
 interface TiptapToolbarProps {
@@ -65,6 +73,14 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
     const [pickerMode, setPickerMode] = useState<string | null>(null);
     const [productForMetadata, setProductForMetadata] = useState<ComponentProduct | null>(null);
     const [showImageUploader, setShowImageUploader] = useState(false);
+    // Add: Email subscription form modal state
+    const [isEmailFormModalOpen, setIsEmailFormModalOpen] = useState(false);
+    const [emailFormTitle, setEmailFormTitle] = useState('Subscribe to Get Latest Updates');
+    const [emailFormDescription, setEmailFormDescription] = useState('Enter your email address to get the latest product information and discount offers.');
+    const [emailInputPlaceholder, setEmailInputPlaceholder] = useState('your.email@example.com');
+    const [emailSubmitButtonText, setEmailSubmitButtonText] = useState('Subscribe');
+    const [emailSourceType, setEmailSourceType] = useState<'general' | 'blog'>('general');
+    const [emailFormStyle, setEmailFormStyle] = useState<'default' | 'compact'>('default');
 
     // 新增：切换快捷键模态框
     const toggleShortcutModal = useCallback(() => {
@@ -316,6 +332,57 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
             editor.chain().focus().updateAttributes('product', { style }).run();
         }
     }, [editor]);
+
+    // 新增：打开邮件表单模态框
+    const handleEmailFormClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // 重置表单字段为默认值
+        setEmailFormTitle('Subscribe to Get Latest Updates');
+        setEmailFormDescription('Enter your email address to get the latest product information and discount offers.');
+        setEmailInputPlaceholder('your.email@example.com');
+        setEmailSubmitButtonText('Subscribe');
+        setEmailSourceType('general');
+        setEmailFormStyle('default');
+        // 打开模态框
+        setIsEmailFormModalOpen(true);
+    }, []);
+
+    // 新增：插入邮件收集表单
+    const insertEmailForm = useCallback(() => {
+        if (!editor) return;
+
+        try {
+            // 构建表单属性
+            const attributes: Partial<EmailFormAttributes> = {
+                formTitle: emailFormTitle,
+                formDescription: emailFormDescription,
+                inputPlaceholder: emailInputPlaceholder,
+                submitButtonText: emailSubmitButtonText,
+                sourceType: emailSourceType,
+                formId: `form-${Date.now()}`, // 生成唯一ID
+                style: emailFormStyle
+            };
+
+            // 尝试使用插件命令
+            const commands = editor.commands as unknown as Partial<RawCommands & EmailFormCommands>;
+
+            if (commands.insertEmailCollectionForm) {
+                commands.insertEmailCollectionForm(attributes);
+            } else {
+                // 回退到通用插入内容方法
+                editor.chain().focus().insertContent({
+                    type: 'emailCollectionForm',
+                    attrs: attributes
+                }).run();
+            }
+
+            // 关闭模态框
+            setIsEmailFormModalOpen(false);
+        } catch {
+            alert('Error inserting email collection form, please try again later');
+        }
+    }, [editor, emailFormTitle, emailFormDescription, emailInputPlaceholder, emailSubmitButtonText, emailSourceType, emailFormStyle]);
 
     if (!editor) {
         return null;
@@ -786,6 +853,16 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
                 <Database size={16} />
             </button>
 
+            {/* 新增：邮件收集表单按钮 */}
+            <button
+                type="button"
+                onClick={handleEmailFormClick}
+                className="p-1.5 rounded hover:bg-gray-100"
+                title="Insert Email Subscription Form"
+            >
+                <Mail size={16} />
+            </button>
+
             {/* 新增：快捷键说明按钮 */}
             <button
                 type="button"
@@ -905,6 +982,160 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
                 onClose={() => setShowImageUploader(false)}
                 onImageUpload={handleLocalImageUpload}
             />
+
+            {/* 新增：邮件收集表单模态框 */}
+            <Modal isOpen={isEmailFormModalOpen} onOpenChange={setIsEmailFormModalOpen}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                    <Mail size={18} />
+                                    Insert Email Subscription Form
+                                </div>
+                            </ModalHeader>
+                            <ModalBody>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label htmlFor="email-form-title" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Form Title
+                                        </label>
+                                        <Input
+                                            id="email-form-title"
+                                            value={emailFormTitle}
+                                            onChange={(e) => setEmailFormTitle(e.target.value)}
+                                            placeholder="Subscription Newsletter"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="email-form-description" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Form Description
+                                        </label>
+                                        <Input
+                                            id="email-form-description"
+                                            value={emailFormDescription}
+                                            onChange={(e) => setEmailFormDescription(e.target.value)}
+                                            placeholder="Enter your email to get the latest news"
+                                        />
+                                    </div>
+
+                                    <div className="flex gap-4">
+                                        <div className="flex-1">
+                                            <label htmlFor="email-input-placeholder" className="block text-sm font-medium text-gray-700 mb-1">
+                                                Input Placeholder
+                                            </label>
+                                            <Input
+                                                id="email-input-placeholder"
+                                                value={emailInputPlaceholder}
+                                                onChange={(e) => setEmailInputPlaceholder(e.target.value)}
+                                                placeholder="your.email@example.com"
+                                            />
+                                        </div>
+
+                                        <div className="flex-1">
+                                            <label htmlFor="email-submit-button" className="block text-sm font-medium text-gray-700 mb-1">
+                                                Submit Button Text
+                                            </label>
+                                            <Input
+                                                id="email-submit-button"
+                                                value={emailSubmitButtonText}
+                                                onChange={(e) => setEmailSubmitButtonText(e.target.value)}
+                                                placeholder="Subscribe"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* 高级设置 - 隐藏在折叠面板中 */}
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        <details className="text-sm">
+                                            <summary className="cursor-pointer text-gray-700 font-medium">Advanced Settings</summary>
+                                            <div className="mt-3 pl-4 border-l-2 border-gray-200">
+                                                <div className="mb-3">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Form Style
+                                                    </label>
+                                                    <RadioGroup
+                                                        value={emailFormStyle}
+                                                        onValueChange={(value) => setEmailFormStyle(value as 'default' | 'compact')}
+                                                        orientation="horizontal"
+                                                    >
+                                                        <Radio value="default">
+                                                            <div className="ml-2">Default (Blue gradient)</div>
+                                                        </Radio>
+                                                        <Radio value="compact">
+                                                            <div className="ml-2">Compact (White)</div>
+                                                        </Radio>
+                                                    </RadioGroup>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        Form Source Type (Only for backend identification)
+                                                    </label>
+                                                    <RadioGroup
+                                                        value={emailSourceType}
+                                                        onValueChange={(value) => setEmailSourceType(value as 'general' | 'blog')}
+                                                        orientation="horizontal"
+                                                    >
+                                                        <Radio value="general">
+                                                            <div className="ml-2">General Product Email</div>
+                                                        </Radio>
+                                                        <Radio value="blog">
+                                                            <div className="ml-2">Blog Content Email</div>
+                                                        </Radio>
+                                                    </RadioGroup>
+                                                </div>
+                                            </div>
+                                        </details>
+                                    </div>
+
+                                    {/* 表单预览 */}
+                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                        <p className="text-sm font-medium text-gray-700 mb-2">Form Preview:</p>
+                                        <div className={`border border-gray-200 rounded-md p-4 ${emailFormStyle === 'default' ? 'bg-gradient-to-br from-[#1A5276] to-[#154360] text-white' : 'bg-white text-gray-800'}`}>
+                                            <div className="text-center mb-2">
+                                                {emailFormStyle === 'default' && (
+                                                    <div className="inline-flex items-center justify-center mb-1">
+                                                        <Mail className="w-5 h-5 text-[#F39C12] mr-1.5" strokeWidth={1.5} />
+                                                        <h3 className="text-lg font-semibold">{emailFormTitle || 'Subscription Newsletter'}</h3>
+                                                    </div>
+                                                )}
+                                                {emailFormStyle === 'compact' && (
+                                                    <h3 className="text-lg font-medium">{emailFormTitle || 'Subscription Newsletter'}</h3>
+                                                )}
+                                                <p className={`${emailFormStyle === 'default' ? 'text-white/90' : 'text-gray-600'} text-sm`}>
+                                                    {emailFormDescription || 'Enter your email address to get the latest product information and discount offers.'}
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row gap-2">
+                                                <div className={`flex-grow ${emailFormStyle === 'default' ? 'bg-white/95' : 'bg-gray-50'} border ${emailFormStyle === 'default' ? 'border-transparent' : 'border-gray-300'} rounded-md px-3 py-2 text-sm text-gray-400`}>
+                                                    <span className="flex items-center gap-2">
+                                                        <Mail size={14} />
+                                                        {emailInputPlaceholder || 'your.email@example.com'}
+                                                    </span>
+                                                </div>
+                                                <div className={`px-3 py-2 ${emailFormStyle === 'default' ? 'bg-[#16A085]' : 'bg-blue-600'} text-white text-sm font-medium rounded-md flex items-center`}>
+                                                    <span>{emailSubmitButtonText || 'Subscribe'}</span>
+                                                    {emailFormStyle === 'default' && <ArrowRight className="w-3.5 h-3.5 ml-1.5" />}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button color="default" variant="light" onPress={onClose}>
+                                    Cancel
+                                </Button>
+                                <Button color="primary" onPress={insertEmailForm}>
+                                    Insert Form
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     );
 }

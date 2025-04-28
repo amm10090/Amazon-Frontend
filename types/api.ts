@@ -231,6 +231,8 @@ export interface ContactMessage {
     isProcessed: boolean;
     processedAt?: string;
     notes?: string;
+    formSource?: 'general' | 'blog' | string;
+    formId?: string;
 }
 
 // 社交媒体链接配置

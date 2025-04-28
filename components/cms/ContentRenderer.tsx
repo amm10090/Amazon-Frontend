@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 
 import DynamicMetadataLoader from './DynamicMetadataLoader';
 import DynamicProductLoader from './DynamicProductLoader';
+import EmbeddedEmailForm from './EmbeddedEmailForm';
 
 // 内容渲染器的props接口
 interface ContentRendererProps {
@@ -81,6 +82,30 @@ const ContentRenderer = ({ content, className = '' }: ContentRendererProps) => {
 
                 // 渲染动态元数据加载器，确保使用正确的布局元素
                 return <DynamicMetadataLoader productId={productId} fieldId={fieldId} />;
+            }
+
+            // 新增: 处理电子邮件收集表单节点
+            else if (domNode.attribs && domNode.attribs['data-type'] === 'email-collection-form') {
+                const formId = domNode.attribs['data-form-id'] || `form-${Date.now()}`;
+                const sourceType = (domNode.attribs['data-source-type'] || 'general') as 'general' | 'blog';
+                const formTitle = domNode.attribs['data-form-title'] || 'Subscribe to get the latest news';
+                const formDescription = domNode.attribs['data-form-description'] ||
+                    'Enter your email address to get the latest product information and discount offers.';
+                const inputPlaceholder = domNode.attribs['data-input-placeholder'] || 'your.email@example.com';
+                const submitButtonText = domNode.attribs['data-submit-button-text'] || 'Subscribe';
+                const style = (domNode.attribs['data-style'] || 'default') as 'default' | 'compact';
+
+                return (
+                    <EmbeddedEmailForm
+                        formId={formId}
+                        sourceType={sourceType}
+                        formTitle={formTitle}
+                        formDescription={formDescription}
+                        inputPlaceholder={inputPlaceholder}
+                        submitButtonText={submitButtonText}
+                        style={style}
+                    />
+                );
             }
 
             // Keep existing image handling (unchanged, but slightly improved)
