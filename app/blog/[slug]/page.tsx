@@ -7,7 +7,7 @@ import ContentRenderer from '@/components/cms/ContentRenderer';
 
 // 获取文章数据
 async function getPageData(slug: string, preview: boolean = false): Promise<PageData | null> {
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     try {
         // 添加preview参数以支持草稿预览
