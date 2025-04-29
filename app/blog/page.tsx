@@ -138,7 +138,7 @@ export default async function BlogList() {
                                                     {page.title}
                                                 </Link>
                                             </h2>
-                                            <div className="flex-grow"></div>
+
                                         </div>
                                         <div className="flex items-center text-sm text-gray-500 pt-4 mt-2 border-t border-gray-100">
                                             <div className="flex items-center mr-4">

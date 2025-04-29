@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import { Geist } from "next/font/google";
 
 import { auth } from '@/auth';
-import { Analytics, GoogleTagManager, VigLink } from "@/components/analytics";
+import { Analytics, GoogleTagManager } from "@/components/analytics";
 import { ClientLayout } from "@/components/client-layout";
 import { HeadScripts, BodyStartScripts, BodyEndScripts } from "@/components/layout/ScriptInjector";
 import { BackTop } from "@/components/ui/BackTop";
@@ -59,7 +59,6 @@ export default async function RootLayout({
         </ClientLayout>
         <Analytics />
         <SpeedInsights />
-        <VigLink />
         {/* 注入body结束处自定义脚本 */}
         <BodyEndScripts />
       </body>
