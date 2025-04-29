@@ -56,7 +56,7 @@ interface PageData {
 
 // Generate page metadata
 export const metadata: Metadata = {
-    title: 'Blog - Oohunt - Latest Product Info & Shopping Guides',
+    title: 'Oohunt - Blog - Latest Product Info & Shopping Guides',
     description: 'Browse our blog posts for the latest product information and shopping guides'
 };
 

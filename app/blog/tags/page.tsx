@@ -35,7 +35,7 @@ async function getTags(): Promise<ContentTag[]> {
 
 // Generate page metadata
 export const metadata: Metadata = {
-    title: 'Blog Tags - Oohunt',
+    title: 'Oohunt - Blog Tags',
     description: 'Browse our blog posts by tag to quickly find related topics'
 };
 

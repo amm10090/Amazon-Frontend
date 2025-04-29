@@ -82,13 +82,13 @@ export async function generateMetadata(
     const previousImages = (await parent).openGraph?.images || [];
 
     return {
-        title: page.seoData?.metaTitle || page.title,
+        title: `Oohunt - ${page.seoData?.metaTitle || page.title}`,
         description: page.seoData?.metaDescription || page.excerpt,
         alternates: {
             canonical: page.seoData?.canonicalUrl || `/blog/${resolvedParams.slug}`,
         },
         openGraph: {
-            title: page.seoData?.metaTitle || page.title,
+            title: `Oohunt - ${page.seoData?.metaTitle || page.title}`,
             description: page.seoData?.metaDescription || page.excerpt || '',
             url: `/blog/${resolvedParams.slug}`,
             images: page.seoData?.ogImage ? [page.seoData.ogImage, ...previousImages] : previousImages,

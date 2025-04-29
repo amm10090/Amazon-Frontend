@@ -19,7 +19,7 @@ import { useState, useCallback, type MouseEvent } from 'react';
 import type { ComponentProduct } from '@/types';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
-import { type EmailFormAttributes } from './EmailCollectionFormBlot';
+import { type EmailFormAttributes } from './Template/email/EmailCollectionFormBlot';
 import { ImageUploader } from './ImageUploader';
 import type { ProductAttributes } from './ProductBlot'; // Import ProductAttributes
 import type { ProductMetadataAttributes } from './ProductMetadataBlot';

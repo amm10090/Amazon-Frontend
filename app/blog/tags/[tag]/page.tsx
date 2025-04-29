@@ -86,7 +86,7 @@ export async function generateMetadata(
     }
 
     return {
-        title: `${tag.name} - Blog Tag`,
+        title: `Oohunt - ${tag.name} - Blog Tag`,
         description: `Browse all articles with the ${tag.name} tag`,
     };
 }

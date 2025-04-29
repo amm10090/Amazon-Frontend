@@ -35,7 +35,7 @@ async function getCategories(): Promise<ContentCategory[]> {
 
 // Generate page metadata
 export const metadata: Metadata = {
-    title: 'Blog Categories - Oohunt',
+    title: 'Oohunt - Blog Categories',
     description: 'Browse our blog posts by category to find the content you are interested in'
 };
 

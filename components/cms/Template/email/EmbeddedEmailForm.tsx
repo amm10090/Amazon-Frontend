@@ -138,15 +138,15 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
                         <form onSubmit={handleSubmit}>
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <div className="flex-grow relative">
-                                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                        <Mail className="w-4 h-4 text-gray-400" />
+                                    <div className="absolute top-1/2 -translate-y-1/2 left-0 pl-3 pointer-events-none">
+                                        <Mail className="h-[16px] w-[16px] text-gray-400 pt" />
                                     </div>
                                     <input
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder={inputPlaceholder}
-                                        className={`w-full pl-9 pr-3 py-2 rounded-md border ${status.type === 'error'
+                                        className={`w-full pl-10 pr-3 py-2 rounded-md border ${status.type === 'error'
                                             ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                                             : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
                                             } shadow-sm transition-colors`}
@@ -175,7 +175,7 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
                                         className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     />
                                     <span>
-                                        I agree to receive email communications as described in the <a href="/email-subscription-terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/privacy-policy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                                        I agree to receive emails as per <a href="/email-subscription-terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/privacy-policy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
                                     </span>
                                 </label>
                             </div>
@@ -223,18 +223,18 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
                     </div>
 
                     {/* 表单内容 */}
-                    <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
+                    <form onSubmit={handleSubmit} className="w-full mx-auto">
                         <div className="flex flex-col sm:flex-row gap-3">
                             <div className="flex-grow relative">
-                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                    <Mail className="w-5 h-5 text-gray-500" />
+                                <div className="absolute top-1/2 -translate-y-1/2 left-0 pl-3 pointer-events-none">
+                                    <Mail className="h-[20px] w-[20px] text-gray-500 flex-shrink-0 translate-y-[1px]" />
                                 </div>
                                 <input
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder={inputPlaceholder}
-                                    className={`w-full pl-10 pr-4 py-3 rounded-lg bg-white/95 text-gray-800 
+                                    className={`w-full pl-11 pr-4 py-3 rounded-lg bg-white/95 text-gray-800 
                                     focus:outline-none focus:ring-2 border border-transparent
                                     ${status.type === 'error'
                                             ? 'focus:ring-red-400 border-red-400/50'
@@ -265,7 +265,7 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
                                     className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#F39C12] focus:ring-[#F39C12]"
                                 />
                                 <span>
-                                    I agree to receive email communications as described in the <a href="/email-subscription-terms" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Email Subscription Terms</a> and <a href="/privacy-policy" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                                    I agree to receive emails as per <a href="/email-subscription-terms" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/privacy-policy" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
                                 </span>
                             </label>
                         </div>

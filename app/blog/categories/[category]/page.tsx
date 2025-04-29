@@ -86,7 +86,7 @@ export async function generateMetadata(
     }
 
     return {
-        title: `${category.name} - Blog Category`,
+        title: `Oohunt - ${category.name} - Blog Category`,
         description: category.description || `Browse all articles in the ${category.name} category`,
     };
 }

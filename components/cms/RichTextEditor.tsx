@@ -38,7 +38,7 @@ import {
 import { useState, useEffect, useCallback, type MouseEvent } from 'react';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
-import { EmailCollectionFormBlot } from './EmailCollectionFormBlot';
+import { EmailCollectionFormBlot } from './Template/email/EmailCollectionFormBlot';
 import { ProductBlot, type ProductAttributes, PRODUCT_STYLES } from './ProductBlot';
 import { ProductMetadataBlot } from './ProductMetadataBlot';
 import { ProductSelector, type Product } from './ProductSelector';

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 
 import DynamicMetadataLoader from './DynamicMetadataLoader';
 import DynamicProductLoader from './DynamicProductLoader';
-import EmbeddedEmailForm from './EmbeddedEmailForm';
+import EmbeddedEmailForm from './Template/email/EmbeddedEmailForm';
 
 // 内容渲染器的props接口
 interface ContentRendererProps {
