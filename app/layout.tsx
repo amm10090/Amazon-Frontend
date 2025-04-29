@@ -43,9 +43,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning className={geist.className}>
-      <head>
-        <VigLink />
-      </head>
+
       <body>
         <GoogleTagManager />
         <ClientLayout session={session}>
@@ -55,6 +53,7 @@ export default async function RootLayout({
         </ClientLayout>
         <Analytics />
         <SpeedInsights />
+        <VigLink />
       </body>
     </html>
   );

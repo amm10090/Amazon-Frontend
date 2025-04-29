@@ -23,6 +23,7 @@ export function VigLink() {
     return (
         <Script
             id="viglink-script"
+            type='text/javascript'
             strategy="afterInteractive"
             dangerouslySetInnerHTML={{
                 __html: `
