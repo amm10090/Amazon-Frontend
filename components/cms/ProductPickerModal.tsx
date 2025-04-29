@@ -196,7 +196,7 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
             url: product.url || '',
             cj_url: product.cj_url || '',
             brand: product.brand ?? null,
-            originalPrice: mainOffer?.original_price || product.original_price || null,
+            originalPrice: product.original_price || null,
             discount: discountPercentage ?? product.discount ?? null, // Use calculated or existing discount percentage
             couponType: couponType as 'percentage' | 'fixed' | null,
             couponValue: couponValue,
@@ -272,8 +272,8 @@ const ProductPickerModal: React.FC<ProductPickerModalProps> = ({
                             {products.map((product, index) => (
                                 <ProductCard
                                     key={`${product.id || product.asin || index}`}
-                                    product={product as any} // Type assertion to fix compatibility issue
-                                    onClick={(p) => handleProductSelect(p as Product)} // Type assertion to fix compatibility issue
+                                    product={product as ProductCardProduct}
+                                    onClick={(p) => handleProductSelect(p as Product)}
                                     size="medium"
                                 />
                             ))}
@@ -329,4 +329,33 @@ interface ApiResponse<T> {
     message?: string;
     data: T;
     error?: string;
-} 
+}
+
+// 定义ProductCard组件接受的产品类型
+type ProductCardProduct = {
+    id?: string;
+    title?: string;
+    price?: number;
+    main_image?: string;
+    image_url?: string;
+    image?: string;
+    images?: string[];
+    sku?: string;
+    asin?: string;
+    brand?: string | null;
+    original_price?: number | null;
+    discount?: number | null;
+    discount_percentage?: number | null;
+    coupon_type?: 'percentage' | 'fixed' | null;
+    coupon_value?: number | null;
+    offers?: Array<{
+        coupon_type?: 'percentage' | 'fixed' | null;
+        coupon_value?: number | null;
+        price?: number;
+        original_price?: number | null;
+    }>;
+    coupon_history?: {
+        coupon_type?: 'percentage' | 'fixed' | null;
+        coupon_value?: number;
+    };
+}; 

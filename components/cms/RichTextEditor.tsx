@@ -32,7 +32,7 @@ import { useEditor, EditorContent, BubbleMenu, FloatingMenu, isNodeSelection } f
 import StarterKit from '@tiptap/starter-kit';
 import {
     Bold, Italic, List, ListOrdered,
-    Link as LinkIcon, Image as ImageIcon, Tag, Heading1, Heading2,
+    Link as LinkIcon, Image as ImageIcon, Heading1, Heading2,
     Strikethrough, Code, Quote, Highlighter, Palette, Minus
 } from 'lucide-react';
 import { useState, useEffect, useCallback, type MouseEvent } from 'react';
@@ -422,7 +422,7 @@ export function RichTextEditor({
     }, [editor]);
 
     // 打开产品选择器的回调
-    const handleAddProductClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+    const _handleAddProductClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -951,13 +951,6 @@ export function RichTextEditor({
                                 className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
                             >
                                 <ImageIcon size={16} /> Insert Image (URL)
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleAddProductClick}
-                                className="flex items-center gap-2 p-1.5 rounded hover:bg-gray-100 text-left text-sm"
-                            >
-                                <Tag size={16} /> Insert Product
                             </button>
                         </FloatingMenu>
                     );
