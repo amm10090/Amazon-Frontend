@@ -13,7 +13,7 @@ export function VigLink() {
     }, []);
 
     // 从环境变量获取VigLink密钥
-    const VIGLINK_KEY = process.env.NEXT_PUBLIC_VIGLINK_KEY || '';
+    const VIGLINK_KEY = process.env.NEXT_PUBLIC_VIGLINK_KEY || 'eef0fb8d0d918f3e0bf7ce780fc25890';
 
     // 如果不是生产环境，则不显示VigLink
     if (!isProduction) {
@@ -21,23 +21,18 @@ export function VigLink() {
     }
 
     return (
-        <Script
-            id="viglink-script"
-            type='text/javascript'
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-                __html: `
-                    var vglnk = {key: '${VIGLINK_KEY}'};
-                    (function(d, t) {
-                        var s = d.createElement(t);
-                        s.type = 'text/javascript';
-                        s.async = true;
-                        s.src = '//cdn.viglink.com/api/vglnk.js';
-                        var r = d.getElementsByTagName(t)[0];
-                        r.parentNode.insertBefore(s, r);
-                    }(document, 'script'));
-                `,
-            }}
-        />
+        <Script id="viglink">
+            {`
+                var vglnk = {key: '${VIGLINK_KEY}'};
+                (function(d, t) {
+                    var s = d.createElement(t);
+                    s.type = 'text/javascript';
+                    s.async = true;
+                    s.src = '//cdn.viglink.com/api/vglnk.js';
+                    var r = d.getElementsByTagName(t)[0];
+                    r.parentNode.insertBefore(s, r);
+                }(document, 'script'));
+            `}
+        </Script>
     );
 } 

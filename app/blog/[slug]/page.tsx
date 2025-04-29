@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import ContentRenderer from '@/components/cms/ContentRenderer';
+import { SafeImage } from '@/components/common/SafeImage';
 
 // 获取文章数据
 async function getPageData(slug: string, preview: boolean = false): Promise<PageData | null> {
@@ -64,11 +65,13 @@ interface PageData {
 
 // 生成页面元数据
 export async function generateMetadata(
-    { params }: { params: { slug: string } },
+    { params, searchParams }: { params: { slug: string }, searchParams?: { [key: string]: string | string[] | undefined } },
     parent: ResolvingMetadata
 ): Promise<Metadata> {
     const resolvedParams = await params;
-    const page = await getPageData(resolvedParams.slug);
+    const resolvedSearchParams = await searchParams;
+    const isPreview = resolvedSearchParams?.preview !== undefined;
+    const page = await getPageData(resolvedParams.slug, isPreview);
 
     if (!page) {
         return {
@@ -120,6 +123,9 @@ export default async function BlogPost({ params, searchParams }: {
     const wordCount = pageData.content.split(/\s+/).length;
     const readingTime = Math.max(1, Math.ceil(wordCount / 200)); // 假设平均阅读速度为每分钟200词
 
+    // 获取特色图片URL（优先使用featuredImage字段）
+    const featuredImageUrl = pageData.featuredImage || pageData.seoData?.ogImage;
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
             {/* 草稿模式提示条 */}
@@ -169,6 +175,22 @@ export default async function BlogPost({ params, searchParams }: {
                             </div>
                         </div>
                     </header>
+
+                    {/* 添加特色图片显示 */}
+                    {featuredImageUrl && (
+                        <div className="mb-8 rounded-xl overflow-hidden shadow-md mx-auto max-w-full">
+                            <div className="relative mx-auto">
+                                <SafeImage
+                                    src={featuredImageUrl}
+                                    alt={pageData.title}
+                                    width={1200}
+                                    height={700}
+                                    className="object-cover w-full"
+                                    priority
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div className="bg-white rounded-2xl shadow-sm p-8">
                         <div className="prose prose-lg max-w-none">

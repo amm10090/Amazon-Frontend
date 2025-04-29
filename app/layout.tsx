@@ -43,7 +43,6 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning className={geist.className}>
-
       <body>
         <GoogleTagManager />
         <ClientLayout session={session}>
