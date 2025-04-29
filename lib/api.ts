@@ -61,9 +61,12 @@ const cmsApiClient = axios.create({
 // 添加请求拦截器确保使用本地URL
 api.interceptors.request.use(
     (config) => {
-        // 在服务器端运行时，强制使用本地URL
-        if (isServer()) {
+        // 在服务器端运行时，除非请求URL包含特定路径
+        if (isServer() && !config.url?.includes('/products/query')) {
             config.baseURL = 'http://localhost:3000/api';
+        } else if (isServer()) {
+            // 对于products/query请求，使用SERVER_API_URL
+            config.baseURL = SERVER_API_URL;
         }
 
         return config;
