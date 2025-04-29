@@ -154,12 +154,6 @@ export default async function BlogPost({ params, searchParams }: {
                             </div>
                         )}
 
-                        {pageData.excerpt && (
-                            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-                                {pageData.excerpt}
-                            </p>
-                        )}
-
                         <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
                             <div className="flex items-center">
                                 <UserIcon className="h-4 w-4 mr-1" />

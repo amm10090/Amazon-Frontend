@@ -170,9 +170,6 @@ export default async function TagPage({ params }: { params: { tag: string } }) {
                                                     {page.title}
                                                 </Link>
                                             </h2>
-                                            {page.excerpt && (
-                                                <p className="text-gray-600 mb-4 line-clamp-3">{page.excerpt}</p>
-                                            )}
                                         </div>
                                         <div className="flex items-center text-sm text-gray-500 pt-4 mt-2 border-t border-gray-100">
                                             {page.author && (
