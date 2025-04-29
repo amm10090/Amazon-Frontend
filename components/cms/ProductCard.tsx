@@ -74,7 +74,7 @@ const ProductCard = memo(({ product, onClick, size = 'medium' }: ProductCardProp
     const couponValue = product.coupon_value || product.offers?.[0]?.coupon_value || product.coupon_history?.coupon_value || 0;
 
     // Calculate display information
-    const showDiscount = originalPrice && price && originalPrice > price;
+    const _showDiscount = originalPrice && price && originalPrice > price;
     const discountText = discountPercentage > 0 ? `-${discountPercentage}%` : '';
 
     // Calculate coupon text

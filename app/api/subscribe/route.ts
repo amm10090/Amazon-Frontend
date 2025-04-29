@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
 
 import clientPromise from '@/lib/mongodb';
 
-// 初始化Resend - 确保API密钥已设置在环境变量中
-const resend = new Resend(process.env.RESEND_API_KEY);
+// 初始化Resend - 暂未使用，计划用于发送欢迎邮件
+// const resend = new Resend(process.env.RESEND_API_KEY);
 
 // 默认邮件模板 - 仅在数据库模板不可用时使用
-const DEFAULT_EMAIL_TEMPLATE = `
+const _DEFAULT_EMAIL_TEMPLATE = `
 <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
     <div style="max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 30px; border-radius: 8px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -122,8 +121,7 @@ export async function POST(request: Request) {
             message: '感谢订阅！我们将发送最新资讯到您的邮箱。'
         });
 
-    } catch (error) {
-        console.error('订阅处理错误:', error);
+    } catch {
 
         return NextResponse.json({
             success: false,

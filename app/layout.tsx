@@ -7,6 +7,7 @@ import { Geist } from "next/font/google";
 import { auth } from '@/auth';
 import { Analytics, GoogleTagManager, VigLink } from "@/components/analytics";
 import { ClientLayout } from "@/components/client-layout";
+import { HeadScripts, BodyStartScripts, BodyEndScripts } from "@/components/layout/ScriptInjector";
 import { BackTop } from "@/components/ui/BackTop";
 import { FloatingFavorites } from "@/components/ui/FloatingFavorites";
 
@@ -43,8 +44,14 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning className={geist.className}>
+      <head>
+        {/* 注入头部自定义脚本 */}
+        <HeadScripts />
+      </head>
       <body>
         <GoogleTagManager />
+        {/* 注入body开始处自定义脚本 */}
+        <BodyStartScripts />
         <ClientLayout session={session}>
           {children}
           <BackTop />
@@ -53,6 +60,8 @@ export default async function RootLayout({
         <Analytics />
         <SpeedInsights />
         <VigLink />
+        {/* 注入body结束处自定义脚本 */}
+        <BodyEndScripts />
       </body>
     </html>
   );

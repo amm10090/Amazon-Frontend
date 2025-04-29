@@ -4,6 +4,7 @@ import type { AxiosResponse } from 'axios';
 import { useEffect } from 'react';
 import useSWR from 'swr';
 
+import type { ScriptLocation } from '@/lib/models/CustomScript';
 import type { Product, Category, PriceHistory, ApiResponse, CJProduct, CategoryStats, ProductStats, BrandStats, UserItem, ListResponse, EmailItem, ContactMessage, SocialLinks } from '@/types/api';
 
 import { productsApi, userApi, systemApi } from './api';
@@ -18,6 +19,16 @@ type SWRHookResponse<T> = {
     isError: unknown;
     mutate?: () => Promise<unknown>;
 };
+
+// 定义自定义脚本接口
+interface CustomScript {
+    _id?: string;
+    name: string;
+    content: string;
+    location: ScriptLocation;
+    enabled: boolean;
+    isNew?: boolean;
+}
 
 // 产品列表
 export function useProducts(params?: {
@@ -748,6 +759,49 @@ export function useSocialLinks(): SWRHookResponse<SocialLinks> & { mutate: () =>
 
             if (!res.ok) {
                 throw new Error('获取社交媒体链接配置失败');
+            }
+
+            return res.json();
+        },
+        {
+            revalidateOnFocus: false,
+            dedupingInterval: 60000, // 1分钟内不重复请求
+        }
+    );
+
+    return {
+        data: response,
+        isLoading,
+        isError: error,
+        mutate,
+    };
+}
+
+// 自定义脚本配置
+export function useCustomScripts(params?: {
+    enabled?: boolean;
+    location?: string;
+}): SWRHookResponse<{ items: CustomScript[], total: number }> & { mutate: () => Promise<unknown> } {
+    // 构建查询参数
+    const queryParams = new URLSearchParams();
+
+    if (params?.enabled !== undefined) {
+        queryParams.append('enabled', params.enabled.toString());
+    }
+    if (params?.location) {
+        queryParams.append('location', params.location);
+    }
+
+    const queryString = queryParams.toString();
+    const apiUrl = `/api/settings/custom-scripts${queryString ? `?${queryString}` : ''}`;
+
+    const { data: response, error, isLoading, mutate } = useSWR(
+        apiUrl,
+        async () => {
+            const res = await fetch(apiUrl);
+
+            if (!res.ok) {
+                throw new Error('获取自定义脚本配置失败');
             }
 
             return res.json();

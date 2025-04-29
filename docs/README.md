@@ -11,6 +11,7 @@
 - [收藏功能](./Favorites/Favorites.md) - 收藏功能的完整使用指南，包含前端组件和API
 - [邮件订阅功能](./NewsletterSubscribe.md) - 邮件订阅功能的实现细节和使用方法
 - [仪表盘系统](./dashboard/README.md) - 后台管理仪表盘的完整文档，包含角色权限系统和组件说明
+- [自定义脚本功能](./dashboard/CustomScripts.md) - 在网站中注入自定义JavaScript或HTML代码的功能说明
 
 ### API文档
 
@@ -18,6 +19,7 @@
 - [收藏功能 API](./Favorites/Favorites.md#后端api) - 收藏功能相关的API端点和使用示例
 - [邮件订阅 API](./email/NewsletterSubscribe.md#后端api) - 邮件订阅相关的API端点和数据库结构
 - [仪表盘 API](./dashboard/README.md#api文档) - 仪表盘相关的API端点和权限控制
+- [自定义脚本 API](./dashboard/CustomScripts.md#技术实现) - 自定义脚本相关的API端点和技术实现
 
 ### 系统功能
 
