@@ -5,8 +5,9 @@ import { NextResponse } from 'next/server';
 import { ScriptLocation, type CustomScript, type CustomScriptRequest } from '@/lib/models/CustomScript';
 import clientPromise from '@/lib/mongodb';
 
-// 配置路由段缓存 - 缓存10分钟，但确保可以手动使其失效
-export const revalidate = 600;
+// 完全禁用路由段缓存
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * 验证脚本请求数据
@@ -82,7 +83,9 @@ export async function GET(request: Request) {
             total: formattedScripts.length
         }, {
             headers: {
-                'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=60'
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
             }
         });
     } catch (error) {
