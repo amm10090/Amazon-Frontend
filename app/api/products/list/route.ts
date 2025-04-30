@@ -39,7 +39,8 @@ export async function GET(request: Request) {
             },
             // 设置缓存策略
             next: {
-                revalidate: revalidate
+                revalidate: revalidate,
+                tags: ['products']
             }
         });
 

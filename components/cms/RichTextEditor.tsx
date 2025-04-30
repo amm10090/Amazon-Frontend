@@ -38,10 +38,10 @@ import {
 import { useState, useEffect, useCallback, type MouseEvent } from 'react';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
-import { EmailCollectionFormBlot } from './Template/email/EmailCollectionFormBlot';
 import { ProductBlot, type ProductAttributes, PRODUCT_STYLES } from './ProductBlot';
 import { ProductMetadataBlot } from './ProductMetadataBlot';
 import { ProductSelector, type Product } from './ProductSelector';
+import { EmailCollectionFormBlot } from './Template/email/EmailCollectionFormBlot';
 import { TiptapToolbar } from './TiptapToolbar';
 
 // 产品命令类型定义

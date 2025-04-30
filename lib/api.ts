@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type AxiosRequestConfig } from 'axios';
 
-import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats, BrandStats } from '@/types/api';
+import type { Product, Category, PriceHistory, ApiResponse, CJProduct, ListResponse, CategoryStats, ProductStats, BrandStats, ProductInfo } from '@/types/api';
 import type {
     ContentPage,
     ContentPageListResponse,
@@ -343,6 +343,16 @@ export const productsApi = {
         // 不要在这里进行编码，让axios自动处理
         // axios会自动对URL参数进行编码
         return api.get<ApiResponse<ListResponse<Product>>>('/search/products', { params: cleanParams });
+    },
+
+    /**
+     * 手动添加商品到数据库
+     * @param productData - 符合 ProductInfo 结构的数据
+     * @returns API响应对象，包含创建的商品信息
+     */
+    manualAddProduct: (productData: ProductInfo) => {
+        // 使用api实例发送请求，让请求通过Next.js API路由
+        return api.post<ApiResponse<ProductInfo>>('/products/manual', productData);
     },
 };
 

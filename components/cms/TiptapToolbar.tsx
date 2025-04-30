@@ -19,12 +19,12 @@ import { useState, useCallback, type MouseEvent } from 'react';
 import type { ComponentProduct } from '@/types';
 
 import { ColorPickerPopover } from './ColorPickerPopover';
-import { type EmailFormAttributes } from './Template/email/EmailCollectionFormBlot';
 import { ImageUploader } from './ImageUploader';
 import type { ProductAttributes } from './ProductBlot'; // Import ProductAttributes
 import type { ProductMetadataAttributes } from './ProductMetadataBlot';
 import { ProductMetadataSelector } from './ProductMetadataSelector';
 import ProductPickerModal from './ProductPickerModal';
+import { type EmailFormAttributes } from './Template/email/EmailCollectionFormBlot';
 
 // 定义用于类型断言的接口
 interface ProductMetadataCommands {

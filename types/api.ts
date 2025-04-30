@@ -245,4 +245,30 @@ export interface SocialLinks {
     linkedin?: string;
     createdAt?: string;
     updatedAt?: string;
+}
+
+/**
+ * 手动添加商品的请求体结构
+ * 基于 /api/products/manual API 文档
+ * 注意: 复用了已有的 ProductOffer 接口定义
+ */
+export interface ProductInfo {
+    asin: string; // 商品的唯一 ASIN (必需)
+    title: string; // 商品标题 (必需)
+    url: string; // 商品的亚马逊链接 (必需)
+    offers: ProductOffer[]; // 包含至少一个 ProductOffer 对象的数组 (必需)
+    brand?: string; // 品牌名称 (可选)
+    main_image?: string; // 主图链接 (可选)
+    timestamp?: string; // 数据采集的时间戳 (ISO 8601 格式) (可选)
+    binding?: string; // 商品绑定类型 (可选)
+    product_group?: string; // 商品分组 (可选)
+    categories?: string[]; // 商品分类路径列表 (字符串数组) (可选)
+    browse_nodes?: Array<{ id: string; name: string;[key: string]: unknown }>; // 亚马逊浏览节点信息列表 (可选)
+    features?: string[]; // 商品特性列表 (字符串数组) (可选)
+    cj_url?: string; // CJ 推广链接 (可选)
+    api_provider?: string; // API 提供者标识 (默认为 "manual") (可选)
+    source?: string; // 数据来源标识 (默认为 "manual") (可选)
+    coupon_expiration_date?: string; // 优惠券过期日期 (ISO 8601 格式) (可选)
+    coupon_terms?: string; // 优惠券使用条款 (可选)
+    raw_data?: Record<string, unknown>; // 包含原始数据的 JSON 对象 (可选)
 } 

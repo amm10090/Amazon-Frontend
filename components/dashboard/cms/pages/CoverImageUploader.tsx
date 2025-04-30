@@ -200,7 +200,7 @@ export default function CoverImageUploader({ currentImageUrl, onImageUploaded }:
             )}
 
             <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">或</span>
+                <span className="text-sm text-gray-500">or</span>
                 <div className="flex-1">
                     <input
                         type="text"

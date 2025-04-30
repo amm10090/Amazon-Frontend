@@ -76,10 +76,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         };
     }, [isMobile, isSidebarOpen]);
 
-    const navigation = [
+    const _navigation = [
         { name: 'Dashboard', href: '/dashboard', icon: '📊' },
         { name: 'Users', href: '/dashboard/users', icon: '👥' },
         { name: 'Products', href: '/dashboard/products', icon: '📦' },
+        { name: 'Emails', href: '/dashboard/emails', icon: '📧' },
+        { name: 'CMS', href: '/dashboard/cms/pages', icon: '📝' },
+        { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
+    ];
+
+    // 在 'Products' 下方添加新链接 (或者根据需要调整位置)
+    const updatedNavigation = [
+        { name: 'Dashboard', href: '/dashboard', icon: '📊' },
+        { name: 'Users', href: '/dashboard/users', icon: '👥' },
+        { name: 'Products', href: '/dashboard/products', icon: '📦' },
+        { name: 'Manual Add', href: '/dashboard/products/manual', icon: '➕' }, // 新增手动添加链接
         { name: 'Emails', href: '/dashboard/emails', icon: '📧' },
         { name: 'CMS', href: '/dashboard/cms/pages', icon: '📝' },
         { name: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
@@ -143,7 +154,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     {/* 导航菜单 */}
                     <div className="flex-grow overflow-y-auto">
                         <nav className="px-2">
-                            {navigation.map((item) => (
+                            {/* 使用更新后的导航数组 */}
+                            {updatedNavigation.map((item) => (
                                 <Link
                                     key={item.href}
                                     href={item.href}
@@ -204,7 +216,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                                 </button>
                             )}
                             <h2 className="text-lg md:text-xl font-semibold text-gray-800 truncate">
-                                {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
+                                {/* 更新标题查找逻辑以包含新页面 - 使用 startsWith 匹配子路径 */}
+                                {updatedNavigation.find(item => pathname.startsWith(item.href))?.name || 'Dashboard'}
                             </h2>
                         </div>
 
@@ -224,7 +237,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     <div className="px-4 md:px-6 py-2 text-sm text-gray-600 border-t border-gray-100">
                         <Link href="/" className="hover:text-blue-600">Home</Link>
                         <span className="mx-2">/</span>
-                        <span>{navigation.find(item => item.href === pathname)?.name || 'Dashboard'}</span>
+                        {/* 更新面包屑查找逻辑 - 使用 startsWith 匹配子路径 */}
+                        <span>{updatedNavigation.find(item => pathname.startsWith(item.href))?.name || 'Dashboard'}</span>
                     </div>
                 </header>
 
