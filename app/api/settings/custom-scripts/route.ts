@@ -1,10 +1,11 @@
 import { ObjectId } from 'mongodb';
+import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 
 import { ScriptLocation, type CustomScript, type CustomScriptRequest } from '@/lib/models/CustomScript';
 import clientPromise from '@/lib/mongodb';
 
-// 配置路由段缓存 - 缓存10分钟
+// 配置路由段缓存 - 缓存10分钟，但确保可以手动使其失效
 export const revalidate = 600;
 
 /**
@@ -84,9 +85,10 @@ export async function GET(request: Request) {
                 'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=60'
             }
         });
-    } catch {
+    } catch (error) {
+
         return NextResponse.json(
-            { error: 'Get custom scripts failed' },
+            { error: error instanceof Error ? error.message : 'Get custom scripts failed' },
             { status: 500 }
         );
     }
@@ -157,10 +159,15 @@ export async function PUT(request: Request) {
             })
         );
 
+        // 使相关路径的缓存失效
+        revalidatePath('/api/settings/custom-scripts');
+
         // 返回更新结果 - 不缓存PUT响应
         return NextResponse.json(updateResults, {
             headers: {
-                'Cache-Control': 'no-store, must-revalidate'
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
             }
         });
     } catch (error) {
@@ -193,20 +200,41 @@ export async function DELETE(request: Request) {
         const db = client.db(process.env.MONGODB_DB || 'oohunt');
         const collection = db.collection('custom_scripts');
 
-        // 删除脚本
-        const result = await collection.deleteOne({ _id: new ObjectId(idParam) });
+        try {
+            // 删除脚本
+            const result = await collection.deleteOne({ _id: new ObjectId(idParam) });
 
-        if (result.deletedCount === 0) {
+            if (result.deletedCount === 0) {
+                return NextResponse.json(
+                    { error: 'Script not found' },
+                    { status: 404 }
+                );
+            }
+
+            // 使相关路径的缓存失效
+            revalidatePath('/api/settings/custom-scripts');
+
+            return NextResponse.json({
+                success: true,
+                deleted: idParam
+            }, {
+                headers: {
+                    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0',
+                }
+            });
+        } catch (dbError) {
+
             return NextResponse.json(
-                { error: 'Script not found' },
-                { status: 404 }
+                { error: '数据库操作失败', details: dbError instanceof Error ? dbError.message : String(dbError) },
+                { status: 500 }
             );
         }
+    } catch (error) {
 
-        return NextResponse.json({ success: true });
-    } catch {
         return NextResponse.json(
-            { error: 'Delete custom script failed' },
+            { error: error instanceof Error ? error.message : 'Delete custom script failed' },
             { status: 500 }
         );
     }

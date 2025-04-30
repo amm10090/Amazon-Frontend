@@ -72,7 +72,14 @@ function ClientScriptsLoader({ location }: { location: ScriptLocation }) {
 
 // 获取脚本数据
 async function fetchScripts(location: ScriptLocation): Promise<CustomScript[]> {
-    const response = await fetch(`/api/settings/custom-scripts?location=${location}`);
+    const response = await fetch(`/api/settings/custom-scripts?location=${location}`, {
+        cache: 'no-store',
+        next: { revalidate: 0 },
+        headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+        }
+    });
 
     if (!response.ok) {
         throw new Error(`Failed to fetch scripts: ${response.statusText}`);
