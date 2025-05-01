@@ -11,7 +11,7 @@ export interface EmailFormAttributes {
     submitButtonText: string;
     sourceType: 'general' | 'blog';
     formId: string;
-    style: 'default' | 'compact';
+    style: 'default' | 'compact' | 'blog' | 'deals';
 }
 
 // 扩展命令类型

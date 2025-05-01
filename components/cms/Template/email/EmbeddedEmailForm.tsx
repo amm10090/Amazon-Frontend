@@ -11,7 +11,7 @@ interface EmbeddedEmailFormProps {
     submitButtonText: string;
     sourceType: 'general' | 'blog';
     formId: string;
-    style?: 'default' | 'compact';
+    style?: 'default' | 'compact' | 'blog' | 'deals';
 }
 
 /**
@@ -116,11 +116,180 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
         }
     };
 
+    // Deals 风格表单 - 更加紧凑且没有图标
+    if (style === 'deals') {
+        return (
+            <div
+                className="email-collection-form-wrapper mb-8"
+                data-type="email-collection-form"
+                data-form-id={formId}
+                data-source-type={sourceType}
+                data-style={style}
+            >
+                <div className="bg-[#2E71A6] rounded-lg shadow-md overflow-hidden">
+                    <div className="px-6 py-7">
+                        {/* 表单标题和说明 */}
+                        <div className="mb-4 text-center">
+                            <h2 className="text-xl font-bold text-[#FFFFFF] mb-2">
+                                {formTitle || 'Subscribe to Our Deals Newsletter'}
+                            </h2>
+                            <p className="text-white/90 max-w-md mx-auto">
+                                {formDescription || "Get the latest deals first-hand, don't miss any money-saving opportunity"}
+                            </p>
+                        </div>
+
+                        {/* 表单内容 */}
+                        <form onSubmit={handleSubmit} className="w-full mx-auto">
+                            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder={inputPlaceholder}
+                                    className="w-full py-3 px-4 rounded-md text-gray-800
+                                        focus:outline-none border-0 shadow-sm bg-white"
+                                    disabled={isSubmitting}
+                                />
+                                <button
+                                    type="submit"
+                                    className="py-3 px-6 bg-[#4DB6AC] hover:bg-[#3EA99E] text-white font-semibold
+                                    rounded-md transition-colors sm:min-w-[140px] flex-shrink-0"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? 'Subscribing...' : submitButtonText}
+                                </button>
+                            </div>
+
+                            {/* 条款同意复选框 */}
+                            <div>
+                                <label className="flex items-start gap-2 text-sm text-white/90 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={acceptTerms}
+                                        onChange={(e) => setAcceptTerms(e.target.checked)}
+                                        className="mt-0.5 h-4 w-4 rounded"
+                                    />
+                                    <span>
+                                        I agree to receive email communications from Oohunt as described in the <a href="/email-subscription-terms" className="text-[#4DB6AC] hover:underline" target="_blank" rel="noopener noreferrer">Email Subscription Terms</a> & <a href="/privacy-policy" className="text-[#4DB6AC] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                                    </span>
+                                </label>
+                            </div>
+
+                            {/* 状态消息 */}
+                            {status.type === 'error' && (
+                                <div className="mt-3 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-md text-red-300 text-sm">
+                                    {status.message}
+                                </div>
+                            )}
+
+                            {status.type === 'success' && (
+                                <div className="mt-3 bg-green-500/10 border border-green-500/20 px-4 py-3 rounded-md 
+                                text-green-300 text-sm flex items-center justify-center">
+                                    <CheckCircle2 className="w-5 h-5 mr-2 flex-shrink-0" />
+                                    <span>{status.message}</span>
+                                </div>
+                            )}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // 博客风格的表单
+    if (style === 'blog') {
+        return (
+            <div
+                className="email-collection-form-wrapper mb-8"
+                data-type="email-collection-form"
+                data-form-id={formId}
+                data-source-type={sourceType}
+                data-style={style}
+            >
+                <div className="bg-gradient-to-r from-[#3282B7] to-[#1C567B] rounded-lg shadow-md overflow-hidden">
+                    <div className="px-6 py-7 relative z-10">
+                        {/* 表单标题 */}
+                        <div className="mb-5 text-center">
+                            <h2 className="text-xl font-bold text-white flex items-center justify-center mb-2">
+                                <Mail className="w-[30px] h-[30px] text-[#FFC107] mr-2.5" strokeWidth={1.5} />
+                                <span className="text-[#FFFFFF]">{formTitle}</span>
+                            </h2>
+                            <p className="text-white/90 max-w-md mx-auto">
+                                {formDescription}
+                            </p>
+                        </div>
+
+                        {/* 表单内容 */}
+                        <form onSubmit={handleSubmit} className="w-full mx-auto">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="flex-grow relative">
+                                    <div className="absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none">
+                                        <Mail className="h-[20px] w-[20px] text-gray-500" strokeWidth={2} />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder={inputPlaceholder}
+                                        className={`w-full pl-11 pr-4 py-3.5 rounded-md text-gray-800
+                                        focus:outline-none border-0 focus:ring-2 focus:ring-[#FFC107]/30
+                                        transition-all duration-200 shadow-sm bg-white`}
+                                        disabled={isSubmitting}
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="py-3.5 px-6 bg-[#16A085] hover:bg-[#117A65] text-white font-semibold
+                                    rounded-md transition-all duration-200 hover:-translate-y-0.5
+                                    flex items-center justify-center whitespace-nowrap min-w-[120px]"
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? 'Subscribing...' : submitButtonText}
+                                    <ArrowRight className="w-4 h-4 ml-2 transition-transform" />
+                                </button>
+                            </div>
+
+                            {/* 条款同意复选框 */}
+                            <div className="mt-4">
+                                <label className="flex items-start gap-2.5 text-sm text-white/90 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={acceptTerms}
+                                        onChange={(e) => setAcceptTerms(e.target.checked)}
+                                        className="mt-1 h-4 w-4 rounded"
+                                    />
+                                    <span>
+                                        I agree to receive emails as per <a href="/email-subscription-terms" className="text-[#FFC107] hover:underline" target="_blank" rel="noopener noreferrer">Email Subscription Terms</a> and <a href="/privacy-policy" className="text-[#FFC107] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                                    </span>
+                                </label>
+                            </div>
+
+                            {/* 状态消息 */}
+                            {status.type === 'error' && (
+                                <div className="mt-4 bg-red-500/10 border border-red-500/20 px-4 py-3 rounded-md text-red-400 text-sm">
+                                    {status.message}
+                                </div>
+                            )}
+
+                            {status.type === 'success' && (
+                                <div className="mt-4 bg-green-500/10 border border-green-500/20 px-4 py-3 rounded-md 
+                                text-green-400 text-sm flex items-center justify-center">
+                                    <CheckCircle2 className="w-5 h-5 mr-2 flex-shrink-0" />
+                                    <span>{status.message}</span>
+                                </div>
+                            )}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     // 紧凑风格的表单
     if (style === 'compact') {
         return (
             <div
-                className="email-collection-form-wrapper"
+                className="email-collection-form-wrapper mb-8"
                 data-type="email-collection-form"
                 data-form-id={formId}
                 data-source-type={sourceType}
@@ -203,7 +372,7 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
     // 默认风格 - 完整版带渐变背景
     return (
         <div
-            className="email-collection-form-wrapper"
+            className="email-collection-form-wrapper mb-8"
             data-type="email-collection-form"
             data-form-id={formId}
             data-source-type={sourceType}
@@ -214,8 +383,8 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
                     {/* 表单标题 */}
                     <div className="mb-4 text-center">
                         <div className="inline-flex items-center justify-center mb-2">
-                            <Mail className="w-6 h-6 text-[#F39C12] mr-2" strokeWidth={1.5} />
-                            <h3 className="text-xl font-bold text-white">{formTitle}</h3>
+                            <Mail className="w-6 h-6 text-[#FFC107] mr-2" strokeWidth={1.5} />
+                            <h3 className="text-xl font-bold text-[#FFFFFF]">{formTitle}</h3>
                         </div>
                         <p className="text-white/90 max-w-md mx-auto">
                             {formDescription}
@@ -234,11 +403,11 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder={inputPlaceholder}
-                                    className={`w-full pl-11 pr-4 py-3 rounded-lg bg-white/95 text-gray-800 
+                                    className={`w-full pl-11 pr-4 py-3 rounded-lg bg-white text-gray-800 
                                     focus:outline-none focus:ring-2 border border-transparent
                                     ${status.type === 'error'
                                             ? 'focus:ring-red-400 border-red-400/50'
-                                            : 'focus:ring-[#F39C12] focus:border-[#F39C12]/30'
+                                            : 'focus:ring-[#FFC107] focus:border-[#FFC107]/30'
                                         } transition-all duration-200 shadow-sm`}
                                     disabled={isSubmitting}
                                 />
@@ -262,10 +431,10 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
                                     type="checkbox"
                                     checked={acceptTerms}
                                     onChange={(e) => setAcceptTerms(e.target.checked)}
-                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#F39C12] focus:ring-[#F39C12]"
+                                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#FFC107] focus:ring-[#FFC107]"
                                 />
                                 <span>
-                                    I agree to receive emails as per <a href="/email-subscription-terms" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/privacy-policy" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                                    I agree to receive emails as per <a href="/email-subscription-terms" className="text-[#FFC107] hover:underline" target="_blank" rel="noopener noreferrer">Terms</a> and <a href="/privacy-policy" className="text-[#FFC107] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
                                 </span>
                             </label>
                         </div>

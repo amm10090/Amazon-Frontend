@@ -80,7 +80,7 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
     const [emailInputPlaceholder, setEmailInputPlaceholder] = useState('your.email@example.com');
     const [emailSubmitButtonText, setEmailSubmitButtonText] = useState('Subscribe');
     const [emailSourceType, setEmailSourceType] = useState<'general' | 'blog'>('general');
-    const [emailFormStyle, setEmailFormStyle] = useState<'default' | 'compact'>('default');
+    const [emailFormStyle, setEmailFormStyle] = useState<'default' | 'compact' | 'blog' | 'deals'>('default');
 
     // 新增：切换快捷键模态框
     const toggleShortcutModal = useCallback(() => {
@@ -1057,7 +1057,7 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
                                                     </label>
                                                     <RadioGroup
                                                         value={emailFormStyle}
-                                                        onValueChange={(value) => setEmailFormStyle(value as 'default' | 'compact')}
+                                                        onValueChange={(value) => setEmailFormStyle(value as 'default' | 'compact' | 'blog' | 'deals')}
                                                         orientation="horizontal"
                                                     >
                                                         <Radio value="default">
@@ -1065,6 +1065,12 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
                                                         </Radio>
                                                         <Radio value="compact">
                                                             <div className="ml-2">Compact (White)</div>
+                                                        </Radio>
+                                                        <Radio value="blog">
+                                                            <div className="ml-2">Blog Style (Blue)</div>
+                                                        </Radio>
+                                                        <Radio value="deals">
+                                                            <div className="ml-2">Deals Newsletter</div>
                                                         </Radio>
                                                     </RadioGroup>
                                                 </div>
@@ -1093,33 +1099,72 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
                                     {/* 表单预览 */}
                                     <div className="mt-4 pt-4 border-t border-gray-200">
                                         <p className="text-sm font-medium text-gray-700 mb-2">Form Preview:</p>
-                                        <div className={`border border-gray-200 rounded-md p-4 ${emailFormStyle === 'default' ? 'bg-gradient-to-br from-[#1A5276] to-[#154360] text-white' : 'bg-white text-gray-800'}`}>
+                                        <div className={`border border-gray-200 rounded-md p-4 ${emailFormStyle === 'default' ? 'bg-gradient-to-br from-[#1A5276] to-[#154360] text-white' :
+                                            emailFormStyle === 'compact' ? 'bg-white text-gray-800' :
+                                                emailFormStyle === 'blog' ? 'bg-gradient-to-r from-[#3282B7] to-[#1C567B] text-white' :
+                                                    'bg-[#2E71A6] text-white'
+                                            }`}>
                                             <div className="text-center mb-2">
                                                 {emailFormStyle === 'default' && (
                                                     <div className="inline-flex items-center justify-center mb-1">
-                                                        <Mail className="w-5 h-5 text-[#F39C12] mr-1.5" strokeWidth={1.5} />
-                                                        <h3 className="text-lg font-semibold">{emailFormTitle || 'Subscription Newsletter'}</h3>
+                                                        <Mail className="w-5 h-5 text-[#FFC107] mr-1.5" strokeWidth={1.5} />
+                                                        <h3 className="text-lg font-semibold text-[#FFFFFF]">{emailFormTitle || 'Subscription Newsletter'}</h3>
                                                     </div>
                                                 )}
                                                 {emailFormStyle === 'compact' && (
                                                     <h3 className="text-lg font-medium">{emailFormTitle || 'Subscription Newsletter'}</h3>
                                                 )}
-                                                <p className={`${emailFormStyle === 'default' ? 'text-white/90' : 'text-gray-600'} text-sm`}>
-                                                    {emailFormDescription || 'Enter your email address to get the latest product information and discount offers.'}
+                                                {emailFormStyle === 'blog' && (
+                                                    <div className="inline-flex items-center justify-center mb-1">
+                                                        <Mail className="w-5 h-5 text-[#FFC107] mr-1.5" strokeWidth={1.5} />
+                                                        <h3 className="text-lg font-semibold text-[#FFFFFF]">{emailFormTitle || 'Subscription Newsletter'}</h3>
+                                                    </div>
+                                                )}
+                                                {emailFormStyle === 'deals' && (
+                                                    <h3 className="text-lg font-bold text-[#FFFFFF]">{emailFormTitle || 'Subscribe to Our Deals Newsletter'}</h3>
+                                                )}
+                                                <p className={`${emailFormStyle === 'default' ? 'text-white/90' :
+                                                    emailFormStyle === 'compact' ? 'text-gray-600' :
+                                                        'text-white/90'
+                                                    } text-sm`}>
+                                                    {emailFormStyle === 'deals' ?
+                                                        (emailFormDescription || "Get the latest deals first-hand, don't miss any money-saving opportunity") :
+                                                        (emailFormDescription || 'Enter your email address to get the latest product information and discount offers.')
+                                                    }
                                                 </p>
                                             </div>
                                             <div className="flex flex-col sm:flex-row gap-2">
-                                                <div className={`flex-grow ${emailFormStyle === 'default' ? 'bg-white/95' : 'bg-gray-50'} border ${emailFormStyle === 'default' ? 'border-transparent' : 'border-gray-300'} rounded-md px-3 py-2 text-sm text-gray-400`}>
+                                                <div className={`flex-grow ${emailFormStyle === 'default' ? 'bg-white' :
+                                                    emailFormStyle === 'compact' ? 'bg-gray-50' :
+                                                        'bg-white'
+                                                    } border ${emailFormStyle === 'default' ? 'border-transparent' :
+                                                        emailFormStyle === 'compact' ? 'border-gray-300' :
+                                                            'border-transparent'
+                                                    } rounded-md px-3 py-2 text-sm text-gray-400`}>
                                                     <span className="flex items-center gap-2">
-                                                        <Mail size={14} />
+                                                        {(emailFormStyle !== 'deals') && <Mail size={14} />}
                                                         {emailInputPlaceholder || 'your.email@example.com'}
                                                     </span>
                                                 </div>
-                                                <div className={`px-3 py-2 ${emailFormStyle === 'default' ? 'bg-[#16A085]' : 'bg-blue-600'} text-white text-sm font-medium rounded-md flex items-center`}>
+                                                <div className={`px-3 py-2 ${emailFormStyle === 'default' ? 'bg-[#16A085]' :
+                                                    emailFormStyle === 'compact' ? 'bg-blue-600' :
+                                                        emailFormStyle === 'blog' ? 'bg-[#16A085]' :
+                                                            'bg-[#4DB6AC]'
+                                                    } text-white text-sm font-medium rounded-md flex items-center justify-center`}>
                                                     <span>{emailSubmitButtonText || 'Subscribe'}</span>
-                                                    {emailFormStyle === 'default' && <ArrowRight className="w-3.5 h-3.5 ml-1.5" />}
+                                                    {(emailFormStyle === 'default' || emailFormStyle === 'blog') &&
+                                                        <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+                                                    }
                                                 </div>
                                             </div>
+                                            {emailFormStyle === 'deals' && (
+                                                <div className="mt-2 flex items-start gap-2 text-xs text-white/90">
+                                                    <input type="checkbox" className="mt-0.5 h-3 w-3" checked readOnly />
+                                                    <span>I agree to receive email communications from Oohunt as described in the
+                                                        <a href="#" className="text-[#4DB6AC] hover:underline ml-1">Terms</a> &
+                                                        <a href="#" className="text-[#4DB6AC] hover:underline ml-1">Privacy Policy</a></span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
