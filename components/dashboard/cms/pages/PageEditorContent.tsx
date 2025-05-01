@@ -5,10 +5,11 @@ import type { Editor } from '@tiptap/react';
 import { Save, FileQuestion, ArrowLeft, AlertTriangle, Eye, Edit3, X } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 import ContentRenderer from '@/components/cms/ContentRenderer';
 import { RichTextEditor } from '@/components/cms/RichTextEditor';
+import { useDashboardSave } from '@/components/dashboard/DashboardLayout';
 import { cmsApi } from '@/lib/api/cms';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
 import { generateSlug } from '@/lib/utils';
@@ -43,6 +44,7 @@ const PageEditorContent = () => {
     const [showSlugWarning, setShowSlugWarning] = useState(false);
     const [isPreviewActive, setIsPreviewActive] = useState(false);
     const editorInstance = useRef<Editor | null>(null);
+    const { setSaveButton } = useDashboardSave();
 
     const [categories, setCategories] = useState<string[]>([]);
     const [tags, setTags] = useState<string[]>([]);
@@ -145,9 +147,11 @@ const PageEditorContent = () => {
         loadCategoriesAndTags();
     }, []);
 
-    // 处理表单提交
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // 使用 useCallback 包装 handleSubmit 函数以避免不必要的重新创建
+    const handleSubmit = useCallback(async (e?: React.FormEvent) => {
+        if (e) {
+            e.preventDefault();
+        }
 
         if (!formData.title) {
             showErrorToast({
@@ -219,7 +223,38 @@ const PageEditorContent = () => {
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }, [formData, categories, tags, featuredImage, session, params, router]);
+
+    // 使用 useEffect 设置顶部保存按钮，不依赖 handleSubmit
+    useEffect(() => {
+        // 只在非预览模式和有表单数据时显示保存按钮
+        if (!isPreviewActive) {
+            // 创建保存按钮元素
+            const saveButtonElement = (
+                <button
+                    type="button"
+                    onClick={() => handleSubmit()}
+                    disabled={isSubmitting || loadingPage}
+                    className={`inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors
+                    ${(isSubmitting || loadingPage) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                >
+                    <Save size={16} className="mr-1.5" />
+                    {isSubmitting ? 'save page...' : 'save page'}
+                </button>
+            );
+
+            // 设置保存按钮
+            setSaveButton(saveButtonElement);
+        } else {
+            // 预览模式下移除保存按钮
+            setSaveButton(null);
+        }
+
+        // 在组件卸载时清除保存按钮
+        return () => {
+            setSaveButton(null);
+        };
+    }, [isSubmitting, loadingPage, isPreviewActive, setSaveButton, handleSubmit]);
 
     // 阻止Enter键提交表单
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -434,6 +469,22 @@ const PageEditorContent = () => {
                         <ContentRenderer content={formData.content} />
                     </div>
                 </div>
+            </div>
+        );
+    };
+
+    // 底部保存按钮的渲染
+    const renderSaveButton = () => {
+        return (
+            <div className="flex justify-end">
+                <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                >
+                    <Save size={18} className="mr-2" />
+                    {isSubmitting ? '保存中...' : '保存页面'}
+                </button>
             </div>
         );
     };
@@ -743,18 +794,8 @@ const PageEditorContent = () => {
                         </div>
                     </div>
 
-                    {/* 提交按钮 */}
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className={`inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-                                }`}
-                        >
-                            <Save size={18} className="mr-2" />
-                            {isSubmitting ? 'Saving...' : 'Save Page'}
-                        </button>
-                    </div>
+                    {/* 底部保存按钮 */}
+                    {renderSaveButton()}
                 </form>
             )}
         </div>

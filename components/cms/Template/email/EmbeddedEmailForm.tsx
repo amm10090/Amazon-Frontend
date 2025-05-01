@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 
 // 定义组件的属性接口
@@ -245,7 +245,6 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? 'Subscribing...' : submitButtonText}
-                                    <ArrowRight className="w-4 h-4 ml-2 transition-transform" />
                                 </button>
                             </div>
 
@@ -420,7 +419,6 @@ export const EmbeddedEmailForm: React.FC<EmbeddedEmailFormProps> = ({
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? 'Subscribing...' : submitButtonText}
-                                {!isSubmitting && <ArrowRight className="w-4 h-4 ml-2" />}
                             </button>
                         </div>
 

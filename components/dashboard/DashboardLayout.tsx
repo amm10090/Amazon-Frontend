@@ -1,13 +1,25 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Menu } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Menu, } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, createContext, useContext } from 'react';
 
 import { UserRole } from '@/lib/models/UserRole';
+
+// 创建一个 Context 用于保存按钮状态
+export const DashboardSaveContext = createContext<{
+    saveButton: React.ReactNode | null;
+    setSaveButton: (button: React.ReactNode | null) => void;
+}>({
+    saveButton: null,
+    setSaveButton: () => { }
+});
+
+// 创建 Hook 供子组件使用
+export const useDashboardSave = () => useContext(DashboardSaveContext);
 
 interface DashboardLayoutProps {
     children: React.ReactNode;
@@ -19,6 +31,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     const { data: session } = useSession();
     const pathname = usePathname();
     const scrollPosition = useRef(0);
+    const [saveButton, setSaveButton] = useState<React.ReactNode | null>(null);
 
     // Responsive handling
     useEffect(() => {
@@ -108,148 +121,157 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden">
-            {/* 移动端背景遮罩 - 添加毛玻璃效果并修复定位 */}
-            {isMobile && isSidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
-                    onClick={closeSidebar}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            closeSidebar();
-                        }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label="Close sidebar"
-                />
-            )}
-
-            {/* 侧边栏 - 修复移动端定位和过渡效果 */}
-            <aside
-                className={`fixed md:sticky top-0 left-0 z-50
-                    ${isSidebarOpen ? 'w-64' : isMobile ? '0' : 'w-20'} 
-                    ${isMobile && !isSidebarOpen ? '-translate-x-full' : 'translate-x-0'}
-                    transition-all duration-300 ease-in-out h-screen`}
-            >
-                <div className="flex flex-col h-full bg-white shadow-lg">
-                    {/* 侧边栏头部 */}
-                    <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 bg-white flex-shrink-0">
-                        <div className={`transition-opacity duration-200 
-                            ${(!isSidebarOpen && !isMobile) ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'}`}>
-                            <Image src="/logo.svg" alt="OOHUNT Logo" width={120} height={32} className="h-8 w-auto" />
-                        </div>
-                        <button
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 cursor-pointer"
-                            aria-label={isSidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-                        >
-                            {isSidebarOpen
-                                ? <ChevronLeft size={20} />
-                                : <ChevronRight size={20} />
+        <DashboardSaveContext.Provider value={{ saveButton, setSaveButton }}>
+            <div className="flex h-screen bg-gray-50 overflow-hidden">
+                {/* 移动端背景遮罩 - 添加毛玻璃效果并修复定位 */}
+                {isMobile && isSidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+                        onClick={closeSidebar}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                closeSidebar();
                             }
-                        </button>
-                    </div>
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Close sidebar"
+                    />
+                )}
 
-                    {/* 导航菜单 */}
-                    <div className="flex-grow overflow-y-auto">
-                        <nav className="px-2">
-                            {/* 使用更新后的导航数组 */}
-                            {updatedNavigation.map((item) => (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={`flex items-center px-4 py-2.5 mt-1 first:mt-1.5 rounded-lg group
-                                    ${pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}
-                                    transition-all duration-200`}
-                                    onClick={isMobile ? closeSidebar : undefined}
-                                >
-                                    <span className="text-xl flex-shrink-0">{item.icon}</span>
-                                    <span className={`ml-3 transition-all duration-200 whitespace-nowrap
-                                        ${(!isSidebarOpen && !isMobile) ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
-                                        {item.name}
-                                    </span>
-                                    {!isSidebarOpen && !isMobile && (
-                                        <div className="absolute left-16 z-50 whitespace-nowrap bg-gray-800 text-white px-2 py-1 rounded 
-                                            ml-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                {/* 侧边栏 - 修复移动端定位和过渡效果 */}
+                <aside
+                    className={`fixed md:sticky top-0 left-0 z-50
+                        ${isSidebarOpen ? 'w-64' : isMobile ? '0' : 'w-20'} 
+                        ${isMobile && !isSidebarOpen ? '-translate-x-full' : 'translate-x-0'}
+                        transition-all duration-300 ease-in-out h-screen`}
+                >
+                    <div className="flex flex-col h-full bg-white shadow-lg">
+                        {/* 侧边栏头部 */}
+                        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 bg-white flex-shrink-0">
+                            <div className={`transition-opacity duration-200 
+                                ${(!isSidebarOpen && !isMobile) ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'}`}>
+                                <Image src="/logo.svg" alt="OOHUNT Logo" width={120} height={32} className="h-8 w-auto" />
+                            </div>
+                            <button
+                                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 cursor-pointer"
+                                aria-label={isSidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+                            >
+                                {isSidebarOpen
+                                    ? <ChevronLeft size={20} />
+                                    : <ChevronRight size={20} />
+                                }
+                            </button>
+                        </div>
+
+                        {/* 导航菜单 */}
+                        <div className="flex-grow overflow-y-auto">
+                            <nav className="px-2">
+                                {/* 使用更新后的导航数组 */}
+                                {updatedNavigation.map((item) => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={`flex items-center px-4 py-2.5 mt-1 first:mt-1.5 rounded-lg group
+                                        ${pathname === item.href ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}
+                                        transition-all duration-200`}
+                                        onClick={isMobile ? closeSidebar : undefined}
+                                    >
+                                        <span className="text-xl flex-shrink-0">{item.icon}</span>
+                                        <span className={`ml-3 transition-all duration-200 whitespace-nowrap
+                                            ${(!isSidebarOpen && !isMobile) ? 'w-0 opacity-0 overflow-hidden' : 'w-auto opacity-100'}`}>
                                             {item.name}
-                                        </div>
-                                    )}
-                                </Link>
-                            ))}
-                        </nav>
-                    </div>
+                                        </span>
+                                        {!isSidebarOpen && !isMobile && (
+                                            <div className="absolute left-16 z-50 whitespace-nowrap bg-gray-800 text-white px-2 py-1 rounded 
+                                                ml-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                                {item.name}
+                                            </div>
+                                        )}
+                                    </Link>
+                                ))}
+                            </nav>
+                        </div>
 
-                    {/* 底部用户信息 */}
-                    <div className={`mt-auto border-t border-gray-200 p-4 ${(!isSidebarOpen && !isMobile) ? 'hidden' : 'block'} cursor-pointer`}>
-                        <div className="flex items-center">
-                            <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center">
-                                {session.user.name?.charAt(0) || 'U'}
-                            </div>
-                            <div className="ml-3">
-                                <p className="text-sm font-medium truncate">{session.user.name || session.user.email}</p>
-                                <p className="text-xs text-gray-500">{session.user.role}</p>
+                        {/* 底部用户信息 */}
+                        <div className={`mt-auto border-t border-gray-200 p-4 ${(!isSidebarOpen && !isMobile) ? 'hidden' : 'block'} cursor-pointer`}>
+                            <div className="flex items-center">
+                                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center">
+                                    {session.user.name?.charAt(0) || 'U'}
+                                </div>
+                                <div className="ml-3">
+                                    <p className="text-sm font-medium truncate">{session.user.name || session.user.email}</p>
+                                    <p className="text-xs text-gray-500">{session.user.role}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </aside>
+
+                {/* 主内容区域 */}
+                <div
+                    className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${isMobile && isSidebarOpen ? 'opacity-50' : 'opacity-100'}`}
+                    style={{
+                        marginLeft: isMobile ? 0 : 0
+                    }}
+                >
+                    {/* 顶部导航栏 */}
+                    <header className="bg-white shadow-sm z-20 flex-shrink-0">
+                        <div className="flex h-16 items-center justify-between px-4 md:px-6">
+                            <div className="flex items-center">
+                                {isMobile && (
+                                    <button
+                                        onClick={() => setIsSidebarOpen(true)}
+                                        className="p-2 rounded-lg hover:bg-gray-100 mr-2 text-gray-600 cursor-pointer"
+                                        aria-label="Open Menu"
+                                    >
+                                        <Menu size={20} />
+                                    </button>
+                                )}
+                                <h2 className="text-lg md:text-xl font-semibold text-gray-800 truncate">
+                                    {/* 更新标题查找逻辑以包含新页面 - 使用 startsWith 匹配子路径 */}
+                                    {updatedNavigation.find(item => pathname.startsWith(item.href))?.name || 'Dashboard'}
+                                </h2>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-600 font-medium">
+                                        {session.user.name || session.user.email}
+                                    </span>
+                                    <span className="hidden md:inline px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded-full">
+                                        {session.user.role}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 面包屑导航 - 修改为弹性布局，添加保存按钮区域 */}
+                        <div className="px-4 md:px-6 py-2 border-t border-gray-100 flex justify-between items-center">
+                            <div className="text-sm text-gray-600">
+                                <Link href="/" className="hover:text-blue-600">Home</Link>
+                                <span className="mx-2">/</span>
+                                {/* 更新面包屑查找逻辑 - 使用 startsWith 匹配子路径 */}
+                                <span>{updatedNavigation.find(item => pathname.startsWith(item.href))?.name || 'Dashboard'}</span>
+                            </div>
+
+                            {/* 保存按钮区域 */}
+                            <div>
+                                {saveButton}
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* 内容区域 */}
+                    <main className="flex-1 overflow-auto p-4 md:p-6">
+                        <div className="w-full">
+                            {children}
+                        </div>
+                    </main>
                 </div>
-            </aside>
-
-            {/* 主内容区域 */}
-            <div
-                className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${isMobile && isSidebarOpen ? 'opacity-50' : 'opacity-100'}`}
-                style={{
-                    marginLeft: isMobile ? 0 : 0
-                }}
-            >
-                {/* 顶部导航栏 */}
-                <header className="bg-white shadow-sm z-20 flex-shrink-0">
-                    <div className="flex h-16 items-center justify-between px-4 md:px-6">
-                        <div className="flex items-center">
-                            {isMobile && (
-                                <button
-                                    onClick={() => setIsSidebarOpen(true)}
-                                    className="p-2 rounded-lg hover:bg-gray-100 mr-2 text-gray-600 cursor-pointer"
-                                    aria-label="Open Menu"
-                                >
-                                    <Menu size={20} />
-                                </button>
-                            )}
-                            <h2 className="text-lg md:text-xl font-semibold text-gray-800 truncate">
-                                {/* 更新标题查找逻辑以包含新页面 - 使用 startsWith 匹配子路径 */}
-                                {updatedNavigation.find(item => pathname.startsWith(item.href))?.name || 'Dashboard'}
-                            </h2>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-600 font-medium">
-                                    {session.user.name || session.user.email}
-                                </span>
-                                <span className="hidden md:inline px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded-full">
-                                    {session.user.role}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 面包屑导航 */}
-                    <div className="px-4 md:px-6 py-2 text-sm text-gray-600 border-t border-gray-100">
-                        <Link href="/" className="hover:text-blue-600">Home</Link>
-                        <span className="mx-2">/</span>
-                        {/* 更新面包屑查找逻辑 - 使用 startsWith 匹配子路径 */}
-                        <span>{updatedNavigation.find(item => pathname.startsWith(item.href))?.name || 'Dashboard'}</span>
-                    </div>
-                </header>
-
-                {/* 内容区域 */}
-                <main className="flex-1 overflow-auto p-4 md:p-6">
-                    <div className="w-full">
-                        {children}
-                    </div>
-                </main>
             </div>
-        </div>
+        </DashboardSaveContext.Provider>
     );
 };
 

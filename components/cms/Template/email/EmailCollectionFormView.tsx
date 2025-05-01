@@ -1,7 +1,7 @@
 'use client';
 
 import { NodeViewWrapper, type NodeViewProps } from '@tiptap/react';
-import { Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 
 import { type EmailFormAttributes } from './EmailCollectionFormBlot';
@@ -231,7 +231,6 @@ export const EmailCollectionFormView: React.FC<NodeViewProps> = ({
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? 'Subscribing...' : attrs.submitButtonText}
-                                    <ArrowRight className="w-4 h-4 ml-2 transition-transform" />
                                 </button>
                             </div>
 
@@ -399,13 +398,12 @@ export const EmailCollectionFormView: React.FC<NodeViewProps> = ({
                             </div>
                             <button
                                 type="submit"
-                                className="py-3 px-6 bg-[#4DB6AC] hover:bg-[#3EA99E] text-white font-medium
+                                className={`py-3 px-6 ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#16A085] hover:bg-[#117A65] cursor-pointer'} text-white font-medium
                                 rounded-lg transition-all duration-200 shadow-sm hover:shadow
-                                flex items-center justify-center whitespace-nowrap"
+                                flex items-center justify-center whitespace-nowrap`}
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? 'Subscribing...' : attrs.submitButtonText}
-                                {!isSubmitting && <ArrowRight className="w-4 h-4 ml-2" />}
                             </button>
                         </div>
 
