@@ -458,17 +458,17 @@ export function RichTextEditor({
     }
 
     return (
-        <div className={`rich-text-editor ${className} border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-150 ${isOverLimit ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-500' : ''}`}>
-            {/* 编辑器顶部工具栏 */}
-            <div className="p-2 border-b border-gray-300 flex flex-wrap items-center gap-1 bg-white sticky top-0 z-10">
+        <div className={`rich-text-editor ${className} border border-gray-300 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all duration-150 flex flex-col h-[850px] ${isOverLimit ? 'border-red-300 focus-within:border-red-500 focus-within:ring-red-500' : ''}`}>
+            {/* 编辑器顶部工具栏 - 使用sticky定位并确保不收缩 */}
+            <div className="p-2 border-b border-gray-300 flex flex-wrap items-center gap-1 bg-white sticky top-0 z-50 shadow-sm flex-shrink-0">
                 <TiptapToolbar editor={editor} onAddProduct={handleAddProductWrapper} />
             </div>
 
-            {/* 编辑器内容区域 */}
-            <div className="relative">
+            {/* 编辑器内容区域 - 设置为可滚动容器 */}
+            <div className="relative flex-grow overflow-y-auto">
                 <EditorContent
                     editor={editor}
-                    className={`prose max-w-none p-4 min-h-[300px] overflow-y-auto ${editorClass}`}
+                    className={`prose max-w-none p-4 ${editorClass}`}
                     translate="no"
                 />
 
@@ -582,7 +582,7 @@ export function RichTextEditor({
 
             {/* 字符统计和单词统计 */}
             {editor && (
-                <div className="px-4 py-2 border-t border-gray-200 bg-gray-50">
+                <div className="px-4 py-2 border-t border-gray-200 bg-gray-50 flex-shrink-0">
                     {/* 字符限制进度条 */}
                     <div className="h-1.5 w-full bg-gray-200 rounded-full mb-2">
                         <div

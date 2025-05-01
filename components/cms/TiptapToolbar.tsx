@@ -433,7 +433,7 @@ export function TiptapToolbar({ editor }: TiptapToolbarProps) {
     const isMac = typeof window !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
     return (
-        <div className="p-2 border-b border-gray-300 flex items-center flex-wrap gap-1 bg-white sticky top-0 z-10 w-full">
+        <div className="flex items-center flex-wrap gap-1 bg-white w-full">
             {/* 撤销/重做 */}
             <button
                 type="button"
