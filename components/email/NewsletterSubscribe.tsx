@@ -130,7 +130,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                                 className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#16A085] focus:ring-[#16A085]"
                             />
                             <span>
-                                I agree to receive email communications from Oohunt as described in the <a href="/legal/email-subscription-terms" className="text-[#16A085] hover:underline" target="_blank" rel="noopener noreferrer">Email Subscription Terms</a> and <a href="/legal/privacy" className="text-[#16A085] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                                I agree to receive email communications from Oohunt as described in the <a href="/email-subscription-terms" className="text-[#16A085] hover:underline" target="_blank" rel="noopener noreferrer">Email Subscription Terms</a> and <a href="/privacy-policy" className="text-[#16A085] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
                             </span>
                         </label>
                     </div>
@@ -223,7 +223,7 @@ export function NewsletterSubscribe({ compact = false }: NewsletterSubscribeProp
                                     className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#F39C12] focus:ring-[#F39C12]"
                                 />
                                 <span>
-                                    I agree to receive email communications from Oohunt as described in the <a href="/legal/email-subscription-terms" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Email Subscription Terms</a> and <a href="/legal/privacy" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                                    I agree to receive email communications from Oohunt as described in the <a href="/email-subscription-terms" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Email Subscription Terms</a> and <a href="/legal/privacy" className="text-[#F39C12] hover:underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
                                 </span>
                             </label>
                         </div>

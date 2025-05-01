@@ -17,7 +17,7 @@ const CompactGridItemElement = ({ product }: { product: ComponentProduct }) => {
     return (
         // 使用 span 作为根元素以兼容 Tiptap inline 节点
         <span className="inline-block align-middle w-full max-w-[200px] relative">
-            <Link href={productUrl} className="no-underline group">
+            <Link href={productUrl} className="no-underline group" target="_blank" rel="noopener noreferrer">
                 <motion.span
                     className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden h-full flex flex-col border border-transparent hover:border-primary-button dark:hover:border-primary transition-colors"
                     whileHover={{ y: -4 }}

@@ -43,7 +43,7 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
                             </span>
                         </span>
                     )}
-                    <Link href={productUrl} className="block h-full w-full no-underline">
+                    <Link href={productUrl} className="block h-full w-full no-underline" target="_blank" rel="noopener noreferrer">
                         <Image
                             src={image || '/placeholder-product.jpg'}
                             alt={title}
@@ -65,7 +65,7 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
                     )}
                     {/* 将h3替换为span，保持样式不变 */}
                     <span className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-2 flex-grow">
-                        <Link href={productUrl} className="hover:text-primary-button dark:hover:text-primary transition-colors no-underline">
+                        <Link href={productUrl} className="hover:text-primary-button dark:hover:text-primary transition-colors no-underline" target="_blank" rel="noopener noreferrer">
                             {title}
                         </Link>
                     </span>
@@ -90,7 +90,7 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
                     {/* 来源与按钮 */}
                     <span className="flex flex-col sm:flex-row items-center sm:items-center sm:justify-between mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
                         <StoreIdentifier url={effectiveUrl} showName={true} className="mb-3 sm:mb-0" />
-                        <Link href={productUrl} className="no-underline text-center sm:text-right w-full sm:w-auto">
+                        <Link href={productUrl} className="no-underline text-center sm:text-right w-full sm:w-auto" target="_blank" rel="noopener noreferrer">
                             <motion.button
                                 whileHover={{ scale: 1.03 }}
                                 whileTap={{ scale: 0.97 }}

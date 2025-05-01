@@ -17,7 +17,7 @@ const SimpleProductElement = ({ product }: { product: ComponentProduct }) => {
         <span className="inline-flex items-center my-4 p-3 border rounded-md bg-white shadow-sm gap-3 max-w-lg align-middle">
             <span className="flex items-center flex-grow min-w-0 gap-3">
                 {image && (
-                    <Link href={productUrl} className="relative w-16 h-16 border rounded-md overflow-hidden flex-shrink-0">
+                    <Link href={productUrl} className="relative w-16 h-16 border rounded-md overflow-hidden flex-shrink-0" target="_blank" rel="noopener noreferrer">
                         <Image
                             src={image}
                             alt={title}
@@ -29,7 +29,7 @@ const SimpleProductElement = ({ product }: { product: ComponentProduct }) => {
                     </Link>
                 )}
                 <span className="min-w-0">
-                    <Link href={productUrl} className="font-medium text-gray-900 truncate hover:text-primary transition-colors no-underline block">
+                    <Link href={productUrl} className="font-medium text-gray-900 truncate hover:text-primary transition-colors no-underline block" target="_blank" rel="noopener noreferrer">
                         {title}
                     </Link>
                     <span className="flex gap-2 text-sm text-gray-500 mt-1">

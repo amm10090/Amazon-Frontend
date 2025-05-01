@@ -23,7 +23,7 @@ const HorizontalProductElement = ({ product }: { product: ComponentProduct }) =>
             <span className="flex flex-col sm:flex-row w-full">
                 {/* 图片容器 - 调整大小并固定宽高比 */}
                 <span className="flex-shrink-0 flex justify-center sm:justify-start mb-3 sm:mb-0">
-                    <Link href={productUrl} className="relative w-28 h-28 sm:w-24 sm:h-24 sm:mr-4 rounded-lg overflow-hidden no-underline">
+                    <Link href={productUrl} className="relative w-28 h-28 sm:w-24 sm:h-24 sm:mr-4 rounded-lg overflow-hidden no-underline" target="_blank" rel="noopener noreferrer">
                         <Image
                             src={image || '/placeholder-product.jpg'}
                             alt={title}
@@ -39,7 +39,7 @@ const HorizontalProductElement = ({ product }: { product: ComponentProduct }) =>
                 <span className="flex flex-col flex-grow">
                     {/* 标题 - 在所有布局中显示，移动端和桌面端有不同样式 */}
                     <span className="text-sm sm:text-base font-medium line-clamp-2 sm:line-clamp-1 mb-2">
-                        <Link href={productUrl} className="text-black dark:text-white no-underline">
+                        <Link href={productUrl} className="text-black dark:text-white no-underline" target="_blank" rel="noopener noreferrer">
                             {title}
                         </Link>
                     </span>
@@ -50,7 +50,7 @@ const HorizontalProductElement = ({ product }: { product: ComponentProduct }) =>
 
                         <span className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 mt-2 sm:mt-0">
                             <StoreIdentifier url={effectiveUrl} align="left" showName={false} className="mb-0" />
-                            <Link href={productUrl} className="no-underline">
+                            <Link href={productUrl} className="no-underline" target="_blank" rel="noopener noreferrer">
                                 <button className="px-3 py-1.5 sm:px-4 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-dark dark:hover:bg-primary text-white rounded-full text-sm transition-colors whitespace-nowrap">
                                     View Details
                                 </button>

@@ -15,7 +15,7 @@ const MiniProductElement = ({ product }: { product: ComponentProduct }) => {
     const productUrl = `/product/${id}`;
 
     return (
-        <Link href={productUrl} className="inline-block no-underline max-w-full align-middle">
+        <Link href={productUrl} className="inline-block no-underline max-w-full align-middle" target="_blank" rel="noopener noreferrer">
             <motion.span
                 className="inline-flex items-center my-2 p-2 border rounded-lg bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm max-w-full w-64 overflow-hidden"
                 whileHover={{ scale: 1.02 }}

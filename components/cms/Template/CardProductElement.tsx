@@ -89,7 +89,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                     </span>
                 </span>
             )}
-            <Link href={productUrl} className="no-underline">
+            <Link href={productUrl} className="no-underline" target="_blank" rel="noopener noreferrer">
                 <motion.span
                     className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full inline-flex flex-col"
                     whileHover={{ y: -8, boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 10px 10px -5px rgba(0, 0, 0, 0.03)' }}
