@@ -138,7 +138,7 @@ export default async function BlogPost({ params, searchParams }: {
                 </div>
             )}
 
-            <div className="container mx-auto px-4 max-w-4xl">
+            <div className="container mx-auto px-4 max-w-6xl">
                 <article>
                     <header className="mb-12 text-center">
                         <Link href="/blog" className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-sm font-medium mb-8 hover:bg-blue-100 transition-colors">

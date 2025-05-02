@@ -80,7 +80,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
         : null;
 
     return (
-        <span className="inline-block align-middle max-w-[280px] relative">
+        <span className="inline-block align-middle max-w-[280px] relative mx-2 my-2">
             {/* Prime badge */}
             {isPrime && (
                 <span className="absolute top-3 left-3 z-10">

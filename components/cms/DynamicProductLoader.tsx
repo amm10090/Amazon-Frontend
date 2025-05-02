@@ -110,8 +110,9 @@ export default function DynamicProductLoader({
         right: 'text-right', // Or ml-auto if using flex/grid container
     };
 
-    // 将wrapper类名修改为动态容器，但保持相同的样式效果
-    const wrapperClassName = `inline-block ${alignmentClasses[alignment]}`;
+    // 修改包装类，保证卡片能够在一行内显示
+    // 对于card样式特别处理，确保正确的显示方式
+    const wrapperClassName = `${style === 'card' ? 'inline-block align-middle' : 'inline-block'} ${alignmentClasses[alignment]}`;
 
     // 创建渲染内容的函数
     const renderContent = () => {
@@ -144,14 +145,20 @@ export default function DynamicProductLoader({
         return productElement;
     };
 
-    // 根据containerElement动态渲染适当的容器
-    return containerElement === 'span' ? (
+    // 对于card样式，统一使用span容器确保内联显示
+    return (style === 'card') ? (
         <span className={wrapperClassName}>
             {renderContent()}
         </span>
     ) : (
-        <div className={wrapperClassName}>
-            {renderContent()}
-        </div>
+        containerElement === 'span' ? (
+            <span className={wrapperClassName}>
+                {renderContent()}
+            </span>
+        ) : (
+            <div className={wrapperClassName}>
+                {renderContent()}
+            </div>
+        )
     );
 } 
