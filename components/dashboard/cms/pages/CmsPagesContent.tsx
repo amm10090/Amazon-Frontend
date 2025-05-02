@@ -1,6 +1,7 @@
 'use client';
 
 import { Edit, Trash2, Search, Plus, Eye, FileCog, FileText, RefreshCcw, Tag, FolderOpen, FileText as FileTextIcon } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -10,7 +11,7 @@ import CategoriesManagement from '@/components/dashboard/cms/pages/CategoriesMan
 import TagsManagement from '@/components/dashboard/cms/pages/TagsManagement';
 import { cmsApi } from '@/lib/api/cms';
 import { showErrorToast, showSuccessToast } from '@/lib/toast';
-import type { ContentPage } from '@/types/cms';
+import type { ContentPage, ContentCategory, ContentTag } from '@/types/cms';
 
 
 /**
@@ -32,6 +33,8 @@ const CmsPagesContent = () => {
     const [sortBy, setSortBy] = useState('updatedAt');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [refreshKey, setRefreshKey] = useState(0);
+    const [availableCategories, setAvailableCategories] = useState<ContentCategory[]>([]);
+    const [availableTags, setAvailableTags] = useState<ContentTag[]>([]);
 
     // 加载页面数据
     useEffect(() => {
@@ -81,6 +84,40 @@ const CmsPagesContent = () => {
 
         fetchPages();
     }, [currentPage, search, statusFilter, sortBy, sortOrder, refreshKey, activeTab]);
+
+    // 加载分类和标签数据
+    useEffect(() => {
+        if (activeTab !== 'posts') return;
+
+        const fetchCategoriesAndTags = async () => {
+            try {
+                const [categoriesRes, tagsRes] = await Promise.all([
+                    cmsApi.getCategories({
+                        limit: 100,
+                        sortBy: 'name',
+                        sortOrder: 'asc'
+                    }),
+                    cmsApi.getTags({
+                        limit: 100,
+                        sortBy: 'name',
+                        sortOrder: 'asc'
+                    })
+                ]);
+
+                if (categoriesRes.data?.status && categoriesRes.data.data?.categories) {
+                    setAvailableCategories(categoriesRes.data.data.categories);
+                }
+
+                if (tagsRes.data?.status && tagsRes.data.data?.tags) {
+                    setAvailableTags(tagsRes.data.data.tags);
+                }
+            } catch {
+                // 静默处理错误
+            }
+        };
+
+        fetchCategoriesAndTags();
+    }, [activeTab, refreshKey]);
 
     // 处理搜索
     const handleSearch = (e: React.FormEvent) => {
@@ -294,6 +331,20 @@ const CmsPagesContent = () => {
         </div>
     );
 
+    // 根据ID获取分类名称
+    const getCategoryName = (categoryId: string) => {
+        const category = availableCategories.find(cat => cat._id === categoryId);
+
+        return category ? category.name : '';
+    };
+
+    // 根据ID获取标签名称
+    const getTagName = (tagId: string) => {
+        const tag = availableTags.find(tag => tag._id === tagId);
+
+        return tag ? tag.name : '';
+    };
+
     // 渲染页面内容
     const renderPostsContent = () => (
         <>
@@ -378,6 +429,9 @@ const CmsPagesContent = () => {
                             <thead className="bg-gray-50 border-b">
                                 <tr>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Featured Image
+                                    </th>
+                                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         <button
                                             onClick={() => handleSortChange('title')}
                                             className="font-medium flex items-center"
@@ -386,12 +440,10 @@ const CmsPagesContent = () => {
                                         </button>
                                     </th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        <button
-                                            onClick={() => handleSortChange('slug')}
-                                            className="font-medium flex items-center"
-                                        >
-                                            Path {renderSortIcon('slug')}
-                                        </button>
+                                        Categories
+                                    </th>
+                                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Tags
                                     </th>
                                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Status
@@ -413,10 +465,68 @@ const CmsPagesContent = () => {
                                 {pages.map((page) => (
                                     <tr key={page._id} className="border-b hover:bg-gray-50">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm font-medium text-gray-900">{page.title}</div>
+                                            {page.featuredImage ? (
+                                                <div className="h-16 w-24 relative overflow-hidden rounded-md">
+                                                    <Image
+                                                        src={page.featuredImage}
+                                                        alt={page.title}
+                                                        width={96}
+                                                        height={64}
+                                                        className="object-cover h-full w-full"
+                                                        unoptimized
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="h-16 w-24 bg-gray-100 flex items-center justify-center rounded-md">
+                                                    <FileText size={24} className="text-gray-400" />
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="text-sm text-gray-700 truncate max-w-[200px]">/{page.slug}</div>
+                                            <div className="text-sm font-medium text-gray-900">{page.title}</div>
+                                            <div className="text-xs text-gray-500 mt-1">/{page.slug}</div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-wrap gap-1">
+                                                {page.categories && page.categories.length > 0 ? (
+                                                    page.categories.slice(0, 2).map((categoryId) => (
+                                                        <span
+                                                            key={categoryId}
+                                                            className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700"
+                                                        >
+                                                            {getCategoryName(categoryId)}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-xs text-gray-500">-</span>
+                                                )}
+                                                {page.categories && page.categories.length > 2 && (
+                                                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">
+                                                        +{page.categories.length - 2}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex flex-wrap gap-1">
+                                                {page.tags && page.tags.length > 0 ? (
+                                                    page.tags.slice(0, 2).map((tagId) => (
+                                                        <span
+                                                            key={tagId}
+                                                            className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700"
+                                                        >
+                                                            {getTagName(tagId)}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-xs text-gray-500">-</span>
+                                                )}
+                                                {page.tags && page.tags.length > 2 && (
+                                                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">
+                                                        +{page.tags.length - 2}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             {renderStatusBadge(page.status)}

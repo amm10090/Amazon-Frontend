@@ -1,4 +1,3 @@
-import { CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -61,7 +60,7 @@ export const metadata: Metadata = {
 };
 
 // Format date
-function formatDate(dateString: string): string {
+function _formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
@@ -138,17 +137,6 @@ export default async function BlogList() {
                                                     {page.title}
                                                 </Link>
                                             </h2>
-
-                                        </div>
-                                        <div className="flex items-center text-sm text-gray-500 pt-4 mt-2 border-t border-gray-100">
-                                            <div className="flex items-center mr-4">
-                                                <UserIcon className="h-4 w-4 mr-1" />
-                                                <span>{page.author}</span>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <CalendarIcon className="h-4 w-4 mr-1" />
-                                                <span>{formatDate(page.publishedAt || page.updatedAt)}</span>
-                                            </div>
                                         </div>
                                     </div>
                                 </article>

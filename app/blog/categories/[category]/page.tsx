@@ -1,4 +1,3 @@
-import { CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -92,7 +91,7 @@ export async function generateMetadata(
 }
 
 // 添加日期格式化函数 (与 /blog/page.tsx 相同)
-function formatDate(dateString: string): string {
+function _formatDate(dateString: string): string {
     if (!dateString) return ''; // 添加保护，防止无效日期
 
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -170,20 +169,6 @@ export default async function CategoryPage({ params }: { params: { category: str
                                                     {page.title}
                                                 </Link>
                                             </h2>
-                                        </div>
-                                        <div className="flex items-center text-sm text-gray-500 pt-4 mt-2 border-t border-gray-100">
-                                            {page.author && (
-                                                <div className="flex items-center mr-4">
-                                                    <UserIcon className="h-4 w-4 mr-1" />
-                                                    <span>{page.author}</span>
-                                                </div>
-                                            )}
-                                            {(page.publishedAt || page.updatedAt) && (
-                                                <div className="flex items-center">
-                                                    <CalendarIcon className="h-4 w-4 mr-1" />
-                                                    <span>{formatDate((page.publishedAt || page.updatedAt).toString())}</span>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 </article>

@@ -1,4 +1,3 @@
-import { CalendarIcon, ClockIcon, UserIcon } from '@heroicons/react/24/outline';
 import type { Metadata, ResolvingMetadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -97,7 +96,7 @@ export async function generateMetadata(
 }
 
 // 格式化日期
-function formatDate(dateString: string): string {
+function _formatDate(dateString: string): string {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
@@ -121,7 +120,7 @@ export default async function BlogPost({ params, searchParams }: {
 
     // 计算阅读时长
     const wordCount = pageData.content.split(/\s+/).length;
-    const readingTime = Math.max(1, Math.ceil(wordCount / 200)); // 假设平均阅读速度为每分钟200词
+    const _readingTime = Math.max(1, Math.ceil(wordCount / 200)); // 假设平均阅读速度为每分钟200词
 
     // 获取特色图片URL（优先使用featuredImage字段）
     const featuredImageUrl = pageData.featuredImage || pageData.seoData?.ogImage;
@@ -153,21 +152,6 @@ export default async function BlogPost({ params, searchParams }: {
                                 Draft
                             </div>
                         )}
-
-                        <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-500">
-                            <div className="flex items-center">
-                                <UserIcon className="h-4 w-4 mr-1" />
-                                <span>{pageData.author}</span>
-                            </div>
-                            <div className="flex items-center">
-                                <CalendarIcon className="h-4 w-4 mr-1" />
-                                <span>{formatDate(pageData.publishedAt || pageData.updatedAt)}</span>
-                            </div>
-                            <div className="flex items-center">
-                                <ClockIcon className="h-4 w-4 mr-1" />
-                                <span>{readingTime} min read</span>
-                            </div>
-                        </div>
                     </header>
 
                     {/* 添加特色图片显示 */}
