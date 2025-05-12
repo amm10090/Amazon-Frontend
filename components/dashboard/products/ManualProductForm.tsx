@@ -47,7 +47,7 @@ const productOfferSchema = z.object({
 
 // 定义 ProductInfo 的 Zod Schema (Define Zod Schema for ProductInfo)
 const productInfoSchema = z.object({
-    asin: z.string().min(1, { message: 'ASIN is required' }), // ASIN (必需)
+    asin: z.string().optional(), // ASIN (必需) -> ASIN (Optional)
     title: z.string().min(1, { message: 'Title is required' }), // 标题 (必需)
     url: z.string().url({ message: 'Invalid URL format' }), // URL (必需, 验证格式)
     offers: z.array(productOfferSchema).min(1, { message: 'At least one offer is required' }), // Offers (必需, 至少一个)
@@ -148,6 +148,7 @@ const ManualProductForm: React.FC = () => {
         // 格式化数据以匹配 API 期望的 ProductInfo 结构 (Format data to match expected ProductInfo structure)
         const formattedData: ProductInfo = {
             ...data,
+            asin: data.asin ?? '', // Handle optional ASIN, provide fallback
             // Zod schema 的 preprocess 已经处理了 categories, features, browse_nodes, raw_data
             browse_nodes: data.browse_nodes || undefined, // 处理空数组情况 (Handle empty array case)
             raw_data: data.raw_data || undefined, // 处理空对象情况 (Handle empty object case)
@@ -275,220 +276,234 @@ const ManualProductForm: React.FC = () => {
     return (
         <Form
             onSubmit={handleSubmit(onSubmit)}
-            className="space-y-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6"
             validationBehavior="aria" // 使用ARIA验证行为，提供实时错误反馈
             validationErrors={serverErrors} // 添加服务器错误
         >
-            {/* 主布局容器 (Main Layout Container) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-6">
-                {/* 左列 (Left Column) */}
-                <div className="flex flex-col gap-6"> {/* 使用flex和gap来控制左列内部间距 */}
-                    {/* 基本信息 (Basic Information) */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Input
-                            {...register("asin")}
-                            label="ASIN"
-                            placeholder="Enter product ASIN"
-                            isRequired
-                            isInvalid={!!errors.asin}
-                            errorMessage={errors.asin?.message}
-                            labelPlacement="outside-left"
-                            variant="bordered" // HeroUI 支持 bordered
-                        />
-                        <Input
-                            {...register("title")}
-                            label="Title"
-                            placeholder="Enter product title"
-                            isRequired
-                            isInvalid={!!errors.title}
-                            errorMessage={errors.title?.message}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                        />
-                        <Input
-                            {...register("url")}
-                            label="Product URL"
-                            placeholder="https://www.amazon.com/dp/..."
-                            type="url"
-                            isRequired
-                            isInvalid={!!errors.url}
-                            errorMessage={errors.url?.message}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                        />
-                        <Input
-                            {...register("brand")}
-                            label="Brand"
-                            placeholder="Enter brand name (optional)"
-                            isInvalid={!!errors.brand}
-                            errorMessage={errors.brand?.message}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                        />
-                    </div>
-
-                    {/* 图片上传 - 移除 col-span */}
-                    <div>
-                        <Controller
-                            name="main_image"
-                            control={control}
-                            render={({ field }) => (
-                                <CoverImageUploader
-                                    currentImageUrl={field.value || ''} // Provide current value to the uploader
-                                    onImageUploaded={(url) => field.onChange(url)} // Update form state on upload
-                                />
-                                // 可以考虑在这里添加错误信息显示，如果需要的话
-                                // {errors.main_image && <p className="text-tiny text-danger mt-1">{errors.main_image.message}</p>}
-                            )}
-                        />
-                        {/* 显示 main_image 字段本身的错误 */}
-                        {errors.main_image && (
-                            <p className="mt-1 text-xs text-red-500">{errors.main_image.message}</p>
-                        )}
-                    </div>
-
-                    {/* 更多基本信息 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Input
-                            {...register("binding")}
-                            label="Binding"
-                            placeholder="e.g., Electronics (optional)"
-                            isInvalid={!!errors.binding}
-                            errorMessage={errors.binding?.message}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                        />
-                        <Input
-                            {...register("product_group")}
-                            label="Product Group"
-                            placeholder="e.g., Test Products (optional)"
-                            isInvalid={!!errors.product_group}
-                            errorMessage={errors.product_group?.message}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                        />
-                        <Input
-                            {...register("cj_url")}
-                            label="CJ Affiliate URL"
-                            placeholder="https://... (optional)"
-                            type="url"
-                            isInvalid={!!errors.cj_url}
-                            errorMessage={errors.cj_url?.message}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                        />
-                        <Controller
-                            name="api_provider"
-                            control={control}
-                            render={({ field }) => (
-                                <Select
-                                    label="API Provider"
-                                    placeholder="Select API provider"
-                                    selectedKeys={field.value ? [field.value] : []}
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value)}
-                                    onBlur={field.onBlur}
-                                    isInvalid={!!errors.api_provider}
-                                    errorMessage={errors.api_provider?.message}
-                                    labelPlacement="outside-left"
-                                    variant="bordered"
-                                >
-                                    <SelectItem key="pa-api">PA-API</SelectItem>
-                                    <SelectItem key="cj-api">CJ-API</SelectItem>
-                                </Select>
-                            )}
-                        />
-                        <Controller
-                            name="source"
-                            control={control}
-                            render={({ field }) => (
-                                <Select
-                                    label="Discount Type"
-                                    placeholder="Select data source"
-                                    selectedKeys={field.value ? [field.value] : []}
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value)}
-                                    onBlur={field.onBlur}
-                                    isInvalid={!!errors.source}
-                                    errorMessage={errors.source?.message}
-                                    labelPlacement="outside-left"
-                                    variant="bordered"
-                                >
-                                    <SelectItem key="coupon">Coupon</SelectItem>
-                                    <SelectItem key="discount">Discount</SelectItem>
-                                </Select>
-                            )}
-                        />
-                    </div>
-
-                    {/* 数组和复杂字段 (Arrays and Complex Fields) */}
-                    <div className="space-y-4">
-                        <Textarea
-                            {...register("categories")}
-                            label="Categories (comma-separated, optional)"
-                            placeholder="e.g., Electronics, Test Category"
-                            isInvalid={!!errors.categories}
-                            // Zod preprocess 返回数组，但错误可能附加到原始字段
-                            errorMessage={errors.categories?.message as string | undefined}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                        />
-                        <Textarea
-                            {...register("features")}
-                            label="Features (comma-separated, optional)"
-                            placeholder="e.g., Feature 1, Feature 2"
-                            isInvalid={!!errors.features}
-                            errorMessage={errors.features?.message as string | undefined}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                        />
-                        <Textarea
-                            {...register("browse_nodes")}
-                            label="Browse Nodes (JSON Array, optional)"
-                            placeholder='e.g., [{\"id\": \"123\", \"name\": \"Test Node\"}]'
-                            isInvalid={!!errors.browse_nodes}
-                            // Fix errorMessage string quoting for JSX
-                            errorMessage={errors.browse_nodes ? `Must be a valid JSON array like '[{"id": "...", "name": "..."}]'` : undefined}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                            minRows={2} // Assuming HeroUI Textarea has minRows
-                        />
-                        <Textarea
-                            {...register("raw_data")}
-                            label="Raw Data (JSON Object, optional)"
-                            placeholder='e.g., {\"key\": \"value\"}'
-                            isInvalid={!!errors.raw_data}
-                            // Fix errorMessage string quoting for JSX
-                            errorMessage={errors.raw_data ? `Must be a valid JSON object like '{"key": "value"}'` : undefined}
-                            labelPlacement="outside-left"
-                            variant="bordered"
-                            minRows={2} // Assuming HeroUI Textarea has minRows
-                        />
-                    </div>
+            {/* 区域 A: 基本产品信息 */}
+            <div className="border rounded-md p-4 space-y-4 md:col-span-1 lg:col-span-2">
+                <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
+                <div className="grid grid-cols-1 gap-6">
+                    <Input
+                        {...register("asin")}
+                        label="ASIN (Optional)"
+                        placeholder="Enter product ASIN"
+                        isInvalid={!!errors.asin}
+                        errorMessage={errors.asin?.message}
+                        labelPlacement="outside-left"
+                        variant="bordered" // HeroUI 支持 bordered
+                        className="w-full" // Added w-full
+                        classNames={{ inputWrapper: "flex-1" }} // Added for internal width
+                    />
+                    <Input
+                        {...register("title")}
+                        label="Title"
+                        placeholder="Enter product title"
+                        isRequired
+                        isInvalid={!!errors.title}
+                        errorMessage={errors.title?.message}
+                        labelPlacement="outside-left"
+                        variant="bordered"
+                        className="w-full" // Added w-full
+                        classNames={{ inputWrapper: "flex-1" }} // Added for internal width
+                    />
+                    <Input
+                        {...register("url")}
+                        label="Source URL"
+                        placeholder="https://www.example.com/product/..."
+                        type="url"
+                        isRequired
+                        isInvalid={!!errors.url}
+                        errorMessage={errors.url?.message}
+                        labelPlacement="outside-left"
+                        variant="bordered"
+                        className="w-full" // Added w-full
+                        classNames={{ inputWrapper: "flex-1" }} // Added for internal width
+                    />
+                    <Input
+                        {...register("brand")}
+                        label="Brand"
+                        placeholder="Enter brand name (optional)"
+                        isInvalid={!!errors.brand}
+                        errorMessage={errors.brand?.message}
+                        labelPlacement="outside-left"
+                        variant="bordered"
+                        className="w-full" // Added w-full
+                        classNames={{ inputWrapper: "flex-1" }} // Added for internal width
+                    />
                 </div>
+            </div>
 
-                {/* 右列 (Right Column) */}
-                <div className="flex flex-col gap-6"> {/* 使用flex和gap来控制右列内部间距 */}
-                    {/* 优惠券信息 (Coupon Information) */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-2 col-span-1 md:col-span-1"> {/* 修改: md:col-span-2 -> md:col-span-1 */}
-                            <label className="text-sm font-medium">Coupon Expiration Date (Optional)</label>
-                            <div className="flex items-center gap-2">
-                                <Controller
-                                    name="coupon_expiration_date"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <DateInput
-                                            value={field.value}
-                                            onChange={field.onChange}
-                                            variant="bordered"
-                                            isInvalid={!!errors.coupon_expiration_date}
-                                            errorMessage={errors.coupon_expiration_date?.message?.toString()}
-                                            granularity="second"
-                                            className="flex-1"
-                                        />
-                                    )}
+            {/* 区域 C: 更多产品信息 */}
+            <div className="border rounded-md p-4 space-y-4 md:col-span-1 lg:col-span-2">
+                <h3 className="text-lg font-semibold mb-2">Additional Information</h3>
+                <div className="grid grid-cols-1 gap-6">
+                    <Input
+                        {...register("binding")}
+                        label="Binding"
+                        placeholder="e.g., Electronics (optional)"
+                        isInvalid={!!errors.binding}
+                        errorMessage={errors.binding?.message}
+                        labelPlacement="outside-left"
+                        variant="bordered"
+                        className="w-full" // Added w-full
+                        classNames={{ inputWrapper: "flex-1" }} // Added for internal width
+                    />
+                    <Input
+                        {...register("product_group")}
+                        label="Product Group"
+                        placeholder="e.g., Test Products (optional)"
+                        isInvalid={!!errors.product_group}
+                        errorMessage={errors.product_group?.message}
+                        labelPlacement="outside-left"
+                        variant="bordered"
+                        className="w-full" // Added w-full
+                        classNames={{ inputWrapper: "flex-1" }} // Added for internal width
+                    />
+                    <Input
+                        {...register("cj_url")}
+                        label="CJ Affiliate URL"
+                        placeholder="https://... (optional)"
+                        type="url"
+                        isInvalid={!!errors.cj_url}
+                        errorMessage={errors.cj_url?.message}
+                        labelPlacement="outside-left"
+                        variant="bordered"
+                        className="w-full" // Added w-full
+                        classNames={{ inputWrapper: "flex-1" }} // Added for internal width
+                    />
+                    <Controller
+                        name="api_provider"
+                        control={control}
+                        render={({ field }) => (
+                            <Select
+                                label="API Provider"
+                                placeholder="Select API provider"
+                                selectedKeys={field.value ? [field.value] : []}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value)}
+                                onBlur={field.onBlur}
+                                isInvalid={!!errors.api_provider}
+                                errorMessage={errors.api_provider?.message}
+                                labelPlacement="outside-left"
+                                variant="bordered"
+                                className="w-full" // Added w-full
+                                classNames={{ trigger: "flex-1" }} // Added for internal width
+                            >
+                                <SelectItem key="pa-api">PA-API</SelectItem>
+                                <SelectItem key="cj-api">CJ-API</SelectItem>
+                            </Select>
+                        )}
+                    />
+                    <Controller
+                        name="source"
+                        control={control}
+                        render={({ field }) => (
+                            <Select
+                                label="Discount Type"
+                                placeholder="Select data source"
+                                selectedKeys={field.value ? [field.value] : []}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value)}
+                                onBlur={field.onBlur}
+                                isInvalid={!!errors.source}
+                                errorMessage={errors.source?.message}
+                                labelPlacement="outside-left"
+                                variant="bordered"
+                                className="w-full" // Added w-full
+                                classNames={{ trigger: "flex-1" }} // Added for internal width
+                            >
+                                <SelectItem key="coupon">Coupon</SelectItem>
+                                <SelectItem key="discount">Discount</SelectItem>
+                            </Select>
+                        )}
+                    />
+                </div>
+            </div>
+
+            {/* 区域 B: 图片上传 */}
+            <div className="border rounded-md p-4 space-y-4 md:col-span-1 lg:col-span-2">
+                <h3 className="text-lg font-semibold mb-2">Cover Image</h3>
+                <Controller
+                    name="main_image"
+                    control={control}
+                    render={({ field }) => (
+                        <CoverImageUploader
+                            currentImageUrl={field.value || ''} // Provide current value to the uploader
+                            onImageUploaded={(url) => field.onChange(url)} // Update form state on upload
+                        />
+                        // 可以考虑在这里添加错误信息显示，如果需要的话
+                        // {errors.main_image && <p className="text-tiny text-danger mt-1">{errors.main_image.message}</p>}
+                    )}
+                />
+                {/* 显示 main_image 字段本身的错误 */}
+                {errors.main_image && (
+                    <p className="mt-1 text-xs text-red-500">{errors.main_image.message}</p>
+                )}
+            </div>
+
+            {/* 区域 D: 分类与特性 */}
+            <div className="border rounded-md p-4 space-y-4 md:col-span-2 lg:col-span-6">
+                <h3 className="text-lg font-semibold mb-2">Categories & Features</h3>
+                <div className="space-y-4">
+                    <Textarea
+                        {...register("categories")}
+                        label="Categories (comma-separated, optional)"
+                        placeholder="e.g., Electronics, Test Category"
+                        isInvalid={!!errors.categories}
+                        errorMessage={errors.categories?.message as string | undefined}
+                        variant="bordered"
+                    />
+                    <Textarea
+                        {...register("features")}
+                        label="Features (comma-separated, optional)"
+                        placeholder="e.g., Feature 1, Feature 2"
+                        isInvalid={!!errors.features}
+                        errorMessage={errors.features?.message as string | undefined}
+                        variant="bordered"
+                    />
+                    <Textarea
+                        {...register("browse_nodes")}
+                        label="Browse Nodes (JSON Array, optional)"
+                        placeholder="e.g., [{&quot;id&quot;: &quot;123&quot;, &quot;name&quot;: &quot;Test Node&quot;}]"
+                        isInvalid={!!errors.browse_nodes}
+                        errorMessage={errors.browse_nodes ? `Must be a valid JSON array like '[{"id": "...", "name": "..."}]'` : undefined}
+                        variant="bordered"
+                        minRows={2} // Assuming HeroUI Textarea has minRows
+                    />
+                    <Textarea
+                        {...register("raw_data")}
+                        label="Raw Data (JSON Object, optional)"
+                        placeholder="e.g., {&quot;key&quot;: &quot;value&quot;}"
+                        isInvalid={!!errors.raw_data}
+                        errorMessage={errors.raw_data ? `Must be a valid JSON object like '{"key": "value"}'` : undefined}
+                        variant="bordered"
+                        minRows={2} // Assuming HeroUI Textarea has minRows
+                    />
+                </div>
+            </div>
+
+            {/* 区域 E: 优惠券信息 */}
+            <div className="border rounded-md p-4 space-y-4 md:col-span-1 lg:col-span-2">
+                <h3 className="text-lg font-semibold mb-2">Coupon Information</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="flex flex-col gap-2 sm:col-span-2"> {/* 让日期选择器占满整行 */}
+                        <label className="text-sm font-medium">Coupon Expiration Date (Optional)</label>
+                        <Controller
+                            name="coupon_expiration_date"
+                            control={control}
+                            render={({ field }) => (
+                                <DateInput
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    variant="bordered"
+                                    isInvalid={!!errors.coupon_expiration_date}
+                                    errorMessage={errors.coupon_expiration_date?.message?.toString()}
+                                    granularity="second"
+                                    labelPlacement="outside-left"
                                 />
-                            </div>
-                        </div>
+                            )}
+                        />
+                    </div>
+                    <div className="sm:col-span-2"> {/* 让 Coupon Terms 占满整行 */}
                         <Input
                             {...register("coupon_terms")}
                             label="Coupon Terms (optional)"
@@ -499,268 +514,267 @@ const ManualProductForm: React.FC = () => {
                             variant="bordered"
                         />
                     </div>
-
-                    {/* Offers 动态字段 (Dynamic Offer Fields) */}
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold">Offers (at least one required)</h3>
-                            {/* 添加 Offer 按钮 (Add Offer Button) */}
-                            <Button
-                                color="primary"
-                                variant="ghost" // HeroUI supports ghost variant
-                                size="sm" // HeroUI supports size
-                                onPress={() => appendOffer({ // Use onPress for HeroUI Button
-                                    condition: 'New',
-                                    price: 0, // 使用数字0作为初始值
-                                    currency: 'USD',
-                                    availability: '',
-                                    merchant_name: '',
-                                    is_prime: false,
-                                    coupon_type: null,
-                                })}
-                            >
-                                Add Offer
-                            </Button>
-                        </div>
-                        {/* 显示 Offers 级别的错误 (Display Offers level error) */}
-                        {errors.offers && !Array.isArray(errors.offers) && (
-                            <p className="text-tiny text-danger">{errors.offers.message}</p> // Assuming text-tiny and text-danger work with Tailwind setup
-                        )}
-
-                        {offerFields.map((field, index) => (
-                            <div key={field.id} className="border p-4 rounded-md space-y-4 relative bg-content1/5 dark:bg-content1/10"> {/* Check if bg-content1 classes exist */}
-                                {/* 删除 Offer 按钮 (Delete Offer Button) */}
-                                {offerFields.length > 1 && (
-                                    <Button
-                                        color="danger" // HeroUI supports danger color
-                                        variant="light" // HeroUI supports light variant
-                                        onPress={() => removeOffer(index)} // Use onPress
-                                        isIconOnly // HeroUI supports isIconOnly
-                                        size="sm"
-                                        className="absolute top-1 right-1 z-10" // Positioning should work
-                                    >
-                                        <TrashIcon size={16} />
-                                    </Button>
-                                )}
-                                {/* Offer 字段 (Offer Fields) */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2"> {/* 增加上边距 */}
-                                    <Controller // 使用 Controller 包裹 Select
-                                        name={`offers.${index}.condition`}
-                                        control={control}
-                                        rules={{ required: 'Condition is required' }} // 添加 RHF 级别的 required
-                                        render={({ field }) => (
-                                            <Select
-                                                // 使用 HeroUI Select props
-                                                label="Condition"
-                                                placeholder="Select condition"
-                                                isRequired
-                                                isInvalid={!!errors.offers?.[index]?.condition}
-                                                errorMessage={errors.offers?.[index]?.condition?.message}
-                                                labelPlacement="outside-left"
-                                                variant="bordered" // HeroUI supports bordered
-                                                selectedKeys={field.value ? [field.value] : []}
-                                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value)} // Add explicit type for event
-                                                onBlur={field.onBlur} // 添加 onBlur
-                                                value={field.value ?? ""} // Select might need controlled value prop like this
-                                            >
-                                                {/* 添加常见的 Condition 选项 */}
-                                                <SelectItem key="New">New</SelectItem>
-                                                <SelectItem key="Used - Like New">Used - Like New</SelectItem>
-                                                <SelectItem key="Used - Very Good">Used - Very Good</SelectItem>
-                                                <SelectItem key="Used - Good">Used - Good</SelectItem>
-                                                <SelectItem key="Used - Acceptable">Used - Acceptable</SelectItem>
-                                                <SelectItem key="Refurbished">Refurbished</SelectItem>
-                                            </Select>
-                                        )}
-                                    />
-                                    <Controller
-                                        name={`offers.${index}.price`}
-                                        control={control}
-                                        rules={{ required: 'Price is required' }}
-                                        render={({ field }) => (
-                                            <NumberInput
-                                                label="Price"
-                                                placeholder="e.g., 99.99"
-                                                isRequired
-                                                isInvalid={!!errors.offers?.[index]?.price}
-                                                errorMessage={errors.offers?.[index]?.price?.message}
-                                                labelPlacement="outside-left"
-                                                variant="bordered"
-                                                step={0.01}
-                                                minValue={0.01}
-                                                value={field.value ?? 0}
-                                                onValueChange={(value: number | null | undefined) => field.onChange(value ?? 0)}
-                                                onBlur={field.onBlur}
-                                            />
-                                        )}
-                                    />
-                                    <Input
-                                        {...register(`offers.${index}.currency`)}
-                                        label="Currency"
-                                        placeholder="e.g., USD"
-                                        isRequired
-                                        isInvalid={!!errors.offers?.[index]?.currency}
-                                        errorMessage={errors.offers?.[index]?.currency?.message}
-                                        labelPlacement="outside-left"
-                                        variant="bordered"
-                                    />
-                                    <Input
-                                        {...register(`offers.${index}.availability`)}
-                                        label="Availability"
-                                        placeholder="e.g., In Stock"
-                                        isRequired
-                                        isInvalid={!!errors.offers?.[index]?.availability}
-                                        errorMessage={errors.offers?.[index]?.availability?.message}
-                                        labelPlacement="outside-left"
-                                        variant="bordered"
-                                    />
-                                    <Input
-                                        {...register(`offers.${index}.merchant_name`)}
-                                        label="Merchant Name"
-                                        placeholder="e.g., Amazon.com"
-                                        isRequired
-                                        isInvalid={!!errors.offers?.[index]?.merchant_name}
-                                        errorMessage={errors.offers?.[index]?.merchant_name?.message}
-                                        labelPlacement="outside-left"
-                                        variant="bordered"
-                                    />
-                                    <Controller
-                                        name={`offers.${index}.original_price`}
-                                        control={control}
-                                        render={({ field }) => (
-                                            <NumberInput
-                                                label="Original Price (Optional)"
-                                                placeholder="e.g., 129.99"
-                                                isInvalid={!!errors.offers?.[index]?.original_price}
-                                                errorMessage={errors.offers?.[index]?.original_price?.message}
-                                                labelPlacement="outside-left"
-                                                variant="bordered"
-                                                step={0.01}
-                                                minValue={0}
-                                                value={field.value ?? undefined}
-                                                onValueChange={(value) => field.onChange(value ?? undefined)}
-                                                onBlur={field.onBlur}
-                                            />
-                                        )}
-                                    />
-                                    <Controller
-                                        name={`offers.${index}.savings`}
-                                        control={control}
-                                        render={({ field }) => (
-                                            <NumberInput
-                                                label="Savings Amount (Optional)"
-                                                placeholder="e.g., 30.00"
-                                                isInvalid={!!errors.offers?.[index]?.savings}
-                                                errorMessage={errors.offers?.[index]?.savings?.message}
-                                                labelPlacement="outside-left"
-                                                variant="bordered"
-                                                step={0.01}
-                                                minValue={0}
-                                                value={field.value ?? undefined}
-                                                onValueChange={(value) => field.onChange(value ?? undefined)}
-                                                onBlur={field.onBlur}
-                                            />
-                                        )}
-                                    />
-                                    <Controller
-                                        name={`offers.${index}.savings_percentage`}
-                                        control={control}
-                                        render={({ field }) => (
-                                            <NumberInput
-                                                label="Savings Percentage (Optional)"
-                                                placeholder="e.g., 23"
-                                                isInvalid={!!errors.offers?.[index]?.savings_percentage}
-                                                errorMessage={errors.offers?.[index]?.savings_percentage?.message}
-                                                labelPlacement="outside-left"
-                                                variant="bordered"
-                                                step={1}
-                                                minValue={0}
-                                                maxValue={100}
-                                                value={field.value ?? undefined}
-                                                onValueChange={(value) => field.onChange(value ?? undefined)}
-                                                onBlur={field.onBlur}
-                                            />
-                                        )}
-                                    />
-                                    <Controller // 使用 Controller 包裹 Select
-                                        name={`offers.${index}.coupon_type`}
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Select
-                                                // 使用 HeroUI Select props
-                                                label="Coupon Type (Optional)"
-                                                placeholder="Select coupon type"
-                                                isInvalid={!!errors.offers?.[index]?.coupon_type}
-                                                errorMessage={errors.offers?.[index]?.coupon_type?.message}
-                                                labelPlacement="outside-left"
-                                                variant="bordered"
-                                                selectedKeys={field.value ? [field.value] : []} // 控制 Select 的值
-                                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value || null)} // Add explicit type, 更新 react-hook-form, 处理空值
-                                                value={field.value ?? ""} // 确保 Select 显示正确
-                                                onBlur={field.onBlur} // 添加 onBlur
-                                            >
-                                                {/* 添加空选项，允许清除选择 */}
-                                                <SelectItem key="">None</SelectItem>
-                                                <SelectItem key="percentage">Percentage</SelectItem>
-                                                <SelectItem key="fixed">Fixed Amount</SelectItem>
-                                            </Select>
-                                        )}
-                                    />
-                                    <Controller
-                                        name={`offers.${index}.coupon_value`}
-                                        control={control}
-                                        render={({ field }) => (
-                                            <NumberInput
-                                                label="Coupon Value (Optional)"
-                                                placeholder="Value based on type"
-                                                isInvalid={!!errors.offers?.[index]?.coupon_value}
-                                                errorMessage={errors.offers?.[index]?.coupon_value?.message}
-                                                labelPlacement="outside-left"
-                                                variant="bordered"
-                                                step={0.01}
-                                                minValue={0}
-                                                value={field.value ?? undefined}
-                                                onValueChange={(value) => field.onChange(value ?? undefined)}
-                                                onBlur={field.onBlur}
-                                                classNames={{ input: 'min-w-[80px]' }}
-                                            />
-                                        )}
-                                    />
-                                    <Controller // 使用 Controller 包裹 Switch
-                                        name={`offers.${index}.is_prime`}
-                                        control={control}
-                                        render={({ field }) => (
-                                            <div className="flex items-center pt-6"> {/* 调整对齐 */}
-                                                <Switch
-                                                    // 使用 HeroUI Switch props
-                                                    isSelected={field.value}
-                                                    onValueChange={field.onChange} // HeroUI uses onValueChange
-                                                    color="primary" // HeroUI supports color
-                                                >
-                                                    Is Prime? (Optional)
-                                                </Switch>
-                                            </div>
-                                        )}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
                 </div>
             </div>
 
-            {/* 提交按钮 (Submit Button) - 移除外部 div, 尝试将类应用到按钮 */}
-            {/* <div className="flex justify-end pt-4"> */}
-            <Button
-                type="submit"
-                color="primary"
-                isLoading={isLoading}
-                disabled={isLoading}
-                className="flex justify-end pt-4" // 尝试将类应用到按钮
-            >
-                {isLoading ? 'Submitting...' : 'Add Product'}
-            </Button>
-            {/* </div> */}
+            {/* 区域 F: Offers 列表 */}
+            <div className="border rounded-md space-y-4 md:col-span-2 lg:col-span-4 p-4"> {/* 添加 P-4 */}
+                <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold">Offers (at least one required)</h3>
+                    {/* 添加 Offer 按钮 (Add Offer Button) */}
+                    <Button
+                        color="primary"
+                        variant="ghost" // HeroUI supports ghost variant
+                        size="sm" // HeroUI supports size
+                        onPress={() => appendOffer({ // Use onPress for HeroUI Button
+                            condition: 'New',
+                            price: 0, // 使用数字0作为初始值
+                            currency: 'USD',
+                            availability: '',
+                            merchant_name: '',
+                            is_prime: false,
+                            coupon_type: null,
+                        })}
+                    >
+                        Add Offer
+                    </Button>
+                </div>
+                {/* 显示 Offers 级别的错误 (Display Offers level error) */}
+                {errors.offers && !Array.isArray(errors.offers) && (
+                    <p className="text-tiny text-danger">{errors.offers.message}</p> // Assuming text-tiny and text-danger work with Tailwind setup
+                )}
+
+                {offerFields.map((field, index) => (
+                    <div key={field.id} className="border p-4 rounded-md space-y-4 relative bg-content1/5 dark:bg-content1/10"> {/* Check if bg-content1 classes exist */}
+                        {/* 删除 Offer 按钮 (Delete Offer Button) */}
+                        {offerFields.length > 1 && (
+                            <Button
+                                color="danger" // HeroUI supports danger color
+                                variant="light" // HeroUI supports light variant
+                                onPress={() => removeOffer(index)} // Use onPress
+                                isIconOnly // HeroUI supports isIconOnly
+                                size="sm"
+                                className="absolute top-1 right-1 z-10" // Positioning should work
+                            >
+                                <TrashIcon size={16} />
+                            </Button>
+                        )}
+                        {/* Offer 字段 (Offer Fields) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2"> {/* 增加上边距, 移除 xl:grid-cols-3, 增加垂直间距 */}
+                            <Controller // 使用 Controller 包裹 Select
+                                name={`offers.${index}.condition`}
+                                control={control}
+                                rules={{ required: 'Condition is required' }} // 添加 RHF 级别的 required
+                                render={({ field }) => (
+                                    <Select
+                                        // 使用 HeroUI Select props
+                                        label="Condition"
+                                        placeholder="Select condition"
+                                        isRequired
+                                        isInvalid={!!errors.offers?.[index]?.condition}
+                                        errorMessage={errors.offers?.[index]?.condition?.message}
+                                        labelPlacement="outside-left"
+                                        variant="bordered" // HeroUI supports bordered
+                                        selectedKeys={field.value ? [field.value] : []}
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value)} // Add explicit type for event
+                                        onBlur={field.onBlur} // 添加 onBlur
+                                        value={field.value ?? ""} // Select might need controlled value prop like this
+                                    >
+                                        {/* 添加常见的 Condition 选项 */}
+                                        <SelectItem key="New">New</SelectItem>
+                                        <SelectItem key="Used - Like New">Used - Like New</SelectItem>
+                                        <SelectItem key="Used - Very Good">Used - Very Good</SelectItem>
+                                        <SelectItem key="Used - Good">Used - Good</SelectItem>
+                                        <SelectItem key="Used - Acceptable">Used - Acceptable</SelectItem>
+                                        <SelectItem key="Refurbished">Refurbished</SelectItem>
+                                    </Select>
+                                )}
+                            />
+                            <Controller
+                                name={`offers.${index}.price`}
+                                control={control}
+                                rules={{ required: 'Price is required' }}
+                                render={({ field }) => (
+                                    <NumberInput
+                                        label="Price"
+                                        placeholder="e.g., 99.99"
+                                        isRequired
+                                        isInvalid={!!errors.offers?.[index]?.price}
+                                        errorMessage={errors.offers?.[index]?.price?.message}
+                                        labelPlacement="outside-left"
+                                        variant="bordered"
+                                        step={0.01}
+                                        minValue={0.01}
+                                        value={field.value ?? 0}
+                                        onValueChange={(value: number | null | undefined) => field.onChange(value ?? 0)}
+                                        onBlur={field.onBlur}
+                                    />
+                                )}
+                            />
+                            <Input
+                                {...register(`offers.${index}.currency`)}
+                                label="Currency"
+                                placeholder="e.g., USD"
+                                isRequired
+                                isInvalid={!!errors.offers?.[index]?.currency}
+                                errorMessage={errors.offers?.[index]?.currency?.message}
+                                labelPlacement="outside-left"
+                                variant="bordered"
+                            />
+                            <Input
+                                {...register(`offers.${index}.availability`)}
+                                label="Availability"
+                                placeholder="e.g., In Stock"
+                                isRequired
+                                isInvalid={!!errors.offers?.[index]?.availability}
+                                errorMessage={errors.offers?.[index]?.availability?.message}
+                                labelPlacement="outside-left"
+                                variant="bordered"
+                            />
+                            <Input
+                                {...register(`offers.${index}.merchant_name`)}
+                                label="Merchant Name"
+                                placeholder="e.g., Amazon.com"
+                                isRequired
+                                isInvalid={!!errors.offers?.[index]?.merchant_name}
+                                errorMessage={errors.offers?.[index]?.merchant_name?.message}
+                                labelPlacement="outside-left"
+                                variant="bordered"
+                            />
+                            <Controller
+                                name={`offers.${index}.original_price`}
+                                control={control}
+                                render={({ field }) => (
+                                    <NumberInput
+                                        label="Original Price (Optional)"
+                                        placeholder="e.g., 129.99"
+                                        isInvalid={!!errors.offers?.[index]?.original_price}
+                                        errorMessage={errors.offers?.[index]?.original_price?.message}
+                                        labelPlacement="outside-left"
+                                        variant="bordered"
+                                        step={0.01}
+                                        minValue={0}
+                                        value={field.value ?? undefined}
+                                        onValueChange={(value) => field.onChange(value ?? undefined)}
+                                        onBlur={field.onBlur}
+                                    />
+                                )}
+                            />
+                            <Controller
+                                name={`offers.${index}.savings`}
+                                control={control}
+                                render={({ field }) => (
+                                    <NumberInput
+                                        label="Savings Amount (Optional)"
+                                        placeholder="e.g., 30.00"
+                                        isInvalid={!!errors.offers?.[index]?.savings}
+                                        errorMessage={errors.offers?.[index]?.savings?.message}
+                                        labelPlacement="outside-left"
+                                        variant="bordered"
+                                        step={0.01}
+                                        minValue={0}
+                                        value={field.value ?? undefined}
+                                        onValueChange={(value) => field.onChange(value ?? undefined)}
+                                        onBlur={field.onBlur}
+                                    />
+                                )}
+                            />
+                            <Controller
+                                name={`offers.${index}.savings_percentage`}
+                                control={control}
+                                render={({ field }) => (
+                                    <NumberInput
+                                        label="Savings Percentage (Optional)"
+                                        placeholder="e.g., 23"
+                                        isInvalid={!!errors.offers?.[index]?.savings_percentage}
+                                        errorMessage={errors.offers?.[index]?.savings_percentage?.message}
+                                        labelPlacement="outside-left"
+                                        variant="bordered"
+                                        step={1}
+                                        minValue={0}
+                                        maxValue={100}
+                                        value={field.value ?? undefined}
+                                        onValueChange={(value) => field.onChange(value ?? undefined)}
+                                        onBlur={field.onBlur}
+                                    />
+                                )}
+                            />
+                            <Controller // 使用 Controller 包裹 Select
+                                name={`offers.${index}.coupon_type`}
+                                control={control}
+                                render={({ field }) => (
+                                    <Select
+                                        // 使用 HeroUI Select props
+                                        label="Coupon Type (Optional)"
+                                        placeholder="Select coupon type"
+                                        isInvalid={!!errors.offers?.[index]?.coupon_type}
+                                        errorMessage={errors.offers?.[index]?.coupon_type?.message}
+                                        labelPlacement="outside-left"
+                                        variant="bordered"
+                                        selectedKeys={field.value ? [field.value] : []} // 控制 Select 的值
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value || null)} // Add explicit type, 更新 react-hook-form, 处理空值
+                                        value={field.value ?? ""} // 确保 Select 显示正确
+                                        onBlur={field.onBlur} // 添加 onBlur
+                                    >
+                                        {/* 添加空选项，允许清除选择 */}
+                                        <SelectItem key="">None</SelectItem>
+                                        <SelectItem key="percentage">Percentage</SelectItem>
+                                        <SelectItem key="fixed">Fixed Amount</SelectItem>
+                                    </Select>
+                                )}
+                            />
+                            <Controller
+                                name={`offers.${index}.coupon_value`}
+                                control={control}
+                                render={({ field }) => (
+                                    <NumberInput
+                                        label="Coupon Value (Optional)"
+                                        placeholder="Value based on type"
+                                        isInvalid={!!errors.offers?.[index]?.coupon_value}
+                                        errorMessage={errors.offers?.[index]?.coupon_value?.message}
+                                        labelPlacement="outside-left"
+                                        variant="bordered"
+                                        step={0.01}
+                                        minValue={0}
+                                        value={field.value ?? undefined}
+                                        onValueChange={(value) => field.onChange(value ?? undefined)}
+                                        onBlur={field.onBlur}
+                                        classNames={{ input: 'min-w-[80px]' }}
+                                    />
+                                )}
+                            />
+                            <Controller // 使用 Controller 包裹 Switch
+                                name={`offers.${index}.is_prime`}
+                                control={control}
+                                render={({ field }) => (
+                                    <div className="flex items-center pt-6"> {/* 调整对齐 */}
+                                        <Switch
+                                            // 使用 HeroUI Switch props
+                                            isSelected={field.value}
+                                            onValueChange={field.onChange} // HeroUI uses onValueChange
+                                            color="primary" // HeroUI supports color
+                                        >
+                                            Is Prime? (Optional)
+                                        </Switch>
+                                    </div>
+                                )}
+                            />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* 15. 16. 响应式提交按钮 */}
+            <div className="md:col-span-2 lg:col-span-6 pt-4 flex justify-center sm:justify-end">
+                <Button
+                    type="submit"
+                    color="primary"
+                    isLoading={isLoading}
+                    disabled={isLoading}
+                >
+                    {isLoading ? 'Submitting...' : 'Add Product'}
+                </Button>
+            </div>
         </Form>
     );
 };

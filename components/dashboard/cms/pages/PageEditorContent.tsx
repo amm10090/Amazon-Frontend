@@ -483,14 +483,14 @@ const PageEditorContent = () => {
                     className={`inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                     <Save size={18} className="mr-2" />
-                    {isSubmitting ? '保存中...' : '保存页面'}
+                    {isSubmitting ? 'Saving...' : 'Save Page'}
                 </button>
             </div>
         );
     };
 
     return (
-        <div className="max-w-5xl mx-auto">
+        <div className="mx-auto">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
                     <button
@@ -542,84 +542,96 @@ const PageEditorContent = () => {
             {isPreviewActive ? (
                 renderPreview()
             ) : (
-                <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
-                    {/* 标题输入 */}
-                    <div>
-                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                            Title
-                        </label>
-                        <input
-                            type="text"
-                            id="title"
-                            value={formData.title}
-                            onChange={handleTitleChange}
-                            placeholder="Enter page title..."
-                            className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            required
-                        />
-                    </div>
-
-                    {/* URL路径输入 */}
-                    <div>
-                        <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
-                            URL Path
-                        </label>
-                        <div className="flex items-center">
-                            <span className="bg-gray-100 px-3 py-2 border border-r-0 rounded-l-md text-gray-500">
-                                /
-                            </span>
+                <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Left Column: Title and Editor */}
+                    <div className="md:col-span-2 space-y-6">
+                        {/* 标题输入 */}
+                        <div>
+                            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                                Title
+                            </label>
                             <input
                                 type="text"
-                                id="slug"
-                                value={formData.slug}
-                                onChange={handleSlugChange}
-                                placeholder="url-path"
-                                className="flex-1 px-4 py-2 border rounded-r-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                id="title"
+                                value={formData.title}
+                                onChange={handleTitleChange}
+                                placeholder="Enter page title..."
+                                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 required
                             />
                         </div>
-                        {showSlugWarning && (
-                            <div className="mt-1 flex items-center text-amber-600 text-sm">
-                                <AlertTriangle size={16} className="mr-1" />
-                                Modifying URL path may affect SEO and existing links
+
+                        {/* 内容编辑器 */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Content
+                            </label>
+                            <RichTextEditor
+                                value={formData.content}
+                                onChange={(content: string) => setFormData(prev => ({ ...prev, content }))}
+                                onEditorReady={handleEditorReady}
+                                placeholder="Start editing page content..."
+                                className="mb-6"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Right Column: Sidebar Elements */}
+                    <div className="md:col-span-1 space-y-6">
+                        {/* 状态选择 */}
+                        <div>
+                            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                                Page Status
+                            </label>
+                            <select
+                                id="status"
+                                value={formData.status}
+                                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'draft' | 'published' | 'archived' }))}
+                                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                        </div>
+
+                        {/* URL路径输入 */}
+                        <div>
+                            <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
+                                URL Path
+                            </label>
+                            <div className="flex items-center">
+                                <span className="bg-gray-100 px-3 py-2 border border-r-0 rounded-l-md text-gray-500">
+                                    /
+                                </span>
+                                <input
+                                    type="text"
+                                    id="slug"
+                                    value={formData.slug}
+                                    onChange={handleSlugChange}
+                                    placeholder="url-path"
+                                    className="flex-1 px-4 py-2 border rounded-r-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                />
                             </div>
-                        )}
-                    </div>
+                            {showSlugWarning && (
+                                <div className="mt-1 flex items-center text-amber-600 text-sm">
+                                    <AlertTriangle size={16} className="mr-1" />
+                                    Modifying URL path may affect SEO and existing links
+                                </div>
+                            )}
+                        </div>
 
-                    {/* 摘要输入 */}
-                    <div>
-                        <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700 mb-1">
-                            Excerpt (for SEO description)
-                        </label>
-                        <textarea
-                            id="excerpt"
-                            value={formData.excerpt}
-                            onChange={handleExcerptChange}
-                            placeholder="Enter a brief description of the page..."
-                            className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            rows={3}
-                        />
-                    </div>
+                        {/* 特色图片 */}
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+                            <CoverImageUploader
+                                currentImageUrl={featuredImage}
+                                onImageUploaded={(url) => setFeaturedImage(url)}
+                            />
+                        </div>
 
-                    {/* 状态选择 */}
-                    <div>
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                            Page Status
-                        </label>
-                        <select
-                            id="status"
-                            value={formData.status}
-                            onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'draft' | 'published' | 'archived' }))}
-                            className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        >
-                            <option value="draft">Draft</option>
-                            <option value="published">Published</option>
-                            <option value="archived">Archived</option>
-                        </select>
-                    </div>
-
-                    {/* 分类选择 */}
-                    <div className="space-y-4">
+                        {/* 分类选择 */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Categories</label>
                             <div className="flex flex-wrap gap-2 mb-2">
@@ -718,84 +730,79 @@ const PageEditorContent = () => {
                                 ))}
                             </Autocomplete>
                         </div>
-                    </div>
 
-                    {/* 特色图片 */}
-                    <div className="space-y-2">
-                        <CoverImageUploader
-                            currentImageUrl={featuredImage}
-                            onImageUploaded={(url) => setFeaturedImage(url)}
-                        />
-                    </div>
+                        {/* 摘要输入 */}
+                        <div>
+                            <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700 mb-1">
+                                Excerpt (for SEO description)
+                            </label>
+                            <textarea
+                                id="excerpt"
+                                value={formData.excerpt}
+                                onChange={handleExcerptChange}
+                                placeholder="Enter a brief description of the page..."
+                                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                rows={3}
+                            />
+                        </div>
 
-                    {/* 内容编辑器 */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Content
-                        </label>
-                        <RichTextEditor
-                            value={formData.content}
-                            onChange={(content: string) => setFormData(prev => ({ ...prev, content }))}
-                            onEditorReady={handleEditorReady}
-                            placeholder="Start editing page content..."
-                            className="mb-6"
-                        />
-                    </div>
-
-                    {/* SEO 元数据部分 */}
-                    <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
-                        <h3 className="text-md font-medium mb-3">SEO Metadata Settings</h3>
-                        <div className="space-y-4">
-                            <div>
-                                <label htmlFor="metaTitle" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Meta Title (for search engines)
-                                </label>
-                                <input
-                                    type="text"
-                                    id="metaTitle"
-                                    value={formData.metaTitle || ''}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, metaTitle: e.target.value }))}
-                                    placeholder="Enter meta title..."
-                                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                                <p className="mt-1 text-xs text-gray-500">
-                                    Recommended: Within 60 characters, leave blank to use page title
-                                </p>
-                            </div>
-                            <div>
-                                <label htmlFor="metaDescription" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Meta Description
-                                </label>
-                                <textarea
-                                    id="metaDescription"
-                                    value={formData.metaDescription || ''}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, metaDescription: e.target.value }))}
-                                    placeholder="Enter meta description..."
-                                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    rows={2}
-                                />
-                                <p className="mt-1 text-xs text-gray-500">
-                                    Recommended: Within 160 characters, leave blank to use excerpt
-                                </p>
-                            </div>
-                            <div>
-                                <label htmlFor="metaKeywords" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Meta Keywords (comma separated)
-                                </label>
-                                <input
-                                    type="text"
-                                    id="metaKeywords"
-                                    value={formData.metaKeywords || ''}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, metaKeywords: e.target.value }))}
-                                    placeholder="keyword1, keyword2, keyword3..."
-                                    className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
+                        {/* SEO 元数据部分 */}
+                        <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+                            <h3 className="text-md font-medium mb-3">SEO Metadata Settings</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="metaTitle" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Meta Title (for search engines)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="metaTitle"
+                                        value={formData.metaTitle || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, metaTitle: e.target.value }))}
+                                        placeholder="Enter meta title..."
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        Recommended: Within 60 characters, leave blank to use page title
+                                    </p>
+                                </div>
+                                <div>
+                                    <label htmlFor="metaDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Meta Description
+                                    </label>
+                                    <textarea
+                                        id="metaDescription"
+                                        value={formData.metaDescription || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, metaDescription: e.target.value }))}
+                                        placeholder="Enter meta description..."
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        rows={2}
+                                    />
+                                    <p className="mt-1 text-xs text-gray-500">
+                                        Recommended: Within 160 characters, leave blank to use excerpt
+                                    </p>
+                                </div>
+                                <div>
+                                    <label htmlFor="metaKeywords" className="block text-sm font-medium text-gray-700 mb-1">
+                                        Meta Keywords (comma separated)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="metaKeywords"
+                                        value={formData.metaKeywords || ''}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, metaKeywords: e.target.value }))}
+                                        placeholder="keyword1, keyword2, keyword3..."
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* 底部保存按钮 */}
-                    {renderSaveButton()}
+                    {/* 底部保存按钮 - 确保在 grid 内部并跨越列 */}
+                    <div className="md:col-span-3 flex justify-end">
+                        {renderSaveButton()}
+                    </div>
                 </form>
             )}
         </div>
