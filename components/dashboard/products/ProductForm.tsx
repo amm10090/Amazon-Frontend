@@ -105,8 +105,8 @@ const productInfoSchema = z.object({
         z.array(z.string()).optional()
     ),
     cj_url: z.string().url({ message: 'Invalid URL format' }).optional().or(z.literal('')),
-    api_provider: z.enum(['manual', 'pa-api', 'cj-api'], { invalid_type_error: 'Invalid API provider' }).optional().default('manual'),
-    source: z.enum(['manual', 'coupon', 'discount'], { invalid_type_error: 'Invalid source' }).optional().default('manual'),
+    api_provider: z.enum(['amazon', 'walmart', 'bestbuy', 'target', 'ebay', 'pa-api', 'cj-api'], { invalid_type_error: 'Invalid API provider' }).optional().default('amazon'),
+    source: z.enum(['coupon', 'discount'], { invalid_type_error: 'Invalid source' }).optional().default('coupon'),
     coupon_expiration_date: z.any().optional().nullable(),
     coupon_terms: z.string().optional(),
     raw_data: z.preprocess(
@@ -126,6 +126,16 @@ type ProductFormData = z.infer<typeof productInfoSchema>;
 
 // Helper type for offer mapping
 type MappedOffer = Omit<ProductOffer, 'price'> & { price: number };
+
+// Extended ProductOffer type to include additional fields for form handling
+type _ExtendedProductOffer = ProductOffer & {
+    original_price?: number;
+    savings?: number;
+    savings_percentage?: number;
+    coupon_type?: "percentage" | "fixed" | null;
+    coupon_value?: number;
+    commission?: string;
+};
 
 // Helper type for form data formatting
 type _FormattedData = Partial<ProductFormData> & {
@@ -201,8 +211,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
             browse_nodes: initialData?.browse_nodes || undefined,
             raw_data: initialData?.raw_data || undefined,
             cj_url: initialData?.cj_url || '',
-            api_provider: initialData?.api_provider || 'manual',
-            source: initialData?.source || 'manual',
+            api_provider: initialData?.api_provider || 'amazon',
+            source: initialData?.source || 'coupon',
             coupon_expiration_date: parseISOStringToCalendarDateTime(initialData?.coupon_expiration_date as string) || null,
             coupon_terms: initialData?.coupon_terms || '',
         },
@@ -473,6 +483,11 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                 className="w-full"
                                 classNames={{ trigger: "flex-1" }}
                             >
+                                <SelectItem key="amazon">Amazon</SelectItem>
+                                <SelectItem key="walmart">Walmart</SelectItem>
+                                <SelectItem key="bestbuy">Best Buy</SelectItem>
+                                <SelectItem key="target">Target</SelectItem>
+                                <SelectItem key="ebay">eBay</SelectItem>
                                 <SelectItem key="pa-api">PA-API</SelectItem>
                                 <SelectItem key="cj-api">CJ-API</SelectItem>
                             </Select>

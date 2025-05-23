@@ -7,6 +7,22 @@ import React, { useEffect } from 'react';
 import ProductForm from '@/components/dashboard/products/ProductForm';
 import type { ProductInfo } from '@/types/api';
 
+// Extended ProductOffer type to handle additional fields
+type ExtendedProductOffer = {
+    condition: string;
+    price: number;
+    currency: string;
+    availability: string;
+    merchant_name: string;
+    is_prime: boolean;
+    original_price?: number;
+    savings?: number;
+    savings_percentage?: number;
+    coupon_type?: "percentage" | "fixed" | null;
+    coupon_value?: number;
+    commission?: string;
+};
+
 interface EditProductFormProps {
     asin: string;
     initialData: ProductInfo;
@@ -95,7 +111,25 @@ const EditProductForm: React.FC<EditProductFormProps> = ({
                 <ProductForm
                     mode="edit"
                     asin={asin}
-                    initialData={initialData}
+                    initialData={{
+                        ...initialData,
+                        source: (initialData.source === 'manual' ? 'coupon' : initialData.source as "coupon" | "discount") || "coupon",
+                        api_provider: (initialData.api_provider === 'manual' ? 'amazon' : initialData.api_provider as "amazon" | "walmart" | "bestbuy" | "target" | "ebay" | "pa-api" | "cj-api") || "amazon",
+                        offers: initialData.offers?.map((offer): ExtendedProductOffer => ({
+                            condition: offer.condition || "New",
+                            price: offer.price || 0,
+                            currency: offer.currency || "USD",
+                            availability: offer.availability || "In Stock",
+                            merchant_name: offer.merchant_name || "Amazon.com",
+                            is_prime: offer.is_prime || false,
+                            original_price: (offer as ExtendedProductOffer).original_price || undefined,
+                            savings: (offer as ExtendedProductOffer).savings || undefined,
+                            savings_percentage: (offer as ExtendedProductOffer).savings_percentage || undefined,
+                            coupon_type: (offer as ExtendedProductOffer).coupon_type || undefined,
+                            coupon_value: (offer as ExtendedProductOffer).coupon_value || undefined,
+                            commission: typeof (offer as ExtendedProductOffer).commission === 'string' ? (offer as ExtendedProductOffer).commission : undefined
+                        })) || []
+                    }}
                     onSuccess={onSuccess}
                     onCancel={onCancel}
                 />
