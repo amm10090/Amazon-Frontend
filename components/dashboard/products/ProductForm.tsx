@@ -3,9 +3,9 @@
 import { Input, Textarea, Button, Switch, Select, SelectItem, DateInput, Form, NumberInput } from "@heroui/react";
 import { zodResolver } from '@hookform/resolvers/zod';
 import { parseAbsolute, toCalendarDateTime, type CalendarDateTime, type CalendarDate, type ZonedDateTime } from '@internationalized/date';
-import { TrashIcon } from 'lucide-react';
+import { TrashIcon, Shuffle } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
-import { useForm, useFieldArray, Controller, type Resolver, type SubmitHandler } from 'react-hook-form';
+import { useForm, useFieldArray, Controller, type SubmitHandler, type Resolver } from 'react-hook-form';
 import * as z from 'zod';
 
 import { revalidateProductsList } from '@/app/actions/revalidateProducts';
@@ -75,14 +75,23 @@ const productOfferSchema = z.object({
     commission: z.string().optional(),
 });
 
-// 定义 ProductInfo 的 Zod Schema
-const productInfoSchema = z.object({
+// 定义基础的 ProductInfo Zod Schema
+const baseProductInfoSchema = z.object({
     asin: z.string().optional(),
     title: z.string().min(1, { message: 'Title is required' }),
     url: z.string().url({ message: 'Invalid URL format' }),
     offers: z.array(productOfferSchema).min(1, { message: 'At least one offer is required' }),
     brand: z.string().optional(),
-    main_image: z.string().url({ message: 'Invalid URL format' }).optional().or(z.literal('')),
+    main_image: z.preprocess(
+        (val: unknown) => {
+            // 如果值为空字符串、null、undefined，返回undefined表示没有提供值
+            if (typeof val === 'string' && val.trim() === '') return undefined;
+            if (val === null || val === undefined) return undefined;
+
+            return val;
+        },
+        z.string().url({ message: 'Invalid URL format' }).optional()
+    ),
     timestamp: z.string().optional(),
     binding: z.string().optional(),
     product_group: z.string().optional(),
@@ -104,7 +113,16 @@ const productInfoSchema = z.object({
         (val: unknown) => (typeof val === 'string' && val.length > 0 ? val.split(',').map(s => s.trim()).filter(Boolean) : []),
         z.array(z.string()).optional()
     ),
-    cj_url: z.string().url({ message: 'Invalid URL format' }).optional().or(z.literal('')),
+    cj_url: z.preprocess(
+        (val: unknown) => {
+            // 如果值为空字符串、null、undefined，返回undefined表示没有提供值
+            if (typeof val === 'string' && val.trim() === '') return undefined;
+            if (val === null || val === undefined) return undefined;
+
+            return val;
+        },
+        z.string().url({ message: 'Invalid URL format' }).optional()
+    ),
     api_provider: z.enum(['amazon', 'walmart', 'bestbuy', 'target', 'ebay', 'pa-api', 'cj-api'], { invalid_type_error: 'Invalid API provider' }).optional().default('amazon'),
     source: z.enum(['coupon', 'discount'], { invalid_type_error: 'Invalid source' }).optional().default('coupon'),
     coupon_expiration_date: z.any().optional().nullable(),
@@ -121,8 +139,21 @@ const productInfoSchema = z.object({
     ),
 });
 
+// 基于模式创建动态schema的函数
+const createProductInfoSchema = (mode: 'add' | 'edit') => {
+    // ASIN格式验证：10位字符，字母和数字组合
+    const asinValidation = z.string()
+        .regex(/^[A-Z0-9]{10}$/, { message: 'ASIN must be exactly 10 characters (letters and numbers only)' });
+
+    return baseProductInfoSchema.extend({
+        asin: mode === 'add'
+            ? asinValidation
+            : z.string().optional()
+    });
+};
+
 // 从 Zod Schema 推断 TypeScript 类型
-type ProductFormData = z.infer<typeof productInfoSchema>;
+type ProductFormData = z.infer<typeof baseProductInfoSchema>;
 
 // Helper type for offer mapping
 type MappedOffer = Omit<ProductOffer, 'price'> & { price: number };
@@ -164,6 +195,44 @@ const ProductForm: React.FC<ProductFormProps> = ({
     const [isLoading, setIsLoading] = useState(false);
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 
+    // 生成类似亚马逊格式的ASIN（10位字符：字母和数字组合）
+    const generateASIN = () => {
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const numbers = '0123456789';
+        const alphanumeric = letters + numbers;
+
+        let result = '';
+
+        // 亚马逊ASIN通常以B开头（约75%的概率），偶尔以其他字母开头
+        if (Math.random() < 0.75) {
+            result = 'B';
+        } else {
+            result = letters.charAt(Math.floor(Math.random() * letters.length));
+        }
+
+        // 生成剩余9位字符，混合字母和数字
+        for (let i = 0; i < 9; i++) {
+            // 前几位倾向于使用数字，后几位混合使用
+            if (i < 3 && Math.random() < 0.6) {
+                result += numbers.charAt(Math.floor(Math.random() * numbers.length));
+            } else {
+                result += alphanumeric.charAt(Math.floor(Math.random() * alphanumeric.length));
+            }
+        }
+
+        return result;
+    };
+
+    // 处理生成ASIN按钮点击
+    const handleGenerateASIN = () => {
+        if (mode === 'edit') return; // 编辑模式下不允许生成新ASIN
+
+        const newASIN = generateASIN();
+        // 使用setValue来更新表单字段的值
+
+        setValue('asin', newASIN);
+    };
+
     // 处理初始数据的格式化
     const formatInitialData = (data?: Partial<ProductFormData>): Record<string, unknown> => {
         if (!data) return {};
@@ -187,17 +256,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
         register,
         formState: { errors },
         reset,
+        setValue,
     } = useForm<ProductFormData>({
-        resolver: zodResolver(productInfoSchema) as Resolver<ProductFormData>,
+        resolver: zodResolver(createProductInfoSchema(mode)) as Resolver<ProductFormData>,
         defaultValues: {
             asin: initialData?.asin || '',
             title: initialData?.title || '',
             url: initialData?.url || '',
             offers: initialData?.offers || [{
                 condition: 'New',
-                price: 0,
+                price: 0.01,
                 currency: 'USD',
-                availability: '',
+                availability: 'In Stock',
                 merchant_name: '',
                 is_prime: false,
                 coupon_type: null,
@@ -376,19 +446,49 @@ const ProductForm: React.FC<ProductFormProps> = ({
             <div id="basic-information" className="border rounded-md p-4 space-y-4 md:col-span-1 lg:col-span-2">
                 <h3 className="text-lg font-semibold mb-2">Basic Information</h3>
                 <div className="grid grid-cols-1 gap-6">
-                    <Input
-                        {...register("asin")}
-                        label="ASIN"
-                        placeholder="Enter product ASIN"
-                        isRequired={mode === 'add'}
-                        isDisabled={mode === 'edit'} // 编辑模式下禁用ASIN字段
-                        isInvalid={!!errors.asin}
-                        errorMessage={errors.asin?.message}
-                        labelPlacement="outside-left"
-                        variant="bordered"
-                        className="w-full"
-                        classNames={{ inputWrapper: "flex-1" }}
-                    />
+                    {/* ASIN字段 - 添加生成按钮 */}
+                    <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium">
+                            ASIN {mode === 'add' && <span className="text-red-500">*</span>}
+                        </label>
+                        <div className="flex space-x-2">
+                            <Controller
+                                name="asin"
+                                control={control}
+                                render={({ field }) => (
+                                    <Input
+                                        {...field}
+                                        placeholder="Enter 10-character ASIN (e.g., B08N5WRWNW)"
+                                        isRequired={mode === 'add'}
+                                        isDisabled={mode === 'edit'} // 编辑模式下禁用ASIN字段
+                                        isInvalid={!!errors.asin}
+                                        errorMessage={errors.asin?.message}
+                                        variant="bordered"
+                                        className="flex-1"
+                                        maxLength={10}
+                                    />
+                                )}
+                            />
+                            {mode === 'add' && (
+                                <Button
+                                    isIconOnly
+                                    variant="bordered"
+                                    onPress={handleGenerateASIN}
+                                    className="shrink-0"
+                                    title="Generate random ASIN"
+                                >
+                                    <Shuffle className="w-4 h-4" />
+                                </Button>
+                            )}
+                        </div>
+                        {errors.asin && (
+                            <p className="text-xs text-danger">{errors.asin.message}</p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                            ASIN must be exactly 10 characters (letters and numbers only).
+                            {mode === 'add' && ' Click the shuffle button to generate a random ASIN.'}
+                        </p>
+                    </div>
                     <Input
                         {...register("title")}
                         label="Title"
@@ -623,9 +723,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         size="sm"
                         onPress={() => appendOffer({
                             condition: 'New',
-                            price: 0,
+                            price: 0.01,
                             currency: 'USD',
-                            availability: '',
+                            availability: 'In Stock',
                             merchant_name: '',
                             is_prime: false,
                             coupon_type: null,
@@ -697,8 +797,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                         variant="bordered"
                                         step={0.01}
                                         minValue={0.01}
-                                        value={field.value ?? 0}
-                                        onValueChange={(value: number | null | undefined) => field.onChange(value ?? 0)}
+                                        formatOptions={{
+                                            style: "decimal",
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        }}
+                                        value={field.value ?? undefined}
+                                        onValueChange={(value: number | null | undefined) => field.onChange(value)}
                                         onBlur={field.onBlur}
                                     />
                                 )}
@@ -713,15 +818,34 @@ const ProductForm: React.FC<ProductFormProps> = ({
                                 labelPlacement="outside-left"
                                 variant="bordered"
                             />
-                            <Input
-                                {...register(`offers.${index}.availability`)}
-                                label="Availability"
-                                placeholder="e.g., In Stock"
-                                isRequired
-                                isInvalid={!!errors.offers?.[index]?.availability}
-                                errorMessage={errors.offers?.[index]?.availability?.message}
-                                labelPlacement="outside-left"
-                                variant="bordered"
+                            <Controller
+                                name={`offers.${index}.availability`}
+                                control={control}
+                                rules={{ required: 'Availability is required' }}
+                                render={({ field }) => (
+                                    <Select
+                                        label="Availability"
+                                        placeholder="Select availability"
+                                        isRequired
+                                        isInvalid={!!errors.offers?.[index]?.availability}
+                                        errorMessage={errors.offers?.[index]?.availability?.message}
+                                        labelPlacement="outside-left"
+                                        variant="bordered"
+                                        selectedKeys={field.value ? [field.value] : []}
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => field.onChange(e.target.value)}
+                                        onBlur={field.onBlur}
+                                        value={field.value ?? ""}
+                                    >
+                                        <SelectItem key="In Stock">In Stock</SelectItem>
+                                        <SelectItem key="Out of Stock">Out of Stock</SelectItem>
+                                        <SelectItem key="Limited Stock">Limited Stock</SelectItem>
+                                        <SelectItem key="Pre-order">Pre-order</SelectItem>
+                                        <SelectItem key="Backorder">Backorder</SelectItem>
+                                        <SelectItem key="Discontinued">Discontinued</SelectItem>
+                                        <SelectItem key="Available">Available</SelectItem>
+                                        <SelectItem key="Temporarily Unavailable">Temporarily Unavailable</SelectItem>
+                                    </Select>
+                                )}
                             />
                             <Input
                                 {...register(`offers.${index}.merchant_name`)}
