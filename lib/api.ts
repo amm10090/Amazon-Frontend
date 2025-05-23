@@ -354,6 +354,22 @@ export const productsApi = {
         // 使用api实例发送请求，让请求通过Next.js API路由
         return api.post<ApiResponse<ProductInfo>>('/products/manual', productData);
     },
+
+    /**
+     * 更新已存在的商品信息
+     * @param asin - 商品的ASIN码
+     * @param productData - 符合 ProductInfo 结构的更新数据
+     * @returns API响应对象，包含更新后的商品信息
+     */
+    updateProduct: (asin: string, productData: ProductInfo) => {
+        // 确保ASIN格式正确
+        if (!asin || asin.length !== 10 || !/^[A-Z0-9]{10}$/i.test(asin)) {
+            throw new Error('Invalid ASIN format. ASIN must be 10 alphanumeric characters.');
+        }
+        
+        // 使用api实例发送请求，让请求通过Next.js API路由
+        return api.put<ApiResponse<ProductInfo>>(`/products/${asin.toUpperCase()}`, productData);
+    },
 };
 
 export const userApi = {

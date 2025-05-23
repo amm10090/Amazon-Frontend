@@ -60,6 +60,47 @@ export function formatDate(date: Date | number): string {
 }
 
 /**
+ * 格式化UTC时间字符串为用户本地时区显示
+ * @param utcDateString UTC时间的ISO字符串
+ * @param options 格式化选项
+ * @returns 格式化后的本地时间字符串
+ */
+export function formatUTCDateToLocal(
+    utcDateString: string | null | undefined,
+    options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short'
+    }
+): string {
+    if (!utcDateString) return '';
+
+    try {
+        const date = new Date(utcDateString);
+
+        if (isNaN(date.getTime())) return '';
+
+        return new Intl.DateTimeFormat('zh-CN', {
+            ...options,
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        }).format(date);
+    } catch {
+        return '';
+    }
+}
+
+/**
+ * 获取当前UTC时间的ISO字符串
+ * @returns UTC时间的ISO字符串
+ */
+export function getCurrentUTCTimeString(): string {
+    return new Date().toISOString();
+}
+
+/**
  * 生成随机ID
  * @param length ID长度
  * @returns 随机ID字符串

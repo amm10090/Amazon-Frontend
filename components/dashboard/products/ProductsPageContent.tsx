@@ -3,9 +3,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { FaTrash, FaSearch, FaSort, FaSortUp, FaSortDown, FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaTrash, FaSearch, FaSort, FaSortUp, FaSortDown, FaTimes, FaChevronDown, FaChevronUp, FaEdit } from 'react-icons/fa';
 
 import { productsApi } from '@/lib/api';
 import { useProducts, useProductSearch } from '@/lib/hooks';
@@ -15,6 +16,7 @@ import type { Product } from '@/types/api';
 const SKELETON_KEYS = ['sk1', 'sk2', 'sk3', 'sk4', 'sk5'];
 
 const ProductsPageContent = () => {
+    const router = useRouter();
     const { data: session } = useSession();
     const [searchTerm, setSearchTerm] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
@@ -597,6 +599,10 @@ const ProductsPageContent = () => {
         </motion.div>
     );
 
+    const handleEditProduct = (asin: string) => {
+        router.push(`/dashboard/products/edit/${asin}`);
+    };
+
     const handleDeleteProduct = async (asin: string) => {
         try {
             const response = await fetch(`/api/products/batch-delete`, {
@@ -1123,13 +1129,22 @@ const ProductsPageContent = () => {
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <button
-                                                        onClick={() => product.asin ? setShowDeleteConfirm(product.asin) : null}
-                                                        className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
-                                                        aria-label="Delete product"
-                                                    >
-                                                        <FaTrash size={12} />
-                                                    </button>
+                                                    <div className="flex items-center space-x-1">
+                                                        <button
+                                                            onClick={() => product.asin ? handleEditProduct(product.asin) : null}
+                                                            className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                                                            aria-label="Edit product"
+                                                        >
+                                                            <FaEdit size={12} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => product.asin ? setShowDeleteConfirm(product.asin) : null}
+                                                            className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
+                                                            aria-label="Delete product"
+                                                        >
+                                                            <FaTrash size={12} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1216,8 +1231,8 @@ const ProductsPageContent = () => {
                                             >
                                                 Source
                                             </th>
-                                            <th scope="col" className="py-3 pl-2 pr-4 text-right text-xs font-medium text-gray-500 uppercase w-20">
-                                                Action
+                                            <th scope="col" className="py-3 pl-2 pr-4 text-right text-xs font-medium text-gray-500 uppercase w-24">
+                                                Actions
                                             </th>
                                         </tr>
                                     </thead>
@@ -1279,13 +1294,22 @@ const ProductsPageContent = () => {
                                                     )}
                                                 </td>
                                                 <td className="py-3 pl-2 pr-4 text-right">
-                                                    <button
-                                                        onClick={() => product.asin ? setShowDeleteConfirm(product.asin) : null}
-                                                        className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
-                                                        aria-label="Delete product"
-                                                    >
-                                                        <FaTrash size={12} />
-                                                    </button>
+                                                    <div className="flex items-center justify-end space-x-1">
+                                                        <button
+                                                            onClick={() => product.asin ? handleEditProduct(product.asin) : null}
+                                                            className="p-1 text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                                                            aria-label="Edit product"
+                                                        >
+                                                            <FaEdit size={12} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => product.asin ? setShowDeleteConfirm(product.asin) : null}
+                                                            className="p-1 text-gray-400 hover:text-red-600 transition-colors duration-200"
+                                                            aria-label="Delete product"
+                                                        >
+                                                            <FaTrash size={12} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </motion.tr>
                                         ))}
@@ -1396,12 +1420,20 @@ const ProductsPageContent = () => {
                                                 )}
                                             </td>
                                             <td className="px-3 py-4 text-sm text-right">
-                                                <button
-                                                    onClick={() => product.asin ? setShowDeleteConfirm(product.asin) : null}
-                                                    className="inline-flex items-center text-red-600 hover:text-red-900"
-                                                >
-                                                    <FaTrash className="mr-1" /> Delete
-                                                </button>
+                                                <div className="flex items-center justify-end space-x-2">
+                                                    <button
+                                                        onClick={() => product.asin ? handleEditProduct(product.asin) : null}
+                                                        className="inline-flex items-center text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                                                    >
+                                                        <FaEdit className="mr-1" /> Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => product.asin ? setShowDeleteConfirm(product.asin) : null}
+                                                        className="inline-flex items-center text-gray-400 hover:text-red-600 transition-colors duration-200"
+                                                    >
+                                                        <FaTrash className="mr-1" /> Delete
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -1568,12 +1600,20 @@ const ProductsPageContent = () => {
                                                     )}
                                                 </td>
                                                 <td className="px-3 py-4 text-sm text-right">
-                                                    <button
-                                                        onClick={() => product.asin ? setShowDeleteConfirm(product.asin) : null}
-                                                        className="inline-flex items-center text-gray-400 hover:text-red-600 transition-colors duration-200"
-                                                    >
-                                                        <FaTrash className="mr-1" /> Delete
-                                                    </button>
+                                                    <div className="flex items-center justify-end space-x-2">
+                                                        <button
+                                                            onClick={() => product.asin ? handleEditProduct(product.asin) : null}
+                                                            className="inline-flex items-center text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                                                        >
+                                                            <FaEdit className="mr-1" /> Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={() => product.asin ? setShowDeleteConfirm(product.asin) : null}
+                                                            className="inline-flex items-center text-gray-400 hover:text-red-600 transition-colors duration-200"
+                                                        >
+                                                            <FaTrash className="mr-1" /> Delete
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </motion.tr>
                                         ))}
