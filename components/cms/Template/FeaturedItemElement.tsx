@@ -89,7 +89,7 @@ const FeaturedItemElement = ({ product }: { product: ComponentProduct }) => {
 
                     {/* 来源与按钮 */}
                     <span className="flex flex-col sm:flex-row items-center sm:items-center sm:justify-between mt-auto pt-3 border-t border-gray-100 dark:border-gray-700">
-                        <StoreIdentifier url={effectiveUrl} showName={true} className="mb-3 sm:mb-0" />
+                        <StoreIdentifier url={effectiveUrl} showName={true} className="mb-3 sm:mb-0" apiProvider={product.apiProvider} />
                         <Link href={productUrl} className="no-underline text-center sm:text-right w-full sm:w-auto" target="_blank" rel="noopener noreferrer">
                             <motion.button
                                 whileHover={{ scale: 1.03 }}

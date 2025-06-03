@@ -39,7 +39,7 @@ const SimpleProductElement = ({ product }: { product: ComponentProduct }) => {
                     </span>
                 </span>
             </span>
-            <StoreIdentifier url={effectiveUrl} align="right" showName={false} className="mb-0 flex-shrink-0" />
+            <StoreIdentifier url={effectiveUrl} align="right" showName={false} className="mb-0 flex-shrink-0" apiProvider={product.apiProvider} />
             {/* Optionally keep the '产品' tag if needed for CMS context */}
             {/* <div className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full ml-2">产品</div> */}
         </span>

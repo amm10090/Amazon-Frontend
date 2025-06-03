@@ -9,11 +9,21 @@ export interface StoreInfo {
 }
 
 /**
- * 根据产品URL判断商店来源
+ * 根据产品URL或API提供商判断商店来源
  * @param url 产品URL
+ * @param apiProvider API提供商 (可选)
  * @returns 商店信息，包括名称、颜色和图标
  */
-export const getStoreFromUrl = (url: string): StoreInfo => {
+export const getStoreFromUrl = (url: string, apiProvider?: string): StoreInfo => {
+    // 优先根据 apiProvider 判断
+    if (apiProvider === 'amazon' || apiProvider === 'pa-api') {
+        return {
+            name: 'Amazon',
+            color: '#FF9900',
+            icon: <AmazonLogo />
+        };
+    }
+
     if (!url) return { name: 'Online Store', color: '#6c757d', icon: <GenericStoreIcon /> };
 
     if (url.includes('amazon.com')) {

@@ -22,7 +22,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     showFavoriteButton = true
 }) => {
 
-    const { id, title, price, image, discount, url, isPrime, brand } = product;
+    const { id, title, price, image, discount, url, isPrime, brand, apiProvider } = product;
 
     // Calculate discount price
     const discountPrice = discount
@@ -101,6 +101,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
                             <StoreIdentifier
                                 url={url}
                                 align="right"
+                                apiProvider={apiProvider}
                             />
                         )}
 

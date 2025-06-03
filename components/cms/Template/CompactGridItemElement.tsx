@@ -48,7 +48,7 @@ const CompactGridItemElement = ({ product }: { product: ComponentProduct }) => {
                             <span className="text-base font-semibold text-primary dark:text-primary-light">
                                 {formatPrice(price)}
                             </span>
-                            <StoreIdentifier url={effectiveUrl} showName={false} className="mb-0 flex-shrink-0" />
+                            <StoreIdentifier url={effectiveUrl} showName={false} className="mb-0 flex-shrink-0" apiProvider={product.apiProvider} />
                         </span>
                     </span>
                 </motion.span>

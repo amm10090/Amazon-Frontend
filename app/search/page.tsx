@@ -258,6 +258,7 @@ function SearchPageContent() {
                                             <StoreIdentifier
                                                 url={product.url || ''}
                                                 align="right"
+                                                apiProvider={product.apiProvider}
                                             />
                                         </div>
 

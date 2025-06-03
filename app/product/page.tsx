@@ -941,6 +941,7 @@ function ProductsContent({ categoryFromSlug }: { categoryFromSlug?: string } = {
                                 <StoreIdentifier
                                     url={product.cj_url || product.url || ''}
                                     align="right"
+                                    apiProvider={product.apiProvider}
                                 />
                             </div>
 

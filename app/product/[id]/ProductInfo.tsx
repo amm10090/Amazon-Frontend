@@ -93,6 +93,7 @@ export default function ProductInfo({ product }: ProductInfoProps) {
                     align="left"
                     showName={true}
                     className="flex items-center"
+                    apiProvider={product.apiProvider}
                 />
 
                 {/* Prime badge - 放置在右侧 */}

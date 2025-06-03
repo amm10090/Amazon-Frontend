@@ -417,6 +417,7 @@ export function FeaturedDeals({
                                     <StoreIdentifier
                                         url={productUrl}
                                         align="right"
+                                        apiProvider={deal.api_provider}
                                     />
                                 </div>
 

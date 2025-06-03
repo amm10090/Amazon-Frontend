@@ -127,7 +127,7 @@ const CardProductElement = ({ product }: { product: ComponentProduct }) => {
                                     {formattedBrand}
                                 </span>
                             ) : <span />}
-                            <StoreIdentifier url={effectiveUrl} align="right" />
+                            <StoreIdentifier url={effectiveUrl} align="right" apiProvider={product.apiProvider} />
                         </span>
 
                         <strong className="text-base font-medium line-clamp-2 mb-2 flex-grow text-primary-dark dark:text-gray-100 min-h-[3.5rem]">

@@ -7,6 +7,7 @@ interface StoreIdentifierProps {
     showName?: boolean;
     className?: string;
     align?: 'left' | 'right';
+    apiProvider?: string;
 }
 
 /**
@@ -16,9 +17,10 @@ export const StoreIdentifier: React.FC<StoreIdentifierProps> = ({
     url,
     showName = true,
     className = '',
-    align = 'left'
+    align = 'left',
+    apiProvider
 }) => {
-    const store = getStoreFromUrl(url);
+    const store = getStoreFromUrl(url, apiProvider);
 
     if (store.name === 'Amazon') {
         return (

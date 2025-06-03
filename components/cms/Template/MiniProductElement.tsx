@@ -35,7 +35,7 @@ const MiniProductElement = ({ product }: { product: ComponentProduct }) => {
                     <span className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate" title={title}>{title}</span>
                     <span className="text-xs text-primary dark:text-primary-light">{formatPrice(price)}</span>
                 </span>
-                <StoreIdentifier url={effectiveUrl} showName={false} className="mb-0 ml-2 flex-shrink-0" />
+                <StoreIdentifier url={effectiveUrl} showName={false} className="mb-0 ml-2 flex-shrink-0" apiProvider={product.apiProvider} />
             </motion.span>
         </Link>
     );

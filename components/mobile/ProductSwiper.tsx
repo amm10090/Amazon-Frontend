@@ -111,6 +111,7 @@ export function ProductSwiper({ products }: ProductSwiperProps) {
                                     <StoreIdentifier
                                         url={productUrl}
                                         align="right"
+                                        apiProvider={product.api_provider}
                                     />
                                 </div>
 

@@ -213,6 +213,7 @@ const DealsPage = () => {
                                 <StoreIdentifier
                                     url={productUrl}
                                     align="right"
+                                    apiProvider={product.api_provider}
                                 />
                             </div>
 

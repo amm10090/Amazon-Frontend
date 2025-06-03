@@ -49,7 +49,7 @@ const HorizontalProductElement = ({ product }: { product: ComponentProduct }) =>
                         <span className="text-primary-button dark:text-primary-light font-bold text-xl">{formatPrice(price)}</span>
 
                         <span className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 mt-2 sm:mt-0">
-                            <StoreIdentifier url={effectiveUrl} align="left" showName={false} className="mb-0" />
+                            <StoreIdentifier url={effectiveUrl} align="left" showName={false} className="mb-0" apiProvider={product.apiProvider} />
                             <Link href={productUrl} className="no-underline" target="_blank" rel="noopener noreferrer">
                                 <button className="px-3 py-1.5 sm:px-4 bg-primary-button hover:bg-primary-button-hover dark:bg-primary-dark dark:hover:bg-primary text-white rounded-full text-sm transition-colors whitespace-nowrap">
                                     View Details
