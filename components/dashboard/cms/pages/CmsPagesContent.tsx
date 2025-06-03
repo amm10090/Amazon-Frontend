@@ -1,6 +1,6 @@
 'use client';
 
-import { Edit, Trash2, Search, Plus, Eye, FileCog, FileText, RefreshCcw, Tag, FolderOpen, FileText as FileTextIcon } from 'lucide-react';
+import { Edit, Trash2, Search, Plus, Eye, FileCog, FileText, RefreshCcw, Tag, FolderOpen, FileText as FileTextIcon, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -35,6 +35,10 @@ const CmsPagesContent = () => {
     const [refreshKey, setRefreshKey] = useState(0);
     const [availableCategories, setAvailableCategories] = useState<ContentCategory[]>([]);
     const [availableTags, setAvailableTags] = useState<ContentTag[]>([]);
+
+    // 新增状态用于删除确认
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
 
     // 加载页面数据
     useEffect(() => {
@@ -135,33 +139,40 @@ const CmsPagesContent = () => {
         }
     };
 
-    // 删除页面
-    const handleDeletePage = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this page? This action cannot be undone.')) {
-            return;
-        }
+    // 删除页面 - 现在只打开确认对话框
+    const handleDeletePage = (id: string) => {
+        setDeletingPageId(id);
+        setShowDeleteConfirm(true);
+    };
+
+    // 确认删除页面 - 实际执行删除操作
+    const confirmDeletePage = async () => {
+        if (!deletingPageId) return;
 
         try {
-            const response = await cmsApi.deletePage(id);
+            const response = await cmsApi.deletePage(deletingPageId);
 
             if (response.data?.status) {
                 showSuccessToast({
-                    title: "Delete Successful",
-                    description: "Page has been successfully deleted",
+                    title: "Deletion Successful",
+                    description: "The blog post has been successfully deleted.",
                 });
                 // 刷新列表
                 setRefreshKey(prev => prev + 1);
             } else {
                 showErrorToast({
-                    title: "Delete Failed",
-                    description: "Error occurred while deleting page",
+                    title: "Deletion Failed",
+                    description: response.data?.message || "An error occurred while deleting the blog post.",
                 });
             }
         } catch {
             showErrorToast({
-                title: "Delete Failed",
-                description: "Error occurred while deleting page",
+                title: "Deletion Failed",
+                description: "An error occurred while deleting the blog post.",
             });
+        } finally {
+            setShowDeleteConfirm(false);
+            setDeletingPageId(null);
         }
     };
 
@@ -589,6 +600,48 @@ const CmsPagesContent = () => {
             {activeTab === 'posts' && renderPostsContent()}
             {activeTab === 'categories' && <CategoriesManagement />}
             {activeTab === 'tags' && <TagsManagement />}
+
+            {/* 删除确认对话框 */}
+            {showDeleteConfirm && (
+                <div className="fixed inset-0 bg-black/35 bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                        <div className="flex items-start">
+                            <div className="mr-3 flex-shrink-0 bg-red-100 rounded-full p-2">
+                                <AlertTriangle className="h-6 w-6 text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-medium text-gray-900" id="modal-title">
+                                    Confirm Deletion
+                                </h3>
+                                <div className="mt-2">
+                                    <p className="text-sm text-gray-500">
+                                        Are you sure you want to delete this blog post? This action cannot be undone.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                            <button
+                                type="button"
+                                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                onClick={confirmDeletePage}
+                            >
+                                Confirm Delete
+                            </button>
+                            <button
+                                type="button"
+                                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm"
+                                onClick={() => {
+                                    setShowDeleteConfirm(false);
+                                    setDeletingPageId(null);
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
